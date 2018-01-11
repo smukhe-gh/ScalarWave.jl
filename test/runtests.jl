@@ -1,3 +1,5 @@
+versioninfo()
+
 using ScalarWave
 using Base.Test
 
