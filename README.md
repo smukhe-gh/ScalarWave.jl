@@ -1,5 +1,4 @@
 # ScalarWave
----
 
 [![Build Status](https://travis-ci.org/soham1112/ScalarWave.jl.svg?branch=master)](https://travis-ci.org/soham1112/ScalarWave.jl)
 
