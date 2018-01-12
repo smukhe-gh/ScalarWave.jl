@@ -1,7 +1,6 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 01-2018
-# XXX: WORK IN PROGRESS
 #--------------------------------------------------------------------
 
 function distribute{T<:Integer}(N::T, M::T)

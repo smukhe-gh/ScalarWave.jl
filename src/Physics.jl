@@ -10,7 +10,9 @@ function operator{T<:Integer}(N::T)
 			I = (N+1)*(i-1) + k
 			J = (N+1)*(j-1) + l
 			for m in 1:N+1, n in 1:N+1
-				operator[I, J] += w[i]*w[k]*(delta[i,m]*D[k,n]*delta[m,j]*D[n,l]) 
+				# TODO: Replace with appropriate functions for D and w
+				operator[I, J] += w[i]*w[k]*(delta[i,m]*D[k,n]*delta[m,j]*D[n,l] + 
+											 D[i,m]*delta[k,n]*delta[m,j]*D[n,k]) 
 			end
 		end
 	end
