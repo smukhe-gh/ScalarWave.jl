@@ -6,10 +6,9 @@
 using ScalarWave
 using Base.Test
 
-modules = ["SpecCalculus"]
-println("Running tests:")
- 
+modules = ["SpecCalculus",
+		   "Physics"]
+
 for file in modules
-	println("- $(file)")
 	include("$(file)Test.jl")
 end

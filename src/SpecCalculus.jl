@@ -3,11 +3,11 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function chebx{T<:Integer}(i::T, N::T)
+function chebx{T<:Int}(i::T, N::T)::Float64
 	cospi((i-1)/N)
 end
 
-function chebd{T<:Integer}(i::T, j::T, N::T)
+function chebd{T<:Int}(i::T, j::T, N::T)::Float64
 	if i==j==1
 		return (2N^2 + 1)/6
 	elseif i==j==N+1
@@ -22,7 +22,7 @@ function chebd{T<:Integer}(i::T, j::T, N::T)
 	end
 end
 
-function chebw{T<:Integer}(i::T, N::T)
+function chebw{T<:Int}(i::T, N::T)::Float64
 	W = 0.0
 	for j in 1:N+1
 		w = (j == 1 ? 1 : (j-1)%2 == 0 ? 2/(1-(j-1)^2): 0)
