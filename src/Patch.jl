@@ -9,7 +9,7 @@ function extractBC{T<:Integer}(patch::Array{Float64, 1}, s::T, N::T)
 		I = (N+1)*(i-1) + j
 		if s==0 && i==1
 			boundary[I] = patch[I]
-		elselif s==1 && j==1
+		elseif s==1 && j==1
 			boundary[I] = patch[I]
 		else
 			continue		
@@ -28,6 +28,7 @@ function setBC!{T<:Integer}(patch::Array{Float64, 1}, boundary::Array{Float64, 1
 		else
 			continue		
 		end
-	return patch
+    end
+    return patch
 end
 

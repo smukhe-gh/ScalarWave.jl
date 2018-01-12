@@ -3,7 +3,7 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-isdefined(Base, :__precompile__) && __precompile__()
+#isdefined(Base, :__precompile__) && __precompile__()
 
 module ScalarWave
 
@@ -14,10 +14,10 @@ export chebx, chebd, chebw,
 	   distribute,
 	   coordtrans, computeB
 
-include("SpecCalculus.jl")
-include("Physics.jl")
-include("Patch.jl")
-include("Grid.jl")
-include("Utilities.jl")
+#include("SpecCalculus.jl")
+#include("Physics.jl")
+#include("Patch.jl")
+#include("Grid.jl")
+#include("Utilities.jl")
 
 end 

@@ -17,13 +17,13 @@ function computeB{T<:Integer}(N::T, M::T, loc::Array{T, 1})
 		continue
 	elseif loc[1] == 1 || loc[2] == 1
 		if loc[1] > loc[2]
-			setBC!(B, extractBC(dbase[loc-[1,0]]), 0, N), 0, N)	
+			setBC!(B, extractBC(dbase[loc-[1,0]], 0, N), 0, N)	
 		else
-			setBC!(B, extractBC(dbase[loc-[0,1]]), 1, N), 1, N)
+			setBC!(B, extractBC(dbase[loc-[0,1]], 1, N), 1, N)
 		end
 	else
-		setBC!(B, extractBC(dbase[loc-[1,0]]), 0, N), 0, N)
-		setBC!(B, extractBC(dbase[loc-[0,1]]), 1, N), 1, N)
+		setBC!(B, extractBC(dbase[loc-[1,0]], 0, N), 0, N)
+		setBC!(B, extractBC(dbase[loc-[0,1]], 1, N), 1, N)
 	end 
 	return B
 end
