@@ -6,15 +6,13 @@
 module ScalarWave
 
 export chebx, chebd, chebw,
-	   operator, initializeB
-#	   extractBC, setBC!,
-#	   distribute,
-#	   coordtrans, computeB
+	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, computeB,
+       operator, setB,
+       extractBC, setBC!
 
 include("SpecCalculus.jl")
+include("Utilities.jl")
 include("Physics.jl")
-#include("Patch.jl")
-#include("Grid.jl")
-#include("Utilities.jl")
+include("Patch.jl")
 
 end 

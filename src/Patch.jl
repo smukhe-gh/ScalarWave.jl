@@ -3,14 +3,14 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function extractBC{T<:Integer}(patch::Array{Float64, 1}, s::T, N::T)
-	boundary = zeros((N+1)^2)
+function extractBC{T<:Integer}(patch::Array{Float64,2}, s::T)::Array{Float64,1}
+    N = size(patch)[1] - 1
+    boundary = zeros(N+1)
 	for i in 1:(N+1), j in 1:(N+1)
-		I = (N+1)*(i-1) + j
-		if s==0 && i==1
-			boundary[I] = patch[I]
-		elseif s==1 && j==1
-			boundary[I] = patch[I]
+		if s==1 && i==1
+			boundary[j] = patch[i,j]
+		elseif s==0 && j==1
+			boundary[i] = patch[i,j]
 		else
 			continue		
 		end
@@ -18,13 +18,13 @@ function extractBC{T<:Integer}(patch::Array{Float64, 1}, s::T, N::T)
 	return boundary
 end
 
-function setBC!{T<:Integer}(patch::Array{Float64, 1}, boundary::Array{Float64, 1}, s::T, N::T)
-	for i in 1:(N+1), j in 1:(N+1)
-		I = (N+1)*(i-1) + j
+function setBC!{T<:Integer}(patch::Array{Float64,2}, boundary::Array{Float64,1}, s::T)::Array{Float64,2}
+	N = size(patch)[1] - 1
+    for i in 1:(N+1), j in 1:(N+1)
 		if s==0 && i==1
-			patch[I] = boundary[I]
+			patch[i,j] = boundary[j]
 		elseif s==1 && j==1
-			patch[I] = boundary[I]
+			patch[i,j] = boundary[i]
 		else
 			continue		
 		end

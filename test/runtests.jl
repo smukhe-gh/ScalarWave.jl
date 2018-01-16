@@ -7,8 +7,11 @@ using ScalarWave
 using Base.Test
 
 modules = ["SpecCalculus",
-		   "Physics"]
+		   "Utilities",
+           "Physics",
+           "Patch"]
 
 for file in modules
-	include("$(file)Test.jl")
+    info("Testing $file")
+    include("$(file)Test.jl")
 end
