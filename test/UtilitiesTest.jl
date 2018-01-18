@@ -40,6 +40,25 @@ function check_shape_reshapeB(b2N::Array{Float64,2})::Bool
 end 
 @test check_shape_reshapeB(randn(6,6)) == true
 
-function check_computeRHS(N,M)
+function pascal!(A::Array{Float64,2})::Array{Float64,2}
+    N = size(A)[1]
+    for i in 2:N, j in 2:N
+        A[i,j] = A[i,j-1] + A[i-1,j]
+    end
+    return A
 end
+
+function check_computeRHS(N::Int, M::Int)::Dict
+    dbase = Dict{Array{Int, 1}, Array{Float64, 2}}()
+    for i in 2:2M, k in i-min(i-1,M):min(i-1,M)
+        loc = [k, i-k]
+        RHS = computeRHS(N-1, M, loc, (x,y)->-1, (x,y)->1, dbase)
+        dbase[loc] = pascal!(RHS)
+    end
+    return dbase
+end
+A = ones(10,10)
+A[1,:] = -1
+@test check_computeRHS(3,4)[[3,2]] == pascal!(A)[5:7,3:5]
+
 
