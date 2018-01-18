@@ -10,7 +10,6 @@ function operator{T<:Int}(N::T, M::T)::Array{Float64, 4}
         i = index.I[2]
         l = index.I[3]
         j = index.I[4]   
-		
         if 	i==1 || k==1
 		    operator[index] = delta(i,j)*delta(k,l)
         else # FIXME: Regression tests failing
@@ -20,18 +19,17 @@ function operator{T<:Int}(N::T, M::T)::Array{Float64, 4}
 	return operator
 end
 
-function setB{T<:Integer}(N::T, M::T, loc::Array{T,1})::Array{Float64,2}	
+function initializeRHS{T<:Integer}(N::T, M::T, loc::Array{T,1}, fnbrow::Function, fnbcol::Function)::Array{Float64,2}	
 	B = zeros(N+1, N+1)
-    bcol = (x,y) -> y
-    brow = (x,y) -> x
-	for index in CartesianRange(size(B))
+    for index in CartesianRange(size(B))
         i = index.I[1]
         j = index.I[2]
 		xp, yp = coordtrans(M, [chebx(i,N),chebx(j,N)], loc)
-		if j == 1
-			B[index] = xp 
-        elseif i==1
-            B[index] = yp
+		if i == 1
+			B[index] = fnbrow(xp,yp) 
+        elseif j==1
+            B[index] = fnbcol(xp,yp)
+        else    
             continue
 		end
 	end

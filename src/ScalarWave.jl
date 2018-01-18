@@ -6,8 +6,8 @@
 module ScalarWave
 
 export chebx, chebd, chebw,
-	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, computeB,
-       operator, setB,
+	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, computeRHS,
+       operator, initializeRHS,
        extractBC, setBC!
 
 include("SpecCalculus.jl")

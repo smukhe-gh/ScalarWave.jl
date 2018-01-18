@@ -4,13 +4,14 @@
 #--------------------------------------------------------------------
 
 A = randn(5,5)
-@test_broken extractBC(A, 1) == A[end, :]
-@test_broken extractBC(A, 0) == A[:, end]
+@test extractBC(A, :R) == A[end, :]
+@test extractBC(A, :C) == A[:, end]
 
-B = zeros(5,5)
-C = zeros(5,5)
-B[1, :] = A[end, :]
-B[:, 1] = A[:, end]
-@test_broken setBC!(C, A[end, :], 1) == B[1,:]
-@test_broken setBC!(C, A[:, end], 0) == B[:,1]
-    
+M = zeros(5,5)
+N = zeros(5,5)
+setBC!(M, extractBC(A, :R), :R)
+setBC!(N, extractBC(A, :C), :C)
+@test M[1,:] == A[end, :]
+@test N[:,1] == A[:, end]
+
+

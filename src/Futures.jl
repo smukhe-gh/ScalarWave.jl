@@ -3,12 +3,15 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-# can an array be assembled with futures?
-function fextractBC(fpatch::Any, s::Int, N::Int):
-	s == 0 ? @spawn extractBC(fetch(fpatch)), 0, N) : @spawn extractBC(fetch(fpatch)), 1, N)
+function fextractBC(patch::Future, s::Symbol)::Future
+    @spawn extractBC(fetch(patch), s)
 end
 
-function fsetBC(fpatch::Any, fboundary::Any, s::Int, N::Int)
-	s == 0 ? @spawn setBC!(fetch(fpatch), fetch(fboundary), 0, N) : @spawn setBC!(fetch(fpatch), fetch(fboundary), 1, N)
+function fsetBC(patch::Array{Float64,2}, patchBC::Future, s::Symbol)::Future
+    @spawn setBC(patch, fetch(patchBC), s)
+end
+ 
+function fsolve(A::Array{Float64,2}, RHS::Array{Float64,1})::Future
+    @spawn A\RHS
 end
 
