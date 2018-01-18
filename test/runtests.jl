@@ -9,7 +9,8 @@ using Base.Test
 modules = ["SpecCalculus",
 		   "Utilities",
            "Physics",
-           "Patch"]
+           "Patch",
+           "Futures"]
 
 for file in modules
     info("Testing $file")
