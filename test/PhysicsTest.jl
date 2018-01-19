@@ -3,7 +3,7 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function check_operator_regression(N::Int, M::Int)::Array{Float64,2}
+function check_operator(N::Int, M::Int)::Array{Float64,2}
     w = Float64[chebw(i,N)*chebw(j,N) for i in 1:N+1, j in 1:N+1]
     d = Float64[chebd(i,j,N) for i in 1:N+1, j in 1:N+1] 
     i = eye(N+1,N+1)
@@ -25,24 +25,16 @@ function check_operator_regression(N::Int, M::Int)::Array{Float64,2}
     end
     return WD
 end
-@test check_operator_regression(2, 1) ≈ reshapeA(operator(2, 1))
+@test check_operator(2, 1) ≈ reshapeA(operator(2, 1))
 
-function check_operator_consistentcy(N::Int, M::Int)::Bool
+function check_operatorNBC(N::Int, M::Int)::Bool   
+    opBNC  = operatorNBC(N,M)
+    f(x,y) = x^2*y^3 + y^2*x^3
+    fvec   = Float64[f(chebx(i,N), chebx(j,N)) for i in 1:N:1, j in 1:N+1]
+    I      = sum(reshapeA(opBNC)*reshapeB(fvec))
+    return I
 end
-
-function check_operator_commutativity()::Bool
-    d = Float64[chebd(i,j,N) for i in 1:N+1, j in 1:N+1]
-    i = eye(N+1,N+1)
-    # construct these operators independently
-    DU = kron(i, d)
-    DV = kron(d, i)
-    if DV*DU == DV*DU
-        return true
-    else
-        return false
-    end
-end
-@test_broken check_operator_commutativity == true
+@test_broken check_operatorNBC(10,1) ≈ 0.0
 
 function check_initializeRHS(N::Int, M::Int)::Array{Float64,2}
     b    = zeros(N+1, N+1)

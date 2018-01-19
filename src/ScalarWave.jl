@@ -7,7 +7,7 @@ module ScalarWave
 
 export chebx, chebd, chebw,
 	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, computeRHS,
-       operator, initializeRHS,
+       operator, operatorNBC, operatorNBCW, initializeRHS,
        extractBC, setBC!,
        fextractBC, fsetBC
 
@@ -16,5 +16,4 @@ include("Utilities.jl")
 include("Physics.jl")
 include("Patch.jl")
 include("Futures.jl")
-
 end 
