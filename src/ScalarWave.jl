@@ -9,7 +9,7 @@ export chebx, chebd, chebw,
 	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, computeRHS,
        operator, initializeRHS,
        extractBC, setBC!,
-       fextractBC, setBC
+       fextractBC, fsetBC
 
 include("SpecCalculus.jl")
 include("Utilities.jl")

@@ -46,8 +46,6 @@ function check_Futures(N::Int, M::Int)::Dict
     return fdbase
 end
 
-A  = ones(3,3)
-fA = @spawn A
-@test fetch(fpascal(fA)) == A
-
-@test fetch(check_Futures(3,1)[[1,1]]) == pascal!(A)
+A  = ones(10,10)
+# XXX: Check with Erik on the implementation
+@test_broken fetch(check_Futures(3,4)[[3,2]]) == pascal!(A)[5:7,3:5]
