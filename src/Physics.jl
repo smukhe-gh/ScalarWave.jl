@@ -19,10 +19,10 @@ function operator{T<:Int}(N::T, M::T)::Array{Float64, 4}
 	return operator
 end
 
-function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, s::Symbol)::Array{Float64,1}	
+function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, s::Symbol)::Boundary	
 	B = zeros(N+1)
-    fnbrow(x,y) = x
-    fnbcol(x,y) = y
+    fnbrow(x,y) = sin(pi*x)
+    fnbcol(x,y) = sin(pi*y)
     for i in 1:N+1
         if s==:R
             xp, yp = coordtrans(M, [chebx(i,N),chebx(1,N)], loc)
@@ -30,7 +30,11 @@ function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, s::Symbol)::Array{Float6
         else
             xp, yp = coordtrans(M, [chebx(1,N),chebx(i,N)], loc)
 			B[i]   = fnbcol(xp,yp) 
-		end
+		end   
 	end
-	return B
+    if s==:R
+	    return Boundary(:R, B)
+    else
+        return Boundary(:C, B)
+    end
 end

@@ -10,11 +10,13 @@ export Patch, Boundary
 export chebx, chebd, chebw,
 	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, 
        operator, getIC,
-       getPB, setPB
+       getPB,
+       distribute
 
 include("SpecCalculus.jl")
 include("Utilities.jl")
 include("Physics.jl")
 include("Patch.jl")
+include("Grid.jl")
 
 end 
