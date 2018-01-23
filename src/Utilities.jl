@@ -16,23 +16,6 @@ function coordtrans{T<:Int}(M::T, point::Array{Float64, 1}, loc::Array{T, 1})::A
 	return [xp,yp]
 end
 
-function computeRHS{T<:Integer}(N::T, M::T, loc::Array{T, 1}, fnbrow::Function, fnbcol::Function, dbase::Dict)::Array{Float64,2}
-	B2N  = initializeRHS(N, M, loc, fnbrow, fnbcol)
-    if sum(loc) == 2
-		return B2N
-	elseif loc[1] == 1 || loc[2] == 1
-		if loc[1] > loc[2]
-			setBC!(B2N, extractBC(dbase[loc-[1,0]], :R), :R)	
-		else
-			setBC!(B2N, extractBC(dbase[loc-[0,1]], :C), :C)
-		end
-	else
-		setBC!(B2N, extractBC(dbase[loc-[1,0]], :R), :R)	
-		setBC!(B2N, extractBC(dbase[loc-[0,1]], :C), :C)
-	end 
-	return B2N
-end
-
 function reshapeA(op4N::Array{Float64,4})::Array{Float64,2}
     N = size(op4N)[1] - 1
     op2N = reshape(op4N, ((N+1)^2, (N+1)^2))

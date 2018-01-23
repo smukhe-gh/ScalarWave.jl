@@ -5,8 +5,9 @@
 # Functions to test a generic future implementation.
 # Doen not test the functions in src 
 
-@test typeof(@spawn 2) == Future
+@test typeof(@spawn 2) === Future
 
+# Have a solve function that takes in 2 boundaries and outputs a patch.
 function fcomputeRHS(N::Int, M::Int, loc::Array{Int, 1}, fnbrow::Function, fnbcol::Function, dbase::Dict{Array{Int,1}, Future})::Future
      B2N  = initializeRHS(N, M, loc, fnbrow, fnbcol)
      if sum(loc) == 2

@@ -5,15 +5,16 @@
 
 module ScalarWave
 
+export Patch, Boundary
+
 export chebx, chebd, chebw,
-	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, computeRHS,
-       operator, operatorNBC, operatorNBCW, initializeRHS,
-       extractBC, setBC!,
-       fextractBC, fsetBC
+	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, 
+       operator, getIC,
+       getPB, setPB
 
 include("SpecCalculus.jl")
 include("Utilities.jl")
 include("Physics.jl")
 include("Patch.jl")
-include("Futures.jl")
+
 end 

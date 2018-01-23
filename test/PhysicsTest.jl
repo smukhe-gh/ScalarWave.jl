@@ -27,24 +27,35 @@ function check_operator(N::Int, M::Int)::Array{Float64,2}
 end
 @test check_operator(2, 1) ≈ reshapeA(operator(2, 1))
 
-function check_operatorNBC(N::Int, M::Int)::Bool   
-    opBNC  = operatorNBC(N,M)
-    f(x,y) = x^2*y^3 + y^2*x^3
-    fvec   = Float64[f(chebx(i,N), chebx(j,N)) for i in 1:N:1, j in 1:N+1]
-    I      = sum(reshapeA(opBNC)*reshapeB(fvec))
-    return I
+function operatorNBC{T<:Int}(N::T, M::T)::Array{Float64, 4}
+    operator = zeros(N+1, N+1, N+1, N+1)
+    for index in CartesianRange(size(operator))
+        k = index.I[1]
+        i = index.I[2]
+        l = index.I[3]
+        j = index.I[4]
+        operator[index] = (2.0/M)*chebw(i,N)*chebw(k,N)*chebd(k,l,N)*chebd(i,j,N)
+    end
+    return operator
 end
-@test_broken check_operatorNBC(10,1) ≈ 0.0
 
-function check_initializeRHS(N::Int, M::Int)::Array{Float64,2}
-    b    = zeros(N+1, N+1)
-    #loc = [2,1]
-    brow = Float64[(chebx(i,N) - 1)/M for i in 1:N+1] 
-    bcol = Float64[(chebx(j,N) + 1)/M for j in 1:N+1]
-    b[:, 1] = bcol
-    b[1, :] = brow
-    return b
+function operatorNBCW{T<:Int}(N::T, M::T)::Array{Float64, 4}
+    operator = zeros(N+1, N+1, N+1, N+1)
+    for index in CartesianRange(size(operator))
+        k = index.I[1]
+        i = index.I[2]
+        l = index.I[3]
+        j = index.I[4]
+        operator[index] = (2.0/M)*chebd(k,l,N)*chebd(i,j,N)
+    end
+    return operator
 end
-@test check_initializeRHS(4,2) == initializeRHS(4, 2, [2,1], (x,y)->y, (x,y)->x)
+
+function check_getIC(N::Int, M::Int)::Array{Float64,1}
+    y = Float64[(chebx(i,N) - 1)/M for i in 1:N+1] 
+    x = Float64[(chebx(j,N) + 1)/M for j in 1:N+1]
+    return y
+end
+@test check_getIC(4,2) == getIC(4, 2, [2,1], :C)
 
 
