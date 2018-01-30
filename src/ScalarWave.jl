@@ -4,10 +4,13 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
+using QuadGK
 
 export Patch, Boundary
 export cheb, chebx, chebd, chebw,
-	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, vandermonde, 
+       pconvergence, hconvergence,
+	   delta, coordtrans, reshapeA, 
+       reshapeB, shapeA, shapeB, vandermonde, 
        operator, getIC,
        getPB, interpolatePatch,
        distribute
