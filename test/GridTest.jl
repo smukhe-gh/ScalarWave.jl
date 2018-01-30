@@ -12,9 +12,14 @@ function hconvergence(N::Int)::Float64
     chebGridData    = dbase[[1,1]]
     gaussGrid, w    = gauss(2*N)  
     exactGridData   = Float64[sin(pi*i) + sin(pi*j) for i in gaussGrid, j in gaussGrid]
-    interpGridData  = interpolatePatch(chebGridData, gaussGrid, gaussGrid)   
+    interpGridData  = interpolatePatch(chebGridData, gaussGrid, gaussGrid).value   
     errorGridData   = interpGridData - exactGridData
     L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
     return L2errorGridData
 end
+
+for n in 10:20
+    @time @show n, hconvergence(n)
+end
+
 

@@ -23,4 +23,8 @@ x = Array(linspace(1,-1,20))
 xgrid = Float64[chebx(i, 10) for i in 1:11]
 B = Float64[x^2 + y^3 for x in xgrid, y in xgrid]
 npatch = Patch(loc, B)
-@test isapprox(interpolatePatch(npatch, xgrid, xgrid).value, npatch.value, atol=15) 
+@test isapprox(interpolatePatch(npatch, xgrid, xgrid).value, npatch.value, atol=15)
+
+xfgrid = Float64[chebx(i, 20) for i in 1:21]
+@test size(interpolatePatch(npatch, xfgrid, xfgrid).value) == (21, 21) 
+
