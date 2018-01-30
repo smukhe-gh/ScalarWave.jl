@@ -40,10 +40,7 @@ function check_shape_reshapeB(b2N::Array{Float64,2})::Bool
 end 
 @test check_shape_reshapeB(randn(6,6)) == true
 
-function pascal!(A::Array{Float64,2})::Array{Float64,2}
-    N = size(A)[1]
-    for i in 2:N, j in 2:N
-        A[i,j] = A[i,j-1] + A[i-1,j]
-    end
-    return A
-end
+N = 9
+x = Float64[chebx(i, N) for i in 1:N+1]
+@test vandermonde(N, x)[3,4] == cheb(2, x[4])
+@test size(vandermonde(N,x)) == (10,10)

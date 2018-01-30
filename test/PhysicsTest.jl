@@ -52,10 +52,9 @@ function operatorNBCW{T<:Int}(N::T, M::T)::Array{Float64, 4}
 end
 
 function check_getIC(N::Int, M::Int)::Array{Float64,1}
-    y = Float64[(chebx(i,N) - 1)/M for i in 1:N+1] 
-    x = Float64[(chebx(j,N) + 1)/M for j in 1:N+1]
-    return y
+    x = Float64[(chebx(j,N) - 1)/M for j in 1:N+1]
+    return x
 end
-@test_broken check_getIC(4,2) == getIC(4, 2, [2,1], :C)
+@test check_getIC(4,2) == getIC(4,2,[1,2], (x)->x , :R).value
 
 

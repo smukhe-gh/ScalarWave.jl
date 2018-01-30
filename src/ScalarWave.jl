@@ -6,11 +6,10 @@
 module ScalarWave
 
 export Patch, Boundary
-
-export chebx, chebd, chebw,
-	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, 
+export cheb, chebx, chebd, chebw,
+	   delta, coordtrans, reshapeA, reshapeB, shapeA, shapeB, vandermonde, 
        operator, getIC,
-       getPB,
+       getPB, interpolatePatch,
        distribute
 
 include("SpecCalculus.jl")

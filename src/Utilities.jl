@@ -8,7 +8,6 @@ function delta{T<:Int}(i::T, j::T)::Float64
 end
 
 function coordtrans{T<:Int}(M::T, point::Array{Float64, 1}, loc::Array{T, 1})::Array{Float64, 1}
-	# x varies along a row, y varies along the columns starting at [1,1].
     x, y = point
     s = Float64[d for d in M-1:-2:-M+1]
 	xp = (x + s[loc[2]])/M
@@ -38,4 +37,8 @@ function shapeB(b1N::Array{Float64,1})::Array{Float64,2}
     N = Int(sqrt(size(b1N)[1])) - 1
     b2N = reshape(b1N, (N+1, N+1))
     return b2N
+end
+
+function vandermonde(N::Int, nodes::Array{Float64, 1})::Array{Float64,2}
+    return Float64[cheb(m,x) for m in 0:N, x in nodes]
 end

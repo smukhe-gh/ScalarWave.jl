@@ -13,19 +13,14 @@ A[1,1] = 1.0
 patch.value[1,1] == 1.0
 @test patch.value == A
 
-#bnd0 = randn(5)
-#bnd1 = randn(5)
-#patchboundary = Boundary(bnd0, bnd1)
-#@test_broken patchboundary.row == bnd0
-#@test_broken patchboundary.col == bnd1
+@test getPB(patch, :R).value == A[end, :]
+@test getPB(patch, :C).value == A[:, end]
 
-#@test_broken getPB(patch, :R) == A[end, :]
-#@test_broken getPB(patch, :C) == A[:, end]
+x = Array(linspace(1,-1,20))
+@test size(interpolatePatch(patch, x, x).value) == (20, 20)
 
-#B = randn(5, 5)
-#newpatch = Patch(loc, B)
-#B[1, :] = bnd0
-#B[:, 1] = bnd1
-#setPB(newpatch, patchboundary)
-#@test_broken newpatch.value == B
-
+# test patch interpolation
+xgrid = Float64[chebx(i, 10) for i in 1:11]
+B = Float64[x^2 + y^3 for x in xgrid, y in xgrid]
+npatch = Patch(loc, B)
+@test isapprox(interpolatePatch(npatch, xgrid, xgrid).value, npatch.value, atol=15) 

@@ -19,22 +19,14 @@ function operator{T<:Int}(N::T, M::T)::Array{Float64, 4}
 	return operator
 end
 
-function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, s::Symbol)::Boundary	
-	B = zeros(N+1)
-    fnbrow(x,y) = sin(pi*x)
-    fnbcol(x,y) = sin(pi*y)
-    for i in 1:N+1
-        if s==:R
-            xp, yp = coordtrans(M, [chebx(i,N),chebx(1,N)], loc)
-			B[i]   = fnbrow(xp,yp) 
-        else
-            xp, yp = coordtrans(M, [chebx(1,N),chebx(i,N)], loc)
-			B[i]   = fnbcol(xp,yp) 
-		end   
-	end
+function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, fn::Function, s::Symbol)::Boundary	
     if s==:R
-	    return Boundary(:R, B)
+        xp = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+        return Boundary(:R, fn.(xp))
+    elseif s==:C
+        yp = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+        return Boundary(:C, fn.(yp))
     else
-        return Boundary(:C, B)
+        error("Unknown symbol passed.")
     end
 end
