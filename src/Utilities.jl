@@ -40,16 +40,18 @@ function shapeB(b1N::Array{Float64,1})::Array{Float64,2}
 end
 
 function vandermonde(N::Int, nodes::Array{Float64, 1})::Array{Float64,2}
-    return Float64[cheb(m,x) for m in 0:N, x in nodes]
+    return Float64[cheb(m,x) for x in nodes, m in 0:N]
 end
 
 function pconvergence(N::Int)::Float64
     dbase = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
     chebGridData    = dbase[[1,1]]
     gaussGrid, w    = gauss(2*N)
-    gaussGrid       = -gaussGrid   # flipping the nodes to be consistent with chebgrid
+    chebGrid        = Float64[chebx(i,N) for i in 1:N+1]
+    gaussGrid       = - gaussGrid   # flipping the nodes to be consistent with chebgrid
+    
     exactGridData   = Float64[sin(pi*i) + sin(pi*j) for i in gaussGrid, j in gaussGrid]
-    interpGridData  = interpolatePatch(chebGridData, gaussGrid, gaussGrid).value
+    interpGridData  = interpolatePatch(chebGridData, chebGrid, chebGrid, gaussGrid, gaussGrid).value
     errorGridData   = interpGridData - exactGridData
     L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
     return L2errorGridData
@@ -58,8 +60,9 @@ end
 function hconvergence(M::Int)::Float64
     dbase = distribute(12, M, x-> sin(pi*x), y->sin(pi*y))
     gaussGrid, w  = gauss(12*M)
-    gaussGrid     = -gaussGrid     # flipping the nodes to be consistent with chebgrid
+    gaussGrid     = - gaussGrid     # flipping the nodes to be consistent with chebgrid
     gaussGridData = Float64[sin(pi*i) + sin(pi*j) for i in gaussGrid, j in gaussGrid]
+    chebGrid      = Float64[chebx(i,12) for i in 1:13]
     chebGridData  = zeros(12*M, 12*M)
     for i in 1:M, j in 1:M
         li = 1+(i-1)*12
@@ -67,7 +70,7 @@ function hconvergence(M::Int)::Float64
         gaussLocalGridy = gaussGrid[li:li+11]
         gaussLocalGridx = gaussGrid[lj:lj+11]
         chebPatchData   = dbase[[i,j]]
-        interpPatchData  = interpolatePatch(chebPatchData, gaussLocalGridx, gaussLocalGridy).value
+        interpPatchData = interpolatePatch(chebPatchData, chebLocalGridx, chebLocalGridy, gaussLocalGridx, gaussLocalGridy).value
         chebGridData[li:li+11, lj:lj+11] = interpPatchData
     end
     errorGridData   = chebGridData - gaussGridData

@@ -36,17 +36,18 @@ function calcPatch(loc::Array{Int,1}, bnd0::Boundary, bnd1::Boundary, operator::
     return Patch(loc, shapeB(reshapeA(operator) \ reshapeB(B))) 
 end
 
-function extractPatchCoeffs(patch::Patch)::Array{Float64,2}
+# XXX: Convert these to element-wise expressions?
+function extractPatchCoeffs{T<:Array{Float64,1}}(patch::Patch, xvec::T, yvec::T)::Array{Float64,2}
+    N      = size(patch.value)[1] - 1
     fnodal = patch.value
-    N      = size(fnodal)[1] - 1
-    x      = Float64[chebx(i, N) for i in 1:N+1]
-    fmodal = inv(vandermonde(N,x))*fnodal*inv(vandermonde(N,x)')
+    fmodal = inv(vandermonde(N,xvec))*fnodal*inv(vandermonde(N,xvec)')
     return fmodal
 end
 
-function interpolatePatch(patch::Patch, x::Array{Float64,1}, y::Array{Float64,1})::Patch
+# XXX: Convert these to element-wise expressions?
+function interpolatePatch{T<:Array{Float64,1}}(patch::Patch, xvec::T, yvec::T,  xinterp::T, yinterp::T)::Patch
     N      = size(patch.value)[1] - 1
-    fmodal = extractPatchCoeffs(patch)
-    fnodal = vandermonde(N,x)'*fmodal*vandermonde(N,y) 
+    fmodal = extractPatchCoeffs(patch, xvec, yvec)
+    fnodal = vandermonde(N,xinterp)*fmodal*vandermonde(N,yinterp)' 
     return Patch(patch.loc, fnodal)
 end
