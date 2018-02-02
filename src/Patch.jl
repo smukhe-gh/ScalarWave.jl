@@ -36,18 +36,36 @@ function calcPatch(loc::Array{Int,1}, bnd0::Boundary, bnd1::Boundary, operator::
     return Patch(loc, shapeB(reshapeA(operator) \ reshapeB(B))) 
 end
 
-# XXX: Convert these to element-wise expressions?
-function extractPatchCoeffs{T<:Array{Float64,1}}(patch::Patch, xvec::T, yvec::T)::Array{Float64,2}
-    N      = size(patch.value)[1] - 1
-    fnodal = patch.value
-    fmodal = inv(vandermonde(N,xvec))*fnodal*inv(vandermonde(N,xvec)')
-    return fmodal
+function pushforward(patch::Patch, loc::Array{Int,1})::Patch
+    N  = size(patch.value) - 1
+    x  = Float64[chebx(i,N) for i in 1:N+1]
+    vx = vy = vandermonde(N, x)
+    xp = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1] 
+    yp = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+    px = vandermonde(N, xp) 
+    py = vandermonde(N, xp)
+    
+    fgrid  = patch.value
+    fpatch = px*inv(vx)*fgrid*inv(vy')*py'
+    return Patch(loc, fpatch)
 end
 
-# XXX: Convert these to element-wise expressions?
-function interpolatePatch{T<:Array{Float64,1}}(patch::Patch, xvec::T, yvec::T,  xinterp::T, yinterp::T)::Patch
-    N      = size(patch.value)[1] - 1
-    fmodal = extractPatchCoeffs(patch, xvec, yvec)
-    fnodal = vandermonde(N,xinterp)*fmodal*vandermonde(N,yinterp)' 
-    return Patch(patch.loc, fnodal)
+function pullback(N::Int, M::, dbase::Dict{Array{Int, 1}, Patch})::Patch
+    # XXX: Can you do the restriction patch-wise?
+    NG    = (N+1)*M
+    fgrid = zeros(NG, NG)
+    x  = Float64[chebx(i,NG) for i in 1:NG+1]
+    vx = vy = vandermonde(NG, x)
+
+    for i in 1:M, j in 1:M
+        li = 1+(i-1)*(N+1)
+        lj = 1+(j-1)*(N+1)
+        xp = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+        yp = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+        px = vandermonde(N, xp)
+        py = vandermonde(N, xp)
+        fpatch = dbase[[i,j]]
+        fgrid[li:li+N, lj:lj+N] = pinv(px*inv(vx))*fpatch*pinv(inv(vy')*py')   
+    end
+    return Patch([0,0], fgrid) 
 end
