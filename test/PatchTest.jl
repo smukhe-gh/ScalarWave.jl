@@ -17,58 +17,74 @@ patch.value[1,1] == 1.0
 @test getPB(patch, :R).value == A[end, :]
 @test getPB(patch, :C).value == A[:, end]
 
-#--------------------------------------------------------------------
-# Testing interpolation
-#--------------------------------------------------------------------
+# XXX: More debugging needed, since for fx = exp(-x^3/0.001)
+#      the error is not dropping with increasing number of modes.
+# Testing restriction and prolongation for the 1D case
+N = 4
+M = 2
+xglobal   = Float64[chebx(i, N) for i in 1:N+1]
+fxglobal  = Float64[exp(-x^2/0.1) for x in xglobal]
+fxglobalR = restriction1D(prolongation1D(fxglobal, M), M)
+@test maximum(abs.(fxglobal - fxglobalR)) < 1e-14
 
-# set chebyshev points
-xcheb = Float64[chebx(i,3) for i in 1:4]
+N = 24
+M = 3
+xglobal   = Float64[chebx(i, N) for i in 1:N+1]
+fxglobal  = Float64[exp(-x^2) for x in xglobal]
+fxglobalR = restriction1D(prolongation1D(fxglobal, M), M)
+@test maximum(abs.(fxglobal - fxglobalR)) < 1e-14
 
-# now, construct xvec and yvec
-xvec = (xcheb - 1)/2
-yvec = (xcheb + 1)/2
+N = 60
+M = 23
+xglobal   = Float64[chebx(i, N) for i in 1:N+1]
+fxglobal  = Float64[exp(-x^2/0.01) for x in xglobal]
+fxglobalR = restriction1D(prolongation1D(fxglobal, M), M)
+@test maximum(abs.(fxglobal - fxglobalR)) < 1e-14
 
-# now, construct a function starting from coefficents with 3 modes
-cfs  = rand(4,4)
+#=
+# resolution in the global patch
+N = 64
+M = 2
 
-# now, construct the vandermonde matrices for these
-vndmx = vandermonde(3,xvec)
-vndmy = vandermonde(3,yvec)
+xglobal  = Float64[chebx(i, N) for i in 1:N+1]
+fxglobal = Float64[x^2 for x in xglobal]
+vndm     = vandermonde(N, xglobal)
+xpatchl  = (xglobal+1)/2
+xpatchr  = (xglobal-1)/2
+pxl      = vandermonde(N,xpatchl)    
+pxr      = vandermonde(N,xpatchr)
 
-# now, construct the function 
-func  = vndmx*cfs*vndmy'
+# define the prolongation and restriction operator
+Pl = pxl*inv(vndm)
+Pr = pxr*inv(vndm)
+Rl = pinv(Pl)
+Rr = pinv(Pr)
 
-# now, extract the coefficents and compare (works)
-ecfs  = inv(vndmx)*func*inv(vndmy')
-@test prod(ecfs - cfs .< 1e-13) == true
+# from a single patch to two patches
+fxl = Pl*fxglobal
+fxr = Pr*fxglobal
 
-# now, recalculate the function values and compare
-efunc = vndmx*ecfs*vndmy'
-@test prod(efunc - func .< 1e-13) == true
+#@show fxglobal
+#@show fxl
+#@show fxr
 
-# now, specify an arbitrary function and compute it's coefficents
-sfunc  = Float64[x + y^3 + y^3*x^2 for x in xvec, y in yvec]
-scfs   = inv(vndmx)*sfunc*inv(vndmy')
-esfunc = vndmx*scfs*vndmy'
-@show maximum(abs.(sfunc - esfunc))
+# from two patchs to a single patch
+fxlglobal = Rl*fxl
+fxrglobal = Rr*fxr
 
-# now, specify a Gaussian grid 
-using QuadGK
-xgauss, w = gauss(14)
-xgauss = - xgauss 
-xgvec  = (xgauss - 1)/2
-ygvec  = (xgauss + 1)/2
-vndmgx = vandermonde(3,xgvec)
-vndmgy = vandermonde(3,ygvec)
+#@show fxlglobal
+#@show fxrglobal
 
-# now, construct the function on the Gaussian grid
-gsfunc = vndmgx*scfs*vndmgy'
+# Combine the vectors and project onto a single patch.
+fxpatch = vcat(fxl, fxr)
+P       = vcat(Pl, Pr)
+@show size(fxpatch)
+@show size(pinv(P))
+fxptog = pinv(P)*fxpatch
+@show fxptog
+@show maximum(abs.(fxptog-fxglobal))
+=#
 
-# now, construct the exact function on Gaussian nodes
-gefunc = Float64[x + y^3 + y^3*x^2 for x in xgvec, y in ygvec] 
-
-# compare
-@show maximum(abs.(gsfunc - gefunc))
 
 
 

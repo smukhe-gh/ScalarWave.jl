@@ -50,7 +50,7 @@ function pushforward(patch::Patch, loc::Array{Int,1})::Patch
     return Patch(loc, fpatch)
 end
 
-function pullback(N::Int, M::, dbase::Dict{Array{Int, 1}, Patch})::Patch
+function pullback(N::Int, M::Int, dbase::Dict{Array{Int, 1}, Patch})::Patch
     # XXX: Can you do the restriction patch-wise?
     NG    = (N+1)*M
     fgrid = zeros(NG, NG)

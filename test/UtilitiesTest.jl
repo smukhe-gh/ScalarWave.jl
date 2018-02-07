@@ -42,6 +42,9 @@ end
 
 N = 9
 x = Float64[chebx(i, N) for i in 1:N+1]
-@test vandermonde(N, x)[3,4] == cheb(2, x[4])
-@test size(vandermonde(N,x)) == (10,10)
-@test size(vandermonde(19,x)) == (10,20)
+@test vandermonde(2*N, x)[4, 12] == cheb(11, x[4])
+@test size(vandermonde(2*N,x)) == (10,2*N+1)
+
+
+
+

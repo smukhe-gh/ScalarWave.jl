@@ -65,10 +65,13 @@ function hconvergence(M::Int)::Float64
     chebGrid      = Float64[chebx(i,12) for i in 1:13]
     chebGridData  = zeros(12*M, 12*M)
     for i in 1:M, j in 1:M
-        li = 1+(i-1)*12
-        lj = 1+(j-1)*12
+        li  = 1+(i-1)*12
+        lj  = 1+(j-1)*12
+        loc = [i,j]
         gaussLocalGridy = gaussGrid[li:li+11]
         gaussLocalGridx = gaussGrid[lj:lj+11]
+        chebLocalGridx  = Float64[coordtrans(M, [chebx(i,12),chebx(1,12)], loc)[1] for i in 1:13]
+        chebLocalGridy  = Float64[coordtrans(M, [chebx(1,12),chebx(j,12)], loc)[2] for j in 1:13]
         chebPatchData   = dbase[[i,j]]
         interpPatchData = interpolatePatch(chebPatchData, chebLocalGridx, chebLocalGridy, gaussLocalGridx, gaussLocalGridy).value
         chebGridData[li:li+11, lj:lj+11] = interpPatchData
@@ -77,4 +80,43 @@ function hconvergence(M::Int)::Float64
     L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(gaussGridData.^2)*w))
     return L2errorGridData
  end
+
+function prolongation1D(fxgrid::Array{Float64,1}, M::Int)::Dict{Int, Array{Float64,1}}
+    # Function on a single patch >  dictionary with function vals on smaller subpatches
+    # Goes from N modes in the global patch to N modes in each of the individual patches
+    N     = size(fxgrid)[1] - 1
+    xg    = Float64[chebx(i, N) for i in 1:N+1]
+    vndm  = vandermonde(N,xg)
+    dbase = Dict()
+    for i in 1:M
+        loc  = [1, i]
+        xp   = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+        px   = vandermonde(N,xp)
+        P    = px*inv(vndm)
+        dbase[i] = P*fxgrid
+    end
+    return dbase
+end
+
+function restriction1D(dbase::Dict{Int, Array{Float64,1}}, M::Int)::Array{Float64,1}
+    # Function on multiple subpatches (dictionary) > Function on a single patch 
+    # Go from N modes in each subpatch to  N modes in one single whole patch
+    N    = size(dbase[1])[1] - 1
+    xg   = Float64[chebx(i, N) for i in 1:N+1]
+    vndm = vandermonde(N,xg)
+    P    = Float64[]
+    fxp  = Float64[]
+    # loop over each patch, joining the P's and the datasets 
+    for i in 1:M
+        loc  = [1,i]
+        xp   = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+        px   = vandermonde(N,xp)
+        p2P  = px*inv(vndm)
+        fxp  = vcat(fxp, dbase[i])
+        P    = vcat(P, p2P)
+    end
+    # take the pseudo-inverse of the prolongation operator
+    fxglobal = pinv(P)*fxp
+    return fxglobal
+end
 
