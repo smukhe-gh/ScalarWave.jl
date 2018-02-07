@@ -8,6 +8,9 @@ function delta{T<:Int}(i::T, j::T)::Float64
 end
 
 function coordtrans{T<:Int}(M::T, point::Array{Float64, 1}, loc::Array{T, 1})::Array{Float64, 1}
+    if maximum(loc) > M
+        error("Location incompatible with the number of patches")
+    end
     x, y = point
     s = Float64[d for d in M-1:-2:-M+1]
 	xp = (x + s[loc[2]])/M
@@ -81,6 +84,7 @@ function hconvergence(M::Int)::Float64
     return L2errorGridData
  end
 
+# XXX: These functions are in the wrong place
 function prolongation1D(fxgrid::Array{Float64,1}, M::Int)::Dict{Int, Array{Float64,1}}
     # Function on a single patch >  dictionary with function vals on smaller subpatches
     # Goes from N modes in the global patch to N modes in each of the individual patches
