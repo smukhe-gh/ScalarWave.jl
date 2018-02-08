@@ -59,28 +59,32 @@ function chebgrid(N::Int)::Array{Float64,1}
 end
 
 function pconvergence(N::Int, M::Int)::Float64
-    fdbase  = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
-    exactGrid = Float64[sin(pi*i) + sin(pi*j) for i in chebgrid(N), j in chebgrid(N)]
-    # project both the computed and the exact solution onto 4 patches
-    fcompute  = prolongation2D(fdbase[[1,1]], M)
-    fexact    = prolongation2D(Patch([1,1], exactGrid), M)
-    errornorm = zeros(M*M)
+    fcompGrid  = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
     # compute the error patch-wise
+    errorvec = zeros(M*M)
     for i in 1:M, j in 1:M
-        errornorm[i+j] = L1norm(fexact[[i,j]].value - fcompute[[i,j]].value)
+        loc      = [i,j]
+        fcompute = prolongation2D(fcompGrid[[1,1]], M, loc).value
+        xf       = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+        yf       = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+        fexact   = Float64[sin(pi*x) + sin(pi*y) for x in xf, y in yf]
+        errorvec[i+j] = L1norm(fcompute - fexact)
     end
-    return maximum(errornorm)
+    return maximum(errorvec)
 end
 
+# FIXME: Screwing up for all cases
 function hconvergence(N::Int, M::Int)::Float64
-    fcompute  = distribute(N, M, x-> sin(pi*x), y->sin(pi*y))
+    fcompGrid = distribute(N, M, x-> sin(pi*x), y->sin(pi*y))
     exactGrid = Float64[sin(pi*i) + sin(pi*j) for i in chebgrid(N), j in chebgrid(N)]
-    # project the exact solution on the same number of patches as the computation
-    fexact    = prolongation2D(Patch([1,1], exactGrid), M)
-    errornorm = zeros(M*M)
     # compute the error patch-wise
     for i in 1:M, j in 1:M
-        errornorm[i+j] = L1norm(fexact[[j,i]].value - fcompute[[i,j]].value)
+        loc      = [i,j] 
+        @show loc
+        fcompute = fcompGrid[loc].value 
+        fexact   = prolongation2D(Patch([1,1], exactGrid), M, loc).value
+        error    = maximum(abs.(fcompute - fexact))
+        @show error
     end
-    return maximum(errornorm)
+    return 0.0
 end

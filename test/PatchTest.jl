@@ -54,24 +54,27 @@ fxglobalR = restriction1D(prolongation1D(fxglobal, M), M)
 # test 2D prolongation and restriction routines
 #-----------------------------------------------------------
 
-M = 2
-N = 32
-xg = Float64[chebx(i, N) for i in 1:N+1]
-fxglobal = Float64[sin(pi*i) + sin(pi*j) for i in xg, j in xg] 
-patch = Patch([1,1], fxglobal)
-fpatchdbase = prolongation2D(patch, M)
-fxc12 = fpatchdbase[[1,2]].value
+func(x,y) = sin(pi*x) + sin(pi*y) 
+for n in 2:20
+    (N,M)     = (n,2) 
+    loc       = [1,2]
+    fx_global_exact  = Float64[func(i,j) for i in chebgrid(N), j in chebgrid(N)] 
+    fx_global_exact_to_patch12 = prolongation2D(Patch([1,1], fx_global_exact), M, loc).value
+   
+    # what are other functions doing?
+    fx_global_num = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
+    fx_global_num_to_patch12 = prolongation2D(fx_global_num[[1,1]], 2, loc).value 
 
-# check the prolongation for location [1,2]
-xp12  = (xg - 1)/2
-yp12  = (xg + 1)/2
-fxp12 = Float64[sin(pi*i) + sin(pi*j) for i in xp12, j in yp12]
-@test maximum(abs.(fxc12 - fxp12)) < 1e-14
-
-# check the restriction routine
-fxc  = restriction2D(fpatchdbase, M)
-fxcv = fxc.value
-#@show size(fxcv)
-#@show size(fxglobal)
-#@show maximum(abs.(fxcv - fxglobal))
+    # check the prolongation for location [1,2]
+    xf    = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+    yf    = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+    fx_patch12_exact = Float64[func(i,j) for i in xf, j in yf]
+    #= 
+    @show n, maximum(abs.(fx_global_exact  - fx_global_num[[1,1]].value))
+    @show n, maximum(abs.(fx_patch12_exact - fx_global_exact_to_patch12))
+    @show n, maximum(abs.(fx_patch12_exact - fx_global_num_to_patch12))
+    @show n, maximum(abs.(fx_global_exact_to_patch12 - fx_global_num_to_patch12))
+    println("--------------------------------------------------------------------------------")
+    =#
+end    
 

@@ -36,28 +36,27 @@ function calcPatch(loc::Array{Int,1}, bnd0::Boundary, bnd1::Boundary, operator::
     return Patch(loc, shapeB(reshapeA(operator) \ reshapeB(B))) 
 end
 
-# XXX: Need to generalize these for more than one dimension. Implement index-wise multiplication
-function prolongation2D(patch::Patch, M::Int)::Dict{Array{Int,1}, Patch}
+function prolongation2D(patch::Patch, M::Int, loc::Array{Int,1})::Patch
     # Go from N modes in the entire patch to N modes in each subpatch
     N  = size(patch.value)[1] - 1
-    xg = Float64[chebx(i,N) for i in 1:N+1]
-    vx = vy = vandermonde(N, xg)
-    dbase = Dict()
-    for k in 1:M, l in 1:M
-        loc = [k,l] 
-        xp = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1] 
-        yp = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
-        px = vandermonde(N, xp) 
-        py = vandermonde(N, yp)
-        fgrid  = patch.value
-        fpatch = px*inv(vx)*fgrid*inv(vy')*py'
-        dbase[loc] = Patch(loc, fpatch) 
-    end
-    return dbase
+    
+    # "from" coordinates
+    xg   = Float64[chebx(i,N) for i in 1:N+1]
+    Tpcx = vandermonde(N, xg)
+    Tpcy = vandermonde(N, xg)  
+   
+    # "to" coordinates
+    xf   = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1] 
+    yf   = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+    Tpfx = vandermonde(N, xf) 
+    Tpfy = vandermonde(N, yf)
+
+    # compute the prolongation operators (in future, shift to explicit indices)
+    Px   = Tpfx*inv(Tpcx)
+    Py   = Tpfy*inv(Tpcy)
+    return Patch(loc, Px*(patch.value)*Py')
 end
 
-# XXX: Need to generalize this to more dimensions.
-# Can you do the restriction patch-wise?
 function restriction2D(dbase::Dict{Array{Int, 1}, Patch}, M::Int)::Patch
     # Go from N modes in each patch to N modes in the entire patch
     N = size(dbase[[1,1]].value)[1] - 1

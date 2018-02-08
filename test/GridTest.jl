@@ -5,6 +5,7 @@
 
 @test 1==1
 
-@test pconvergence(22, 2) < 1e-13
-@test hconvergence(20, 12) < 1e-12
-
+# testing h-convergence
+for n in 2:20
+    @show n, pconvergence(n, 2)
+end
