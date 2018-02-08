@@ -46,81 +46,41 @@ function vandermonde(N::Int, nodes::Array{Float64, 1})::Array{Float64,2}
     return Float64[cheb(m,x) for x in nodes, m in 0:N]
 end
 
-function pconvergence(N::Int)::Float64
-    dbase = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
-    chebGridData    = dbase[[1,1]]
-    gaussGrid, w    = gauss(2*N)
-    chebGrid        = Float64[chebx(i,N) for i in 1:N+1]
-    gaussGrid       = - gaussGrid   # flipping the nodes to be consistent with chebgrid
-    
-    exactGridData   = Float64[sin(pi*i) + sin(pi*j) for i in gaussGrid, j in gaussGrid]
-    interpGridData  = interpolatePatch(chebGridData, chebGrid, chebGrid, gaussGrid, gaussGrid).value
-    errorGridData   = interpGridData - exactGridData
-    L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
-    return L2errorGridData
+function L2norm{T<:Array{Float64,2}}(errorGridData::T, exactGridData::T, w::Array{Float64,1})::Float64
+    return sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
 end
 
-function hconvergence(M::Int)::Float64
-    dbase = distribute(12, M, x-> sin(pi*x), y->sin(pi*y))
-    gaussGrid, w  = gauss(12*M)
-    gaussGrid     = - gaussGrid     # flipping the nodes to be consistent with chebgrid
-    gaussGridData = Float64[sin(pi*i) + sin(pi*j) for i in gaussGrid, j in gaussGrid]
-    chebGrid      = Float64[chebx(i,12) for i in 1:13]
-    chebGridData  = zeros(12*M, 12*M)
+function L1norm{T<:Array{Float64,2}}(errorGridData::T)::Float64
+    return maximum(abs.(errorGridData))
+end
+
+function chebgrid(N::Int)::Array{Float64,1}
+    return Float64[chebx(i,N) for i in 1:N+1] 
+end
+
+function pconvergence(N::Int, M::Int)::Float64
+    fdbase  = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
+    exactGrid = Float64[sin(pi*i) + sin(pi*j) for i in chebgrid(N), j in chebgrid(N)]
+    # project both the computed and the exact solution onto 4 patches
+    fcompute  = prolongation2D(fdbase[[1,1]], M)
+    fexact    = prolongation2D(Patch([1,1], exactGrid), M)
+    errornorm = zeros(M*M)
+    # compute the error patch-wise
     for i in 1:M, j in 1:M
-        li  = 1+(i-1)*12
-        lj  = 1+(j-1)*12
-        loc = [i,j]
-        gaussLocalGridy = gaussGrid[li:li+11]
-        gaussLocalGridx = gaussGrid[lj:lj+11]
-        chebLocalGridx  = Float64[coordtrans(M, [chebx(i,12),chebx(1,12)], loc)[1] for i in 1:13]
-        chebLocalGridy  = Float64[coordtrans(M, [chebx(1,12),chebx(j,12)], loc)[2] for j in 1:13]
-        chebPatchData   = dbase[[i,j]]
-        interpPatchData = interpolatePatch(chebPatchData, chebLocalGridx, chebLocalGridy, gaussLocalGridx, gaussLocalGridy).value
-        chebGridData[li:li+11, lj:lj+11] = interpPatchData
+        errornorm[i+j] = L1norm(fexact[[i,j]].value - fcompute[[i,j]].value)
     end
-    errorGridData   = chebGridData - gaussGridData
-    L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(gaussGridData.^2)*w))
-    return L2errorGridData
- end
-
-# XXX: These functions are in the wrong place
-function prolongation1D(fxgrid::Array{Float64,1}, M::Int)::Dict{Int, Array{Float64,1}}
-    # Function on a single patch >  dictionary with function vals on smaller subpatches
-    # Goes from N modes in the global patch to N modes in each of the individual patches
-    N     = size(fxgrid)[1] - 1
-    xg    = Float64[chebx(i, N) for i in 1:N+1]
-    vndm  = vandermonde(N,xg)
-    dbase = Dict()
-    for i in 1:M
-        loc  = [1, i]
-        xp   = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
-        px   = vandermonde(N,xp)
-        P    = px*inv(vndm)
-        dbase[i] = P*fxgrid
-    end
-    return dbase
+    return maximum(errornorm)
 end
 
-function restriction1D(dbase::Dict{Int, Array{Float64,1}}, M::Int)::Array{Float64,1}
-    # Function on multiple subpatches (dictionary) > Function on a single patch 
-    # Go from N modes in each subpatch to  N modes in one single whole patch
-    N    = size(dbase[1])[1] - 1
-    xg   = Float64[chebx(i, N) for i in 1:N+1]
-    vndm = vandermonde(N,xg)
-    P    = Float64[]
-    fxp  = Float64[]
-    # loop over each patch, joining the P's and the datasets 
-    for i in 1:M
-        loc  = [1,i]
-        xp   = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
-        px   = vandermonde(N,xp)
-        p2P  = px*inv(vndm)
-        fxp  = vcat(fxp, dbase[i])
-        P    = vcat(P, p2P)
+function hconvergence(N::Int, M::Int)::Float64
+    fcompute  = distribute(N, M, x-> sin(pi*x), y->sin(pi*y))
+    exactGrid = Float64[sin(pi*i) + sin(pi*j) for i in chebgrid(N), j in chebgrid(N)]
+    # project the exact solution on the same number of patches as the computation
+    fexact    = prolongation2D(Patch([1,1], exactGrid), M)
+    errornorm = zeros(M*M)
+    # compute the error patch-wise
+    for i in 1:M, j in 1:M
+        errornorm[i+j] = L1norm(fexact[[j,i]].value - fcompute[[i,j]].value)
     end
-    # take the pseudo-inverse of the prolongation operator
-    fxglobal = pinv(P)*fxp
-    return fxglobal
+    return maximum(errornorm)
 end
-

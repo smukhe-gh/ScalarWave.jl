@@ -5,5 +5,6 @@
 
 @test 1==1
 
-@test_broken pconvergence(20) < 1e-14
-@test_broken hconvergence(2)  < 1e-14
+@test pconvergence(22, 2) < 1e-13
+@test hconvergence(20, 12) < 1e-12
+

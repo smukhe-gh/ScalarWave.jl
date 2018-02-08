@@ -13,7 +13,7 @@ export cheb, chebx, chebd, chebw,
        reshapeB, shapeA, shapeB, vandermonde, 
        prolongation1D, restriction1D,
        operator, getIC,
-       getPB, pushforward, pullback, 
+       getPB, prolongation2D, restriction2D, 
        distribute
 
 include("SpecCalculus.jl")
