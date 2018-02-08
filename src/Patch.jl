@@ -60,25 +60,33 @@ end
 function restriction2D(dbase::Dict{Array{Int, 1}, Patch}, M::Int)::Patch
     # Go from N modes in each patch to N modes in the entire patch
     N = size(dbase[[1,1]].value)[1] - 1
-    fcpatches = zeros((N+1)*M, (N+1)*M)
-    cPx = zeros((N+1)*M, (N+1)*M)
-    cPy = zeros((N+1)*M, (N+1)*M)
-    xg  = Float64[chebx(i,N) for i in 1:N+1]
-    vx  = vy = vandermonde(N, xg)
+
+    # create storage to store all patches, and Tpfx and Tpfy
+    cpatch = zeros((N+1)*M, (N+1)*M)
+    cPx    = zeros((N+1)*M, (N+1)*M)
+    cPy    = zeros((N+1)*M, (N+1)*M)
+    
+    xg     = Float64[chebx(i,N) for i in 1:N+1]
+    Tpcx   = vandermonde(N, xg)
+    Tpcy   = vandermonde(N, xg)
+    
     for i in 1:M, j in 1:M
-        li = 1+(i-1)*(N+1)
-        lj = 1+(j-1)*(N+1)
+        li  = 1+(i-1)*(N+1)
+        lj  = 1+(j-1)*(N+1)
         loc = [i,j]
-        xp = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
-        yp = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
-        px = vandermonde(N, xp)
-        py = vandermonde(N, yp)
-        cPx[li:li+N, lj:lj+N]   = px*inv(vx) 
-        cPy[li:li+N, lj:lj+N]   = inv(vy')*py'
-        fcpatches[li:li+N, lj:lj+N] = dbase[loc].value   
+        
+        xp   = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+        yp   = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+        Tpfx = vandermonde(N, xp)
+        Tpfy = vandermonde(N, yp)
+        
+        cpatch[li:li+N, lj:lj+N] = dbase[loc].value   
+        cPx[li:li+N, lj:lj+N]    = Tpfx*inv(Tpcx) 
+        cPy[li:li+N, lj:lj+N]    = Tpfy*inv(Tpcy)
     end
-    fglobalgrid = pinv(cPx)*fcpatches*pinv(cPy)
-    return Patch([1,1], fglobalgrid) 
+
+    fgrid = pinv(cPx)*cpatch*pinv(cPy')
+    return Patch([1,1], fgrid) 
 end
 
 function prolongation1D(fxgrid::Array{Float64,1}, M::Int)::Dict{Int, Array{Float64,1}}

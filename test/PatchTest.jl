@@ -78,3 +78,17 @@ for n in 2:20
     =#
 end    
 
+# checking restriction routines
+fxpatches = distribute(2, 2, x-> sin(pi*x), y->sin(pi*y))
+fxglobal  = restriction2D(fxpatches, 2)
+@show size(fxglobal.value)
+@show fxglobal.value
+
+
+
+
+
+
+
+
+

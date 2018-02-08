@@ -73,18 +73,20 @@ function pconvergence(N::Int, M::Int)::Float64
     return maximum(errorvec)
 end
 
-# FIXME: Screwing up for all cases
 function hconvergence(N::Int, M::Int)::Float64
     fcompGrid = distribute(N, M, x-> sin(pi*x), y->sin(pi*y))
-    exactGrid = Float64[sin(pi*i) + sin(pi*j) for i in chebgrid(N), j in chebgrid(N)]
+    exactGrid = Float64[sin(pi*x) + sin(pi*y) for x in chebgrid(N), y in chebgrid(N)]
     # compute the error patch-wise
+    errorvec = zeros(M*M)
     for i in 1:M, j in 1:M
         loc      = [i,j] 
-        @show loc
-        fcompute = fcompGrid[loc].value 
-        fexact   = prolongation2D(Patch([1,1], exactGrid), M, loc).value
-        error    = maximum(abs.(fcompute - fexact))
-        @show error
+        fcompute = fcompGrid[[j,i]].value 
+        xf       = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
+        yf       = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
+        fexact   = Float64[sin(pi*x) + sin(pi*y) for x in xf, y in yf]
+        fexact_prolongated = prolongation2D(Patch([1,1], exactGrid), M, loc).value
+        #errorvec[i+j] = L1norm(fcompute - fexact)
+        errorvec[i+j] = L1norm(fcompute - fexact_prolongated)
     end
-    return 0.0
+    return maximum(errorvec)
 end
