@@ -8,12 +8,11 @@ using QuadGK
 
 export Patch, Boundary
 export cheb, chebx, chebd, chebw,
-       pconvergence, hconvergence,
+       hconvergence, pconvergence,
 	   delta, coordtrans, reshapeA, 
        reshapeB, shapeA, shapeB, vandermonde, chebgrid,
        operator, getIC,
-       getPB, prolongation2D, restriction2D, 
-       prolongation1D, restriction1D,
+       getPB, extractPatchCoeffs, interpolatePatch,
        distribute
 
 include("SpecCalculus.jl")

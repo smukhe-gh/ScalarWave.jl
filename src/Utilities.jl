@@ -3,6 +3,8 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
+using QuadGK
+
 function delta{T<:Int}(i::T, j::T)::Float64
 	return i==j ? 1 : 0
 end
@@ -58,35 +60,35 @@ function chebgrid(N::Int)::Array{Float64,1}
     return Float64[chebx(i,N) for i in 1:N+1] 
 end
 
-function pconvergence(N::Int, M::Int)::Float64
-    fcompGrid  = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
-    # compute the error patch-wise
-    errorvec = zeros(M*M)
-    for i in 1:M, j in 1:M
-        loc      = [i,j]
-        fcompute = prolongation2D(fcompGrid[[1,1]], M, loc).value
-        xf       = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
-        yf       = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
-        fexact   = Float64[sin(pi*x) + sin(pi*y) for x in xf, y in yf]
-        errorvec[i+j] = L1norm(fcompute - fexact)
-    end
-    return maximum(errorvec)
+function pconvergence(N::Int)::Float64
+    dbase = distribute(N, 1, x-> sin(pi*x), y->sin(pi*y))
+    chebGrid        = Float64[chebx(i, N) for i in 1:N+1]
+    chebGridData    = dbase[[1,1]]
+    gaussGrid, w    = gauss(2*N)
+    gaussGrid       = - gaussGrid
+    exactGridData   = Float64[sin(pi*i) + sin(pi*j) for i in gaussGrid, j in gaussGrid]
+    interpGridData  = interpolatePatch(chebGridData, gaussGrid, gaussGrid).value
+    errorGridData   = interpGridData - exactGridData
+    L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
+    return L2errorGridData
 end
 
 function hconvergence(N::Int, M::Int)::Float64
-    fcompGrid = distribute(N, M, x-> sin(pi*x), y->sin(pi*y))
-    exactGrid = Float64[sin(pi*x) + sin(pi*y) for x in chebgrid(N), y in chebgrid(N)]
-    # compute the error patch-wise
-    errorvec = zeros(M*M)
+    dbase = distribute(N, M, x-> sin(pi*x), y->sin(pi*y))
+    chebGrid        = Float64[chebx(i, N) for i in 1:N+1]
+    gaussGrid, w    = gauss(2*N)
+    gaussGrid       = -gaussGrid
+    errorvec        = zeros(M*M)
     for i in 1:M, j in 1:M
-        loc      = [i,j] 
-        fcompute = fcompGrid[[j,i]].value 
-        xf       = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
-        yf       = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
-        fexact   = Float64[sin(pi*x) + sin(pi*y) for x in xf, y in yf]
-        fexact_prolongated = prolongation2D(Patch([1,1], exactGrid), M, loc).value
-        #errorvec[i+j] = L1norm(fcompute - fexact)
-        errorvec[i+j] = L1norm(fcompute - fexact_prolongated)
+        loc             = [i,j]
+        gaussLocalx     = Float64[coordtrans(M, [x, 0], loc)[1] for x in gaussGrid]
+        gaussLocaly     = Float64[coordtrans(M, [0, y], loc)[2] for y in gaussGrid] 
+        exactGridData   = Float64[sin(pi*x) + sin(pi*y) for x in gaussLocalx, y in gaussLocaly]
+        # XXX: Check why we need to flip the array?
+        interpGridData  = interpolatePatch(dbase[loc[end:-1:1]], gaussGrid, gaussGrid).value
+        errorGridData   = interpGridData - exactGridData
+        L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
+        errorvec[i+j]   = L2errorGridData
     end
-    return maximum(errorvec)
+    return sum(errorvec)
 end
