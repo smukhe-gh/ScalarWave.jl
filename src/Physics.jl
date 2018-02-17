@@ -30,3 +30,4 @@ function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, fn::Function, s::Symbol)
         error("Unknown symbol passed.")
     end
 end
+
