@@ -45,6 +45,22 @@ x = Float64[chebx(i, N) for i in 1:N+1]
 @test vandermonde(2*N, x)[4, 12] == cheb(11, x[4])
 @test size(vandermonde(2*N,x)) == (10,2*N+1)
 
+# test Gaussian integration
+function exactint(N::Int)::Float64
+    c = randn(N)
+    p = rand(0:10,N)
+    a = rand(-100:0,1)
+    b = rand(1:100,1)
 
+    # just a smart way to construct the polynomial and
+    # it's integral
+    f(x) = sum(c.*(x.^p))
+    intf(x) = sum((c./(p+1)).*(x.^(p+1)))
+    numericintf = quadgk(f(x), a, b; abstol=0, maxevals=10^7, order=2*N, norm=vecnorm)
+    exactintf = intf(b) - intf(a) 
+    @show numericintf[2]
+    @show numericintf[1] - exactintf
+    return numericintf[1] - exactintf 
+end
 
-
+@test_broken exactint(10) < 1e-14
