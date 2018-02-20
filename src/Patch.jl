@@ -39,17 +39,14 @@ end
 function extractPatchCoeffs(patch::Patch)::Array{Float64,2}
     fnodal = patch.value
     N      = size(fnodal)[1] - 1
-    x      = Float64[chebx(i, N) for i in 1:N+1]
-    invndm = inv(vandermonde(N,x))    
+    invndm = inv(vandermonde(N,chebgrid(N)))
     fmodal = zeros(N+1, N+1)
-    # TODO: Test loop
-    for m in 1:N+1, j in 1:N+1
+    for i in 1:N+1, j in 1:N+1
         elem = 0.0
-        for k in 1:N+1, j in 1:N+1
-            elem = elem + invndm[m,j]*fmodal[j,k]*invndm[n,k]
+        for m in 1:N+1, n in 1:N+1
+            elem = elem + invndm[i,m]*fnodal[m,n]*invndm[j,n]
         end  
-        fmodal[m,n] = elem
+        fmodal[i,j] = elem
     end
-    #fmodal = inv(vandermonde(N,x))*fnodal*inv(vandermonde(N,x)')
     return fmodal
 end
