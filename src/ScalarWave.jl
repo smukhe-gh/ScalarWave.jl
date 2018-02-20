@@ -4,23 +4,22 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using QuadGK, ParallelAccelerator
+using QuadGK, JLD, ParallelAccelerator
 
 export Patch, Boundary
-export cheb, chebx, chebd, chebw,
-       hconvergence, pconvergence,
-	   delta, coordtrans, reshapeA, 
-       reshapeB, shapeA, shapeB, vandermonde, chebgrid, 
-       chebweights, operator, getIC,
-       getPB, extractPatchCoeffs, interpolatePatch,
+export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde,
+	   delta, coordtrans, jacobian, reshapeA, reshapeB, shapeA, shapeB,
+       L2norm, L1norm, LInfnorm, savegrid, 
+       getPB, calcPatch,  extractPatchCoeffs,
+       operator, getIC,
        distribute,
        plotgrid
 
-include("Patch.jl")
 include("SpecCalculus.jl")
 include("Utilities.jl")
+include("Patch.jl")
 include("Physics.jl")
-include("Grid.jl")
+include("Dispatch.jl")
 include("Visualization.jl")
 
 end 

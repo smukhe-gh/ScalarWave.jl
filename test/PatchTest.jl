@@ -2,30 +2,20 @@
 # Spacetime Discretization methods in Julia
 # Soham 01-2018
 #--------------------------------------------------------------------
-using QuadGK
 
-A = randn(5,5)
-loc = [3,4]
-patch = Patch(loc, A)
-@test patch.loc   == loc
-@test patch.value == A 
-
-A[1,1] = 1.0
-patch.value[1,1] == 1.0
-@test patch.value == A
-
-@test getPB(patch, :R).value == A[end, :]
-@test getPB(patch, :C).value == A[:, end]
-
-function check_interpolation(N, M, loc)
-    xg = chebgrid(2*N)
-    xp = Float64[coordtrans(M, [x, 0], loc)[1] for x in xg]
-    yp = Float64[coordtrans(M, [0, x], loc)[2] for x in xg]
-    fp = Float64[sin(pi*x) + sin(pi*y) for x in xp, y in yp]
-
-    fgrid  = distribute(N, M, x->sin(pi*x), y->sin(pi*y))
-    fpatch = interpolatePatch(fgrid[loc[end:-1:1]], xg, xg) 
+function check_calcPatch(N::Int, bnd1::Function, bnd2::Function)::Float64
+    fpatch = Float64[bnd1(x) + bnd2(y) for x in chebgrid(N), y in chebgrid(N)]
+    patch  = Patch([1,1], fpatch) 
+    bndx   = Boundary(:R, Float64[bnd1(x) for x in chebgrid(N)])
+    bndy   = Boundary(:C, Float64[bnd2(y) for y in chebgrid(N)])
+    error  = calcPatch([1,1], bndx, bndy, operator(N,1)).value - fpatch
+    @test patch.value == fpatch
+    @test patch.loc   == [1,1]
+    @test getPB(patch, :R).value == fpatch[end, :]
+    @test getPB(patch, :C).value == fpatch[:, end]
+    return  L2norm(calcPatch([1,1], bndx, bndy, operator(N,1)).value, fpatch, chebweights(N))
 end
 
-check_interpolation(14, 2, [1,1])
-check_interpolation(14, 2, [2,1])
+@test check_calcPatch(12, x->sin(pi*x), y->sin(pi*y)) < 1e-14
+@test_broken check_calcPatch(12, x->x, y->y) < 1e-14
+

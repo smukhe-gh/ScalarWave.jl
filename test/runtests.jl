@@ -4,13 +4,13 @@
 #--------------------------------------------------------------------
 
 using ScalarWave
-using Base.Test
+using Base.Test, QuadGK
 
 modules = ["SpecCalculus",
 		   "Utilities",
-           "Physics",
            "Patch",
-           "Grid"]
+           "Physics",
+           "Dispatch"]
 
 for file in modules
     info("Testing $file")

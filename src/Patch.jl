@@ -36,19 +36,20 @@ function calcPatch(loc::Array{Int,1}, bnd0::Boundary, bnd1::Boundary, operator::
     return Patch(loc, shapeB(reshapeA(operator) \ reshapeB(B))) 
 end
 
-# TODO: Convert to index operations. Can we use ParallelAccelerator.jl to speed things up here?
 function extractPatchCoeffs(patch::Patch)::Array{Float64,2}
     fnodal = patch.value
     N      = size(fnodal)[1] - 1
     x      = Float64[chebx(i, N) for i in 1:N+1]
-    fmodal = inv(vandermonde(N,x))*fnodal*inv(vandermonde(N,x)')
+    invndm = inv(vandermonde(N,x))    
+    fmodal = zeros(N+1, N+1)
+    # TODO: Test loop
+    for m in 1:N+1, j in 1:N+1
+        elem = 0.0
+        for k in 1:N+1, j in 1:N+1
+            elem = elem + invndm[m,j]*fmodal[j,k]*invndm[n,k]
+        end  
+        fmodal[m,n] = elem
+    end
+    #fmodal = inv(vandermonde(N,x))*fnodal*inv(vandermonde(N,x)')
     return fmodal
-end
-
-# TODO: Convert to index operations
-function interpolatePatch(patch::Patch, x::Array{Float64,1}, y::Array{Float64,1})::Patch
-    N      = size(patch.value)[1] - 1
-    fmodal = extractPatchCoeffs(patch)
-    fnodal = vandermonde(N,x)*fmodal*vandermonde(N,y)' 
-    return Patch(patch.loc, fnodal)
 end

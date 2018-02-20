@@ -7,6 +7,10 @@
 @test chebd(3, 1, 5) ≈ -0.723606797749979
 @test chebw(9, 12) ≈ 0.2258075258075258
 
+@test chebgrid(23)[7] == chebx(7,23)
+@test chebweights(12)[8] == chebw(8,12)
+@test vandermonde(10, chebgrid(14))[3,7] == cheb(6, chebx(3,14)) 
+
 function consistency_chebx(N::Int)
 	x  = chebx(5, N)
 	Tx = cos(N*acos(x))
@@ -19,11 +23,9 @@ function consistency_chebd(N::Int)
 	return sum(DR)
 end
 @test isapprox(consistency_chebd(rand(10:20)), 0.0; atol = 15)
-# @test consistency_chebd(rand(10:20)) ≈ 0.0
 
 function consistency_chebw(N::Int)
 	w = Float64[chebw(i, N) for i in 1:N+1]
 	return sum(w)
 end
 @test consistency_chebw(rand(2:20)) ≈ 2.0
-
