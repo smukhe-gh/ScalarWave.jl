@@ -36,13 +36,15 @@ end
 
 # testing on multi-patch systems
 function check_caclPatch_multipatch(N::Int, M::Int, loc::Array{Int,1}, bnd1::Function, bnd2::Function)::Float64
-    fpatch = Float64[bnd1(xg) + bnd2(yg) for xg in chebgrid(N, M, loc[1]), yg in chebgrid(N, M, loc[2])]
+    #FIXME: flipping loc makes it work
+    fpatch = Float64[bnd1(xg) + bnd2(yg) for xg in chebgrid(N, M, loc[2]), yg in chebgrid(N, M, loc[1])]
     bndx   = Boundary(:R, Float64[bnd1(xg) + bnd2(coordtransL2G(M, loc[2], 1.0)) for xg in chebgrid(N, M, loc[1])])
     bndy   = Boundary(:C, Float64[bnd1(coordtransL2G(M, loc[1], 1.0)) + bnd2(yg) for yg in chebgrid(N, M, loc[2])])
-    fbndx  = fpatch[:,1]
-    fbndy  = fpatch[1,:]
-    npatch = calcPatch(loc, bndx, bndy, operator(N,1)).value - fpatch
+    npatch = calcPatch(loc, bndx, bndy, operator(N,1)).value
     return  L2norm(npatch, fpatch, (1/M)*chebweights(N))
 end
 
+@test check_caclPatch_multipatch(12, 2, [1,1], x->sin(pi*x), y->sin(pi*y)) < 1e-14
+@test check_caclPatch_multipatch(12, 2, [2,2], x->sin(pi*x), y->sin(pi*y)) < 1e-14
 @test check_caclPatch_multipatch(12, 2, [1,2], x->sin(pi*x), y->sin(pi*y)) < 1e-14
+@test check_caclPatch_multipatch(12, 2, [2,1], x->sin(pi*x), y->sin(pi*y)) < 1e-14

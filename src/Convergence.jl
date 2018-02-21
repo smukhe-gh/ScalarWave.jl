@@ -25,8 +25,8 @@ function hconvergence(N::Int, M::Int, fbnd1:: Function, fbnd2::Function, fsol::F
     errorvec        = zeros(M*M)
     for i in 1:M, j in 1:M
         loc             = [i,j]
-        gaussLocalx     = Float64[coordtrans(M, [x, 0], loc)[1] for x in gaussGrid]
-        gaussLocaly     = Float64[coordtrans(M, [0, y], loc)[2] for y in gaussGrid] 
+        gaussLocalx     = Float64[coordtransL2G(M, loc[1], x) for x in gaussGrid]
+        gaussLocaly     = Float64[coordtransL2G(M, loc[1], y) for y in gaussGrid] 
         exactGridData   = Float64[fsol(x,y) for x in gaussLocalx, y in gaussLocaly]
         interpGridData  = interpolatePatch(dbase[loc], gaussGrid, gaussGrid).value
         errorGridData   = interpGridData - exactGridData

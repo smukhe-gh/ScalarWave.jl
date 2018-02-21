@@ -9,6 +9,7 @@ using Base.Test, QuadGK
 modules = ["SpecCalculus",
 		   "Utilities",
            "Patch",
+           "Grid",
            "Physics",
            "Dispatch"]
 

@@ -21,10 +21,10 @@ end
 
 function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, fn::Function, s::Symbol)::Boundary	
     if s==:R
-        xg = Float64[coordtransL2G(M, loc[1], chebx(i,N)) for i in 1:N+1] 
+        xg = chebgrid(N, M, loc[1]) 
         return Boundary(:R, fn.(xg))
     elseif s==:C
-        yg = Float64[coordtransL2G(M, loc[2], chebx(i,N)) for i in 1:N+1] 
+        yg = chebgrid(N, M, loc[2]) 
         return Boundary(:C, fn.(yg))
     else
         error("Unknown symbol passed.")
