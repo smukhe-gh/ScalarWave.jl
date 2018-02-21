@@ -7,11 +7,7 @@ using ScalarWave
 using Base.Test, QuadGK
 
 modules = ["SpecCalculus",
-		   "Utilities",
-           "Patch",
-           "Grid",
-           "Physics",
-           "Dispatch"]
+           "Physics"]
 
 for file in modules
     info("Testing $file")

@@ -3,7 +3,7 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function getPB(patch::Patch, s::Symbol)::Boundary
+function getPatchBnd(patch::Patch, s::Symbol)::Boundary
     if s==:R
         boundary = Boundary(:R, patch.value[end, :])
     elseif s==:C
@@ -14,16 +14,19 @@ function getPB(patch::Patch, s::Symbol)::Boundary
     return boundary
 end
 
-function calcPatch(loc::Array{Int,1}, bnd0::Boundary, bnd1::Boundary, operator::Array{Float64, 4})::Patch
-    N = size(operator)[1] - 1
-    B = zeros(N+1, N+1)
+function calcPatch(loc::Array{Int,1}, bndx::Boundary, bndy::Boundary, operator::Array{Float64, 4})::Patch
+    Nx = size(operator)[1] - 1
+    Ny = size(operator)[2] - 1
+    B  = zeros(Nx+1, Ny+1)
+
     if bnd0.value[1] != bnd1.value[1]
         error("Inconsistent boundary conditions.")
     else
-        B[1, :] = bnd0.value
-        B[:, 1] = bnd1.value
+        B[1, :] = bndx.value
+        B[:, 1] = bndy.value
     end
-    return Patch(loc, shapeB(reshapeA(operator) \ reshapeB(B))) 
+    
+    return Patch(loc, shapeL2H(shapeH2L(operator) \ shapeH2L(B))) 
 end
 
 function extractPatchCoeffs(patch::Patch)::Array{Float64,2}

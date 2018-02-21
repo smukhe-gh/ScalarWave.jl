@@ -48,7 +48,11 @@ function chebweights(N::Int)::Array{Float64,1}
     return Float64[chebw(i,N) for i in 1:N+1]
 end
 
-function vandermonde(N::Int, nodes::Array{Float64, 1})::Array{Float64,2}
-    return Float64[cheb(m,x) for x in nodes, m in 0:N]
+function vandermonde(N::Int)::Array{Float64,2}
+    return Float64[cheb(m,x) for x in chebgrid(N), m in 0:N]
+end
+
+function pseudovandermonde(N::Int, collocationpts::Array{Float64, 1})::Array{Float64,2}
+    return Float64[cheb(m,x) for x in collocationpts, m in 0:N]
 end
 

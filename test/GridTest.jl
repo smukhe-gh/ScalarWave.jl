@@ -8,8 +8,6 @@ function check_interpolatePatch(N::Int, M::Int, loc::Array{Int,1})::Float64
     f2Npatch = Float64[x^2 + y^3 + x^3*y^2 for x in chebgrid(2N, M, loc[1]), y in chebgrid(2N, M, loc[2])]
     patch    = Patch([1,1], fNpatch)
     interpfNpatch = interpolatePatch(patch, 2N)
-    @show size(interpfNpatch.value)
-    @show size(f2Npatch)
     return L2norm(interpfNpatch.value, f2Npatch, chebweights(2*N))
 end
 

@@ -26,30 +26,30 @@ function coordtransG2L{T<:Int}(M::T, loc::T, xg::Float64)::Float64
 end
 
 function jacobian(M::Int)::Float64
-    return (1/M)^2
+    return 1/M
 end
 
-function reshapeA(op4N::Array{Float64,4})::Array{Float64,2}
-    N = size(op4N)[1] - 1
-    op2N = reshape(op4N, ((N+1)^2, (N+1)^2))
+function shapeH2L(op4N::Array{Float64,4})::Array{Float64,2}
+    Nx   = size(op4N)[1] - 1 
+    NY   = size(op4N)[2] - 1
+    op2N = reshape(op4N, ((Nx+1)*(Ny+1),(Nx+1)*(Ny+1)))
     return op2N
 end
 
-function shapeA(op2N::Array{Float64,2})::Array{Float64,4}
-    N = Int(sqrt(size(op2N)[1])) - 1
-    op4N = reshape(op2N, (N+1, N+1, N+1, N+1))
-    return op4N
-end
-
-function reshapeB(b2N::Array{Float64,2})::Array{Float64,1}
-    N = size(b2N)[1] - 1
-    b1N = reshape(b2N, (N+1)^2)
+function shapeH2L(b2N::Array{Float64,2})::Array{Float64,1}
+    Nx = size(b2N)[1] - 1
+    Ny = size(b2N)[2] - 1
+    b1N = reshape(b2N, (Nx+1)*(Ny+1))
     return b1N
 end
 
-function shapeB(b1N::Array{Float64,1})::Array{Float64,2}
-    N = Int(sqrt(size(b1N)[1])) - 1
-    b2N = reshape(b1N, (N+1, N+1))
+function shapeL2H(op2N::Array{Float64,2}, Nx::Int, Ny::Int)::Array{Float64,4}
+    op4N = reshape(op2N, (Nx+1, Ny+1, Nx+1, Ny+1))
+    return op4N
+end
+
+function shapeL2H(b1N::Array{Float64,1}, Nx::Int, Ny::Int)::Array{Float64,2}
+    b2N = reshape(b1N, (Nx+1, Ny+1))
     return b2N
 end
 

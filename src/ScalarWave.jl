@@ -7,11 +7,9 @@ module ScalarWave
 using QuadGK
 
 export Patch, Boundary
-export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde,
-	   delta, coordtransL2G, coordtransG2L, jacobian, 
-       reshapeA, reshapeB, shapeA, shapeB,
-       L2norm, L1norm, LInfnorm, savegrid, 
-       getPB, calcPatch,  extractPatchCoeffs,
+export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
+	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, LInfnorm, L1norm, L2norm, 
+       getPatchBnd, calcPatch,  extractPatchCoeffs,
        interpolatePatch,
        operator, getIC,
        distribute
