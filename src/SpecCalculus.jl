@@ -8,7 +8,7 @@ function cheb(m::Int, x::Float64)::Float64
 end
 
 function chebx{T<:Int}(i::T, N::T)::Float64
-	cospi((i-1)/N)
+    return cospi((i-1)/N)
 end
 
 function chebd{T<:Int}(i::T, j::T, N::T)::Float64
@@ -36,12 +36,12 @@ function chebw{T<:Int}(i::T, N::T)::Float64
 	return W
 end
 
-function chebgrid(N::Int, M=1, loc=1)::Array{Float64,1}
-    if loc > M || loc < 1 
-        error("Location incompatible with number of patches.")
-    else
-        return Float64[coordtransL2G(M, loc, chebx(i,N)) for i in 1:N+1]
-    end
+function chebgrid(N::Int)::Array{Float64,1}
+    return Float64[chebx(i,N) for i in 1:N+1]
+end
+
+function chebgrid(N::Int, M, loc)::Array{Float64,1}
+    return Float64[coordtransL2G(M, loc, chebx(i,N)) for i in 1:N+1]
 end
 
 function chebweights(N::Int)::Array{Float64,1}
