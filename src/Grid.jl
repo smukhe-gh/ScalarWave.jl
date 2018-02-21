@@ -3,11 +3,10 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function interpolatePatch(patch::Patch, x::Array{Float64,1}, y::Array{Float64,1})::Patch
-    N      = size(patch.value)[1] - 1
-    vndm   = vandermonde(N,x)
+function interpolatePatch(patch::Patch, N::Int)::Patch
+    vndm   = vandermonde(N, chebgrid(N))
     fmodal = extractPatchCoeffs(patch)
-    fnodal = zeros(size(x)[1], size(y)[1])
+    fnodal = zeros(N+1, N+1)
     for i in 1:N+1, j in 1:N+1
         elem = 0.0
         for m in 1:N+1, n in 1:N+1

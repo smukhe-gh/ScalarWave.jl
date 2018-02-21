@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using QuadGK, JLD
+using QuadGK
 
 export Patch, Boundary
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde,
@@ -14,8 +14,7 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde,
        getPB, calcPatch,  extractPatchCoeffs,
        interpolatePatch,
        operator, getIC,
-       distribute,
-       plotgrid
+       distribute
 
 include("Types.jl")
 include("SpecCalculus.jl")
