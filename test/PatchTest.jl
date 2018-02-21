@@ -7,14 +7,14 @@
 function check_calcPatch(N::Int, bnd1::Function, bnd2::Function)::Float64
     fpatch = Float64[bnd1(x) + bnd2(y) for x in chebgrid(N), y in chebgrid(N)]
     patch  = Patch([1,1], fpatch) 
-    bndx   = Boundary(:R, Float64[bnd1(x) for x in chebgrid(N)])
-    bndy   = Boundary(:C, Float64[bnd2(y) for y in chebgrid(N)])
-    error  = calcPatch([1,1], bndx, bndy, operator(N,1)).value - fpatch
     @test patch.value == fpatch
     @test patch.loc   == [1,1]
     @test getPB(patch, :R).value == fpatch[end, :]
     @test getPB(patch, :C).value == fpatch[:, end]
-    return  L2norm(calcPatch([1,1], bndx, bndy, operator(N,1)).value, fpatch, chebweights(N))
+    bndx   = Boundary(:R, Float64[bnd1(x) for x in chebgrid(N)])
+    bndy   = Boundary(:C, Float64[bnd2(y) for y in chebgrid(N)])
+    npatch = calcPatch([1,1], bndx, bndy, operator(N,1)).value
+    return L2norm(npatch, fpatch, chebweights(N))
 end
 
 # these ones don't interpolate. You could have errors coming from Gaussian interpolation.
@@ -35,3 +35,14 @@ end
 @test check_extractPatchCoeffs(24) < 1e-14
 
 # testing on multi-patch systems
+function check_caclPatch_multipatch(N::Int, M::Int, loc::Array{Int,1}, bnd1::Function, bnd2::Function)::Float64
+    fpatch = Float64[bnd1(xg) + bnd2(yg) for xg in chebgrid(N, M, loc[1]), yg in chebgrid(N, M, loc[2])]
+    bndx   = Boundary(:R, Float64[bnd1(xg) + bnd2(coordtransL2G(M, loc[2], 1.0)) for xg in chebgrid(N, M, loc[1])])
+    bndy   = Boundary(:C, Float64[bnd1(coordtransL2G(M, loc[1], 1.0)) + bnd2(yg) for yg in chebgrid(N, M, loc[2])])
+    fbndx  = fpatch[:,1]
+    fbndy  = fpatch[1,:]
+    npatch = calcPatch(loc, bndx, bndy, operator(N,1)).value - fpatch
+    return  L2norm(npatch, fpatch, (1/M)*chebweights(N))
+end
+
+@test check_caclPatch_multipatch(12, 2, [1,2], x->sin(pi*x), y->sin(pi*y)) < 1e-14

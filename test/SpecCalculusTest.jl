@@ -36,6 +36,8 @@ end
 @test consistency_chebx(rand(10:20)) ≈ 1.0
 @test isapprox(consistency_chebd(rand(10:20)), 0.0; atol = 15)
 @test consistency_chebw(rand(2:20)) ≈ 2.0
+@test chebgrid(4, 2, 1) == (chebgrid(4) + 1)/2
+@test chebgrid(4, 2, 2) == (chebgrid(4) - 1)/2
 @test check_chebd(10) < 1e-13
 @test_broken check_chebd(20) < 1e-13
 
