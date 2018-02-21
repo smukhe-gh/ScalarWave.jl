@@ -3,16 +3,6 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-struct Patch
-    loc::Array{Int,1}
-    value::Array{Float64,2}
-end
-
-struct Boundary
-    kind::Symbol
-    value::Array{Float64,1}
-end
-
 function getPB(patch::Patch, s::Symbol)::Boundary
     if s==:R
         boundary = Boundary(:R, patch.value[end, :])

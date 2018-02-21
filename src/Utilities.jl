@@ -7,15 +7,22 @@ function delta{T<:Int}(i::T, j::T)::Float64
 	return i==j ? 1 : 0
 end
 
-function coordtrans{T<:Int}(M::T, point::Array{Float64, 1}, loc::Array{T, 1})::Array{Float64, 1}
-    if maximum(loc) > M
+function coordtransL2G{T<:Int}(M::T, loc::T, xp::Float64)::Float64
+    if loc > M || loc < 1
         error("Location incompatible with the number of patches")
     end
-    x, y = point
     s = Float64[d for d in M-1:-2:-M+1]
-	xp = (x + s[loc[2]])/M
-	yp = (y + s[loc[1]])/M
-	return [xp,yp]
+	xg = (xp + s[loc])/M
+	return xg 
+end
+
+function coordtransG2L{T<:Int}(M::T, loc::T, xg::Float64)::Float64
+    if loc > M || M < 1
+        error("Location incompatible with the number of patches")
+    end
+    s = Float64[d for d in M-1:-2:-M+1]
+	xp = xg*M - s[loc]
+	return xp
 end
 
 function jacobian(M::Int)::Float64

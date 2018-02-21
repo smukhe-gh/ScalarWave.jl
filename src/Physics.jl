@@ -13,7 +13,7 @@ function operator{T<:Int}(N::T, M::T)::Array{Float64, 4}
         if 	i==1 || k==1
 		    operator[index] = delta(i,j)*delta(k,l)
         else 
-	        operator[index] = (2.0/M)*chebw(i,N)*chebw(k,N)*chebd(k,l,N)*chebd(i,j,N)	
+	        operator[index] = (2.0/M^4)*chebw(i,N)*chebw(k,N)*chebd(k,l,N)*chebd(i,j,N)	
         end
 	end
 	return operator
@@ -21,11 +21,11 @@ end
 
 function getIC{T<:Integer}(N::T, M::T, loc::Array{T,1}, fn::Function, s::Symbol)::Boundary	
     if s==:R
-        xp = Float64[coordtrans(M, [chebx(i,N),chebx(1,N)], loc)[1] for i in 1:N+1]
-        return Boundary(:R, fn.(xp))
+        xg = Float64[coordtransL2G(M, loc[1], chebx(i,N)) for i in 1:N+1] 
+        return Boundary(:R, fn.(xg))
     elseif s==:C
-        yp = Float64[coordtrans(M, [chebx(1,N),chebx(j,N)], loc)[2] for j in 1:N+1]
-        return Boundary(:C, fn.(yp))
+        yg = Float64[coordtransL2G(M, loc[2], chebx(i,N)) for i in 1:N+1] 
+        return Boundary(:C, fn.(yg))
     else
         error("Unknown symbol passed.")
     end

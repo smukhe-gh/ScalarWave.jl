@@ -3,33 +3,20 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function check_coordtrans(N::Int)::Bool
-    x11 = zeros(N+1)
-    y11 = zeros(N+1) 
-    x21 = zeros(N+1)
-    y21 = zeros(N+1)
-    x12 = zeros(N+1)
-    y12 = zeros(N+1)
-    for i in 1:N+1
-        x11[i], y11[i] = coordtrans(2, [chebx(i,N),chebx(i,N)], [1,1])
-        x21[i], y21[i] = coordtrans(2, [chebx(i,N),chebx(i,N)], [2,1])
-        x12[i], y12[i] = coordtrans(2, [chebx(i,N),chebx(i,N)], [1,2])
-    end
-    X = vcat(x11, x12)
-    Y = vcat(y11, y21)
-    if X == Y
-        return true
-    else
-        return false
-    end
+function consistency_coordtrans(N::Int, M::Int)
+    xp = chebgrid(N)
+    xp2xg1 = Float64[coordtransL2G(M, 1, chebx(i, N)) for i in 1:N+1]
+    xp2xg2 = Float64[coordtransL2G(M, 2, chebx(i, N)) for i in 1:N+1]
+    xg2xp  = Float64[coordtransG2L(M, 2, xg) for xg in xp2xg2]
+    (xp2xg1[end] == xp2xg2[1]) && (xg2xp ≈ xp)
 end
 
 function check_shape_reshapeA(a4N::Array{Float64,4})::Bool
-    shapeA(reshapeA(a4N)) == a4N ? true : false
+    shapeA(reshapeA(a4N)) == a4N
 end
 
 function check_shape_reshapeB(b2N::Array{Float64,2})::Bool
-    shapeB(reshapeB(b2N)) == b2N ? true : false
+    shapeB(reshapeB(b2N)) == b2N
 end 
 
 function check_quadgk(N::Int)::Float64
@@ -91,18 +78,21 @@ function check_savegrid()
     return true
 end
 
-@test check_savegrid() == true
-@test check_coordtrans(4) == true    
+@test consistency_coordtrans(8,4) == true
+@test coordtransL2G(2, 1, -1.0) ≈ 0.0 
+@test coordtransL2G(2, 2,  1.0)  ≈ 0.0
+
 @test jacobian(12) == (1/12)^2
 @test check_shape_reshapeA(randn(4,4,4,4)) == true
 @test check_shape_reshapeB(randn(6,6)) == true
-@test coordtrans(2, [0.0,0.0], [1,2]) ≈ [-0.5,0.5]
-@test coordtrans(2, [0.0,0.0], [2,1]) ≈ [0.5,-0.5]
 @test vandermonde(2*9, chebgrid(9))[4, 12] == cheb(11, chebgrid(9)[4])
 @test size(vandermonde(2*9,chebgrid(9))) == (10,2*9+1)
+
 @test check_chebint(10) < 1e-14
 @test check_gaussint(8) < 1e-14
 @test check_quadgk(12) < 1e-14
 @test check_L1norm(14) < 1e-14
 @test check_L2norm(11) < 1e-14
 @test gaussint2D(10) < 1e-14
+
+@test_broken check_savegrid() == true

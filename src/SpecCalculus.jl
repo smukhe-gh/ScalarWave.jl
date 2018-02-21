@@ -7,6 +7,7 @@ function cheb(m::Int, x::Float64)::Float64
     return cos(m*acos(x))
 end
 
+# generate Chebyshev collocation point from [1...-1]
 function chebx{T<:Int}(i::T, N::T)::Float64
 	cospi((i-1)/N)
 end
