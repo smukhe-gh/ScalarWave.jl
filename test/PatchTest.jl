@@ -27,7 +27,7 @@ function check_extractPatchCoeffs(N::Int)::Float64
     coeffs  = randn(N+1,N+1)
     vndm    = vandermonde(N,chebgrid(N))
     fpatch  = vndm*coeffs*vndm'
-    patch   = Patch([1,1], fpatch )
+    patch   = Patch([1,1], fpatch)
     ncoeffs = extractPatchCoeffs(patch)
     return L2norm(ncoeffs, coeffs, chebweights(N))
 end
