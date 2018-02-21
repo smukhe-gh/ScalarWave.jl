@@ -16,3 +16,10 @@ end
 @test_broken check_interpolatePatch(12, 2, [1,2]) < 1e-14
 @test_broken check_interpolatePatch(12, 2, [2,1]) < 1e-14
 @test_broken check_interpolatePatch(12, 2, [2,2]) < 1e-14
+
+N = 10
+fNpatch  = Float64[sin(pi*x) + sin(pi*y) for x in chebgrid(N), y in chebgrid(N)]
+f2Npatch = Float64[sin(pi*x) + sin(pi*y) for x in chebgrid(2*N), y in chebgrid(2*N)]
+patch    = Patch([1,1], fNpatch)
+interpfNpatch = interpolatePatch(patch, 2N).value
+@show maximum(abs.(interpfNpatch-f2Npatch)) 

@@ -4,8 +4,10 @@
 #--------------------------------------------------------------------
 
 function interpolatePatch(patch::Patch, N::Int)::Patch
-    vndm   = vandermonde(N, chebgrid(N))
+    ON      = size(patch.value)[1] - 1
+    vndm   = vandermonde(ON, chebgrid(N))
     fmodal = extractPatchCoeffs(patch)
+    """
     fnodal = zeros(N+1, N+1)
     for i in 1:N+1, j in 1:N+1
         elem = 0.0
@@ -14,6 +16,8 @@ function interpolatePatch(patch::Patch, N::Int)::Patch
         end 
         fnodal[i,j] = elem
     end
+    """
+    fnodal = vndm*fmodal*vndm' 
     return Patch(patch.loc, fnodal)
 end
 
