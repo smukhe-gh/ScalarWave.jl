@@ -97,19 +97,42 @@ function projectonPatchBnd(fn::Function, Nx::Int, M::Int, loc::Int)::Array{Float
     return fonbnd 
 end
 
+function projectonPatch(fn::Function, Nx::Int, Ny::Int)::Array{Float64,2}
+    fmodal   = zeros(Nx+1, Ny+1)
+    fonpatch = zeros(Nx+1, Ny+1)
+    vndmx    = vandermonde(Nx)
+    vndmy    = vandermonde(Ny)
+    for m in 0:Nx,  n in 0:Ny
+        integxy = hcubature(xp->fn(cos(xp[1]), cos(xp[2]))*cos(m*xp[1])*cos(n*xp[2]), (0, 0), (pi, pi))[1]
+        if m == n == 0
+            fmodal[m+1,n+1] = integxy/(pi^2)
+        elseif m == 0 || n == 0
+            fmodal[m+1,n+1] = integxy/(pi^2/2)
+        else
+            fmodal[m+1,n+1] = integxy/(pi^2/4)
+        end
+    end
+    for index in CartesianRange(size(fonpatch))
+         i = index.I[1]
+         j = index.I[2]
+         fonpatch[i,j] = sum(vndmx[i,m]*fmodal[m,n]*vndmy[j,n] for m in 1:Nx+1, n in 1:Ny+1)
+    end 
+    return fonpatch
+end
+
 function projectonPatch(fn::Function, Nx::Int, Ny::Int, M::Int, loc::Array{Float64,1})::Array{Float64,2}
     fmodal   = zeros(Nx+1, Ny+1)
     fonpatch = zeros(Nx+1, Ny+1)
     vndmx    = vandermonde(Nx)
     vndmy    = vandermonde(Ny)
     for m in 0:Nx,  n in 0:Ny
-        integxy = hcubature(xp->fn(cos(coordtransL2G(M,loc[1],xp[1])), cos(coordtrans(M,loc[2],xp[2])))*cos(m*x[1])*cos(n*x[2]), (0, 0), (pi, pi))
+        integxy = hcubature(xp->fn(cos(coordtransL2G(M,loc[1],xp[1])), cos(coordtrans(M,loc[2],xp[2])))*cos(m*xp[1])*cos(n*xp[2]), (0, 0), (pi, pi))[1]
         if m == n == 0
-            fmodal[m,n] = integxy/(pi^2)
+            fmodal[m+1,n+1] = integxy/(pi^2)
         elseif m == 0 || n == 0
-            fmodal[m,n] = integxy/(pi^2/2)
+            fmodal[m+1,n+1] = integxy/(pi^2/2)
         else
-            fmodal[m,n] = integxy/(pi^2/4)
+            fmodal[m+1,n+1] = integxy/(pi^2/4)
         end
     end
     for index in CartesianRange(size(fonpatch))

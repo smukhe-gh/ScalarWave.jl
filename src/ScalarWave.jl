@@ -11,6 +11,7 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
 	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, LInfnorm, L1norm, L2norm, 
        derivOP, boundaryOP,
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, projectonPatchBnd, projectonPatch,
+       restrict, prolongate,
        distribute
 
 include("Types.jl")
