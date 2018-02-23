@@ -4,22 +4,21 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using QuadGK
+using QuadGK, HCubature
 
-export Patch, Boundary
+export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
 	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, LInfnorm, L1norm, L2norm, 
-       getPatchBnd, calcPatch,  extractPatchCoeffs,
-       interpolatePatch,
-       operator, getIC,
+       derivOP, boundaryOP,
+       getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, projectonPatchBnd, projectonPatch,
        distribute
 
 include("Types.jl")
 include("SpecCalculus.jl")
 include("Utilities.jl")
+include("Physics.jl")
 include("Patch.jl")
 include("Grid.jl")
-include("Physics.jl")
 include("Dispatch.jl")
 include("Visualization.jl")
 

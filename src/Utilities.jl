@@ -31,7 +31,7 @@ end
 
 function shapeH2L(op4N::Array{Float64,4})::Array{Float64,2}
     Nx   = size(op4N)[1] - 1 
-    NY   = size(op4N)[2] - 1
+    Ny   = size(op4N)[2] - 1
     op2N = reshape(op4N, ((Nx+1)*(Ny+1),(Nx+1)*(Ny+1)))
     return op2N
 end
@@ -58,14 +58,14 @@ function LInfnorm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T)::
     return maximum(abs.(errorGridData))
 end
 
-function L1norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, w::Array{Float64,1})::Float64
+function L1norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, wx::Array{Float64,1}, wy::Array{Float64,1})::Float64
     errorGridData = numericalGridData - exactGridData
-    return (w'*(errorGridData)*w)/(w'*(exactGridData)*w)
+    return (wx'*(errorGridData)*wy)/(wx'*(exactGridData)*wy)
 end
 
-function L2norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, w::Array{Float64,1})::Float64
+function L2norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, wx::Array{Float64,1}, wy::Array{Float64,1})::Float64
     errorGridData = numericalGridData - exactGridData
-    return sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
+    return sqrt((wx'*(errorGridData.^2)*wy)/(wx'*(exactGridData.^2)*wy))
 end
 
 function savegrid(dbase::Dict, path::String)
