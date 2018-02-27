@@ -8,10 +8,10 @@ using QuadGK, HCubature
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
-	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, LInfnorm, L1norm, L2norm, 
+	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, LInfnorm, L1norm, L2norm, array2dict, dict2array, 
        derivOP, boundaryOP,
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, projectonPatchBnd, projectonPatch,
-       restrict, prolongate,
+       restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        distribute
 
 include("Types.jl")

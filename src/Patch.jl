@@ -74,7 +74,7 @@ function projectonPatchBnd(fn::Function, Nx::Int)::Array{Float64,1}
     fonbnd = zeros(Nx+1)
     vndmx  = vandermonde(Nx)
     for m in 0:Nx
-        integ = quadgk(x->fn(cos(x))*cos(m*x), 0, pi)[1]
+        @time integ = quadgk(x->fn(cos(x))*cos(m*x), 0, pi)[1]
         (m == 0) ? coeffs[m+1] = integ/pi : coeffs[m+1] = integ/(pi/2)
     end
     for nx in 1:Nx+1
@@ -103,7 +103,7 @@ function projectonPatch(fn::Function, Nx::Int, Ny::Int)::Array{Float64,2}
     vndmx    = vandermonde(Nx)
     vndmy    = vandermonde(Ny)
     for m in 0:Nx,  n in 0:Ny
-        integxy = hcubature(xp->fn(cos(xp[1]), cos(xp[2]))*cos(m*xp[1])*cos(n*xp[2]), (0, 0), (pi, pi))[1]
+        @time integxy = hcubature(xp->fn(cos(xp[1]), cos(xp[2]))*cos(m*xp[1])*cos(n*xp[2]), (0, 0), (pi, pi))[1]
         if m == n == 0
             fmodal[m+1,n+1] = integxy/(pi^2)
         elseif m == 0 || n == 0

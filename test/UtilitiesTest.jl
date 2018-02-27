@@ -66,10 +66,9 @@ function testL2norm(Nx::Int, Ny::Int)::Float64
     return abs(errorL2 - exactL2)
 end
 
-function check_savegrid()
-    dbase = distribute(4, 2, x->sin(pi*x), y->sin(pi*y))
-    savegrid(dbase, "../output")
-    return true
+function testarray2dict2array(Nx, Ny, M)::Bool
+    sPatch = rand((Nx+1)*M, (Ny+1)*M)
+    return dict2array(array2dict(sPatch, Nx, Ny, M)) == sPatch
 end
 
 @test coordtransL2G(2, 1, -1.0) ≈ 0.0 
@@ -78,10 +77,9 @@ end
 @test jacobian(12) == 1/12
 @test testshapeH2L2H(randn(4,12,4,12), 4, 12) == true
 @test testshapeH2L2H(randn(6,10), 6, 10) == true
-
 @test testchebint(12,14)  < 1e-14
 @test testgaussint(12,14) < 1e-14
 @test testquadgk()        < 1e-14
 @test testL1norm(14, 11)  < 1e-14
 @test testL2norm(11, 14)  < 1e-14
-@test_broken check_savegrid() == true
+@test testarray2dict2array(4,5,3) == true

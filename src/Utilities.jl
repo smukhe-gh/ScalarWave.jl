@@ -68,6 +68,25 @@ function L2norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, wx:
     return sqrt(wx'*(errorGridData.^2)*wy)
 end
 
+function dict2array(dbase::Dict{Array{Int,1}, Patch})::Array{Float64,2}
+    Nx = size(dbase[[1,1]].value)[1] - 1
+    Ny = size(dbase[[1,1]].value)[2] - 1
+    M  = convert(Int, sqrt(length(dbase)))
+    sPatch = zeros((Nx+1)*M, (Ny+1)*M)
+    for m in 1:M, n in 1:M
+        sPatch[1+(m-1)*(Nx+1):m*(Nx+1), 1+(n-1)*(Ny+1):n*(Ny+1)] = dbase[[m,n]].value
+    end
+    return sPatch
+end
+
+function array2dict(mPatch::Array{Float64,2}, Nx::Int, Ny::Int, M)::Dict{Array{Int,1}, Patch}
+    dbase = Dict{Array{Int,1}, Patch}()
+    for m in 1:M, n in 1:M
+        dbase[[m,n]] = Patch([m,n], mPatch[1+(m-1)*(Nx+1):m*(Nx+1), 1+(n-1)*(Ny+1):n*(Ny+1)])
+    end
+    return dbase
+end
+
 function savegrid(dbase::Dict, path::String)
     datetime =  DateTime(now())
     jldopen("$path/$datetime.jld", "w") do file
