@@ -6,7 +6,8 @@
 using ScalarWave
 using Base.Test, QuadGK
 
-modules = ["SpecCalculus",
+modules = ["Grid",
+           "SpecCalculus",
            "Utilities",
            "Physics",
            "Patch"]

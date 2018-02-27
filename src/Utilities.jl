@@ -60,12 +60,12 @@ end
 
 function L1norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, wx::Array{Float64,1}, wy::Array{Float64,1})::Float64
     errorGridData = numericalGridData - exactGridData
-    return (wx'*(errorGridData)*wy)/(wx'*(exactGridData)*wy)
+    return (wx'*(errorGridData)*wy)
 end
 
 function L2norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, wx::Array{Float64,1}, wy::Array{Float64,1})::Float64
     errorGridData = numericalGridData - exactGridData
-    return sqrt((wx'*(errorGridData.^2)*wy)/(wx'*(exactGridData.^2)*wy))
+    return sqrt(wx'*(errorGridData.^2)*wy)
 end
 
 function savegrid(dbase::Dict, path::String)

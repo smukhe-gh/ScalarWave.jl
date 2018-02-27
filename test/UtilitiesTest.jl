@@ -52,7 +52,7 @@ function testL1norm(Nx::Int, Ny::Int)::Float64
     A = Float64[x^2 - y^3 for x in X, y in Y]
     B = Float64[x^2 - y^3 + x^4*y^2 for x in X, y in Y]
     errorL1 = L1norm(B, A, chebweights(Nx), chebweights(Ny))
-    exactL1 = 1/5 
+    exactL1 = 4/15 
     return abs(errorL1 - exactL1)
 end
 
@@ -62,7 +62,7 @@ function testL2norm(Nx::Int, Ny::Int)::Float64
     A = Float64[x^2 - y^3 for x in X, y in Y]
     B = Float64[x^2 - y^3 + x^4*y^2 for x in X, y in Y]
     errorL2 = L2norm(B, A, chebweights(Nx), chebweights(Ny))
-    exactL2 = sqrt(7/3)/6
+    exactL2 = 2/sqrt(45)
     return abs(errorL2 - exactL2)
 end
 

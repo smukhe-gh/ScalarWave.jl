@@ -33,7 +33,7 @@ function testprojectonPatchBnd(fn::Function, Nx::Int)::Float64
     pfbnd = projectonPatchBnd(fn, Nx) 
     efbnd = Float64[fn(x) for x in chebgrid(Nx)]
     w     = chebweights(Nx)  
-    L2error = sqrt(w'*(pfbnd-efbnd).^2/w'*(efbnd).^2)
+    L2error = sqrt(w'*(pfbnd-efbnd).^2)
     return L2error 
 end
 
@@ -52,10 +52,8 @@ fpatch = Float64[(x-1)^2 + (y-1)^2 for x in 1:10, y in 1:15]
 @test getPatchBnd(Patch([1,1], fpatch), 1).value == Float64[(y-1)^2 + 9^2 for y in 1:15]
 @test testextractPatchCoeffs(7,3) < 1e-14
 @test testinterpolatePatch(12,5) < 1e-14
-@test testinterpolatePatch(8, 9, (x,y)->x^2 + y^3 + y^2*x^3) < 1e-14
-@test testinterpolatePatch(19, 21, (x,y)-> sin(pi*x) + exp(-y^2)) < 1e-14
-@test_broken testprojectonPatchBnd(x->x^2+1, 4) < 1e-14
-@test_broken testprojectonPatch((x,y)->x^2+y^3+x^3*y^2, 8, 9) < 1e-14
-
-
-
+@test testinterpolatePatch(12, 13, (x,y)->x^2 + y^3 + y^2*x^3) < 1e-14
+@test testinterpolatePatch(29, 31, (x,y)-> sin(pi*x) + exp(-y^2)) < 1e-14
+@test testprojectonPatchBnd(x->x^2+1, 4) < 1e-14
+#FIXME: Taking too long
+#@test testprojectonPatch((x,y)->x^2+y^3+x^3*y^2, 8, 9) < 1e-13
