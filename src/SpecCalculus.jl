@@ -55,4 +55,3 @@ end
 function pseudovandermonde(N::Int, collocationpts::Array{Float64, 1})::Array{Float64,2}
     return Float64[cheb(m,x) for x in collocationpts, m in 0:N]
 end
-

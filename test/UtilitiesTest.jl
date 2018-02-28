@@ -19,29 +19,12 @@ function testshapeH2L2H(b2N::Array{Float64,2}, Nx::Int, Ny::Int)::Bool
     shapeL2H(shapeH2L(b2N), Nx-1, Ny-1) == b2N
 end
 
-function testquadgk()::Float64
-    a, b = (-1,1)
-    f(x) = 16*x^2 - 6*x + 2
-    intf(x) = (16/3)*x^3 - 3*x^2 + 2*x
-    exactint = intf(b) - intf(a)
-    numint = quadgk(f,a,b; reltol=1e-15, order=4)
-    return abs.(exactint - numint[1])
-end
-
 function testchebint(Nx::Int, Ny::Int)::Float64
     X  = chebgrid(Nx)
     Y  = chebgrid(Ny)
     B  = Float64[x^2 - y^3 + x^4*y^2 for x in X, y in Y]
     wx = chebweights(Nx)
     wy = chebweights(Ny)
-    numint = wx'*B*wy
-    return abs.(numint - 8/5)
-end
-
-function testgaussint(Nx::Int, Ny::Int)::Float64
-    X, wx = gauss(Nx)
-    Y, wy = gauss(Ny)
-    B = Float64[x^2 - y^3 + x^4*y^2 for x in -X, y in -Y]
     numint = wx'*B*wy
     return abs.(numint - 8/5)
 end
@@ -78,8 +61,6 @@ end
 @test testshapeH2L2H(randn(4,12,4,12), 4, 12) == true
 @test testshapeH2L2H(randn(6,10), 6, 10) == true
 @test testchebint(12,14)  < 1e-14
-@test testgaussint(12,14) < 1e-14
-@test testquadgk()        < 1e-14
 @test testL1norm(14, 11)  < 1e-14
 @test testL2norm(11, 14)  < 1e-14
 @test testarray2dict2array(4,5,3) == true

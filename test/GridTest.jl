@@ -3,6 +3,42 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
+function testrestrictmodes1D(fn::Function, Nx::Int, M::Int)::Float64
+    fpatch  = Float64[fn(x) for x in chebgrid(Nx)]
+    vndmx   = vandermonde(Nx)
+    frpatch = vndmx*restrictmodes!(inv(vndmx)*fpatch, M)
+    w       = chebweights(Nx)
+    L2error = sqrt(w'*(fpatch - frpatch).^2)
+    return L2error
+end
+
+function testrestrictmodes2D(fn::Function, Nx::Int, Ny::Int, M::Int, N::Int)::Float64
+    fpatch  = Float64[fn(x,y) for x in chebgrid(Nx), y in chebgrid(Ny)]
+    vndmx   = vandermonde(Nx)
+    vndmy   = vandermonde(Ny)
+    frpatch = vndmx*restrictmodes!(inv(vndmx)*fpatch*inv(vndmy)', M, N)*vndmy'
+    return L2norm(fpatch, frpatch, chebweights(Nx), chebweights(Ny))
+end
+
+function testprolongatemodes1D(fn::Function, Nx::Int, M::Int)::Float64
+    fpatch  = Float64[fn(x) for x in chebgrid(Nx)]
+    vndmx   = vandermonde(Nx)
+    vndmMx  = pseudovandermonde(M, chebgrid(Nx))
+    fppatch = vndmMx*prolongatemodes(inv(vndmx)*fpatch, M)
+    w       = chebweights(Nx)
+    return  sqrt(w'*(fpatch - fppatch).^2)
+end
+
+function testprolongatemodes2D(fn::Function, Nx::Int, Ny::Int, M::Int, N::Int)::Float64
+    fpatch  = Float64[fn(x,y) for x in chebgrid(Nx), y in chebgrid(Ny)]
+    vndmx   = vandermonde(Nx)
+    vndmy   = vandermonde(Ny)
+    vndmMx  = pseudovandermonde(M, chebgrid(Nx))
+    vndmNy  = pseudovandermonde(N, chebgrid(Ny))
+    fppatch = vndmMx*prolongatemodes(inv(vndmx)*fpatch*inv(vndmy)', M, N)*vndmNy'
+    return L2norm(fpatch, fppatch, chebweights(Nx), chebweights(Ny))
+end
+
 function testprolongate1Dx(fn::Function, Nx::Int, M::Int)::Float64
     patch1D = Float64[fn(x) for x in chebgrid(Nx)]
     patchMD = prolongateOP(Nx, M)*patch1D
@@ -44,6 +80,10 @@ function testrProlongateThenRestrictPatch(fn::Function, Nx::Int, Ny::Int, M::Int
     return L2norm(sPatch.value, m2sPatch.value, chebweights(Nx), chebweights(Ny))
 end
 
+@test testrestrictmodes1D(x->x^9, 12, 4) > testrestrictmodes1D(x->x^9, 12, 5)
+@test testrestrictmodes2D((x,y)->x^9+y^8, 12, 12, 4, 5) > testrestrictmodes2D((x,y)->x^9+y^8, 12, 12, 7, 8)
+@test testprolongatemodes1D(x->x^9, 10, 12) == testprolongatemodes1D(x->x^9, 10, 13)
+@test testprolongatemodes2D((x,y)->x^2+y^2, 9, 9, 10, 10) == testprolongatemodes2D((x,y)->x^2+y^2, 9, 9, 12, 12) 
 @test prolongateOP(4,2)*restrictOP(4,2)*prolongateOP(4,2) ≈ prolongateOP(4,2) 
 @test restrictOP(4,2)*prolongateOP(4,2)*restrictOP(4,2) ≈ restrictOP(4,2)
 @test (prolongateOP(4,2)*restrictOP(4,2))' ≈ prolongateOP(4,2)*restrictOP(4,2) 

@@ -37,6 +37,14 @@ function testprojectonPatchBnd(fn::Function, Nx::Int)::Float64
     return L2error 
 end
 
+function testprojectonPatchBnd(fn::Function, Nx::Int, M::Int, loc::Int)::Float64
+    pfbnd = projectonPatchBnd(fn, Nx) 
+    efbnd = Float64[fn(x) for x in chebgrid(Nx, M, loc)]
+    w     = chebweights(Nx)  
+    L2error = sqrt(w'*(pfbnd-efbnd).^2)
+    return L2error 
+end
+
 function testprojectonPatch(fn::Function, Nx::Int, Ny::Int)::Float64
     pfpatch = projectonPatch(fn, Nx, Ny)
     efpatch = Float64[fn(x,y) for x in chebgrid(Nx), y in chebgrid(Ny)]
@@ -54,6 +62,6 @@ fpatch = Float64[(x-1)^2 + (y-1)^2 for x in 1:10, y in 1:15]
 @test testinterpolatePatch(12,5) < 1e-14
 @test testinterpolatePatch(12, 13, (x,y)->x^2 + y^3 + y^2*x^3) < 1e-14
 @test testinterpolatePatch(29, 31, (x,y)-> sin(pi*x) + exp(-y^2)) < 1e-14
-@test testprojectonPatchBnd(x->x^2+1, 4) < 1e-14
-#FIXME: Taking too long
+@test_broken testprojectonPatchBnd(x->x.^2 + 1, 4) < 1e-14
+@test_broken testprojectonPatchBnd(x->x.^2 + 1, 4, 2, 2) < 1e-14
 #@test testprojectonPatch((x,y)->x^2+y^3+x^3*y^2, 8, 9) < 1e-13

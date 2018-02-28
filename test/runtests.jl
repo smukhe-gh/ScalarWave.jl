@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 using ScalarWave
-using Base.Test, QuadGK
+using Base.Test
 
 modules = ["Grid",
            "SpecCalculus",

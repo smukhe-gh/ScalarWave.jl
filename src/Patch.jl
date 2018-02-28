@@ -74,21 +74,7 @@ function projectonPatchBnd(fn::Function, Nx::Int)::Array{Float64,1}
     fonbnd = zeros(Nx+1)
     vndmx  = vandermonde(Nx)
     for m in 0:Nx
-        @time integ = quadgk(x->fn(cos(x))*cos(m*x), 0, pi)[1]
-        (m == 0) ? coeffs[m+1] = integ/pi : coeffs[m+1] = integ/(pi/2)
-    end
-    for nx in 1:Nx+1
-        fonbnd[nx] = sum(vndmx[nx,j]*coeffs[j] for j in 1:Nx+1)
-    end
-    return fonbnd 
-end
-
-function projectonPatchBnd(fn::Function, Nx::Int, M::Int, loc::Int)::Array{Float64,1}
-    coeffs = zeros(Nx+1)
-    fonbnd = zeros(Nx+1)
-    vndmx  = vandermonde(Nx)
-    for m in 0:Nx
-        integ = quadgk(xp->fn(cos(coortransL2G(M, loc, xp)))*cos(m*xp), 0, pi)[1]
+        integ = gaussint(fn, 0.0, convert(Float64,pi), 10000)
         (m == 0) ? coeffs[m+1] = integ/pi : coeffs[m+1] = integ/(pi/2)
     end
     for nx in 1:Nx+1
@@ -103,7 +89,9 @@ function projectonPatch(fn::Function, Nx::Int, Ny::Int)::Array{Float64,2}
     vndmx    = vandermonde(Nx)
     vndmy    = vandermonde(Ny)
     for m in 0:Nx,  n in 0:Ny
-        @time integxy = hcubature(xp->fn(cos(xp[1]), cos(xp[2]))*cos(m*xp[1])*cos(n*xp[2]), (0, 0), (pi, pi))[1]
+        localf(x,y) = fn(cos.(x), cos.(y)).*cos.(m*x).*cos.(n*x)
+        @show m,n
+        integxy  = gausslegendreintegration(localf, 0.0, convert(Float64,pi), 0.0, convert(Float64,pi), 10000)
         if m == n == 0
             fmodal[m+1,n+1] = integxy/(pi^2)
         elseif m == 0 || n == 0
@@ -118,6 +106,22 @@ function projectonPatch(fn::Function, Nx::Int, Ny::Int)::Array{Float64,2}
          fonpatch[i,j] = sum(vndmx[i,m]*fmodal[m,n]*vndmy[j,n] for m in 1:Nx+1, n in 1:Ny+1)
     end 
     return fonpatch
+end
+
+function projectonPatchBnd(fn::Function, Nx::Int, M::Int, loc::Int)::Array{Float64,1}
+    coeffs = zeros(Nx+1)
+    fonbnd = zeros(Nx+1)
+    vndmx  = vandermonde(Nx)
+    xgauss, wgauss = gausslegendre(Nx*10000)
+    for m in 0:Nx
+        localf(x) = fn(cos.(coortransL2G(M, loc, x))).*cos.(m*x)
+        integ = guasslegendreintegration(localf, 0.0, convert(Float64,pi), 10000)
+        (m == 0) ? coeffs[m+1] = integ/pi : coeffs[m+1] = integ/(pi/2)
+    end
+    for nx in 1:Nx+1
+        fonbnd[nx] = sum(vndmx[nx,j]*coeffs[j] for j in 1:Nx+1)
+    end
+    return fonbnd 
 end
 
 function projectonPatch(fn::Function, Nx::Int, Ny::Int, M::Int, loc::Array{Float64,1})::Array{Float64,2}
