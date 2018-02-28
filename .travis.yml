@@ -1,4 +1,4 @@
-## Documentation: http://docs.travis-ci.com/user/languages/julia/
+# Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
 os:
   - linux
@@ -17,11 +17,12 @@ git:
 #  allow_failures:
 #  - julia: nightly
 
-## uncomment and modify the following lines to manually install system packages
-#addons:
-#  apt: # apt-get for linux
-#    packages:
-#    - gfortran
+# uncomment and modify the following lines to manually install system packages
+addons:
+  apt: # apt-get for linux
+    packages:
+    - hdf5-tools
+
 #before_script: # homebrew for mac
 #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
 
@@ -32,4 +33,4 @@ after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("ScalarWave")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
-  #- julia -e 'cd(Pkg.dir("ScalarWave")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'cd(Pkg.dir("ScalarWave")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
