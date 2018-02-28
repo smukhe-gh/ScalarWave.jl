@@ -87,21 +87,6 @@ function array2dict(mPatch::Array{Float64,2}, Nx::Int, Ny::Int, M)::Dict{Array{I
     return dbase
 end
 
-function gausslegendreintegration{T<:Float64}(fn::Function, bnd1::T, bnd2::T, N::Int)::Float64
-    @time xgauss, wgauss = gausslegendre(N)
-    @time xg = ((-bnd2 + bnd1)/2)*xgauss + (bnd2+bnd1)/2
-    @time fx = fn(xg) 
-    return ((bnd2-bnd1)/2)*(wgauss'*fx)
-end
-
-function gausslegendreintegration{T<:Float64}(fn::Function, bnd1::T, bnd2::T, bnd3::T, bnd4::T, N::Int)::Float64
-    @time xgauss, wgauss = gausslegendre(N)
-    @time x  = ((bnd2 - bnd1)/2)*xgauss + (bnd2+bnd1)/2
-    @time y  = ((bnd4 - bnd3)/2)*xgauss + (bnd4+bnd3)/2
-    @time fx = Float64[fn(i,j) for i in x, j in y] 
-    return ((bnd4-bnd3)/2)*((bnd2-bnd1)/2)*(wgauss'*fx*wgauss)
-end
-
 function savegrid(dbase::Dict, path::String)
     datetime =  DateTime(now())
     jldopen("$path/$datetime.jld", "w") do file

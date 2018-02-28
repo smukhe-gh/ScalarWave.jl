@@ -6,11 +6,12 @@
 using ScalarWave
 using Base.Test
 
-modules = ["Grid",
-           "SpecCalculus",
+modules = ["SpecCalculus",
            "Utilities",
            "Physics",
-           "Patch"]
+           "Patch",
+           "Grid",
+           "Projection"]
 
 for file in modules
     info("Testing $file")
