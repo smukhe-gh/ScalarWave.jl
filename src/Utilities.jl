@@ -65,7 +65,7 @@ end
 
 function L2norm{T<:Array{Float64,2}}(numericalGridData::T, exactGridData::T, wx::Array{Float64,1}, wy::Array{Float64,1})::Float64
     errorGridData = numericalGridData - exactGridData
-    return sqrt(wx'*(errorGridData.^2)*wy)
+    return sqrt(abs(wx'*(errorGridData.^2)*wy))
 end
 
 function dict2array(dbase::Dict{Array{Int,1}, Patch})::Array{Float64,2}

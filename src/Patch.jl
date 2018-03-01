@@ -3,13 +3,11 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function getPatchIC{T<:Integer}(Nx::T, Ny::T, M::T, loc::Array{T,1}, fn::Function, s::Int)::Boundary
+function getPatchIC{T<:Integer}(fn::Function, s::T, Nx::T, Ny::T, M::T, loc::Array{T,1})::Boundary
     if s == 0
-        xg = chebgrid(Nx, M, loc[1])
-        return Boundary(0, fn.(xg))
+        return Boundary(0, projectonPatchBndbyRestriction(fn, Nx, M, loc[1]))
     elseif s == 1
-        yg = chebgrid(Ny, M, loc[2])
-        return Boundary(1, fn.(yg))
+        return Boundary(1, projectonPatchBndbyRestriction(fn, Ny, M, loc[2]))
     else
         error("Unknown direction passed.")
     end
@@ -26,17 +24,19 @@ function getPatchBnd(patch::Patch, s::Int)::Boundary
     return boundary
 end
 
-function calcPatch(loc::Array{Int,1}, bndx::Boundary, bndy::Boundary, operator::Array{Float64, 4})::Patch
-    Nx   = size(operator)[1] - 1
-    Ny   = size(operator)[2] - 1
+function calcPatch(bndx::Boundary, bndy::Boundary, RHS::Array{Float64,2}, 
+                   derivOP::Array{Float64,4}, boundaryOP::Array{Float64,4},
+                   loc::Array{Int,1})::Patch
+    Nx   = size(bndx.value)[1] - 1
+    Ny   = size(bndy.value)[1] - 1
     bval = zeros(Nx+1, Ny+1)
-    if bnd0.value[1] != bnd1.value[1]
+    if bndx.value[1] != bndy.value[1]
         error("Inconsistent boundary conditions.")
     else
         bval[:, 1] = bndx.value
         bval[1, :] = bndy.value 
     end
-    return Patch(loc, shapeL2H(shapeH2L(operator) \ shapeH2L(bval))) 
+    return Patch(loc, shapeL2H(shapeH2L(derivOP + boundaryOP) \ shapeH2L(RHS + bval), Nx, Ny))  
 end
 
 function extractPatchCoeffs(patch::Patch)::Array{Float64,2}

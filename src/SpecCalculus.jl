@@ -40,7 +40,7 @@ function chebgrid(N::Int)::Array{Float64,1}
     return Float64[chebx(i,N) for i in 1:N+1]
 end
 
-function chebgrid(N::Int, M, loc)::Array{Float64,1}
+function chebgrid(N::Int, M::Int, loc::Int)::Array{Float64,1}
     return Float64[coordtransL2G(M, loc, chebx(i,N)) for i in 1:N+1]
 end
 
