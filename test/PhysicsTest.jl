@@ -29,4 +29,6 @@ end
 @test testderivOP(2, 2) ≈ shapeH2L(derivOP(2, 2))
 @test_broken testderivOP(1, 2) == shapeH2L(derivOP(1, 2))
 @test testboundaryOP(2,2) == shapeH2L(boundaryOP(2,2))
-@test testboundaryOP(2,4) == shapeH2L(boundaryOP(2,4)) 
+@test testboundaryOP(2,4) == shapeH2L(boundaryOP(2,4))
+@test RHS((x,y)->x^8+y^9, 8, 8) == projectonPatchbyRestriction((x,y)->x^8+y^9, 8, 8)
+@test RHS((x,y)->x^8+y^9, 8, 4, 7, [2,1]) == projectonPatchbyRestriction((x,y)->x^8+y^9, 8, 4, 7, [2,1])

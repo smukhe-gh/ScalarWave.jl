@@ -79,7 +79,7 @@ function dict2array(dbase::Dict{Array{Int,1}, Patch})::Array{Float64,2}
     return sPatch
 end
 
-function array2dict(mPatch::Array{Float64,2}, Nx::Int, Ny::Int, M)::Dict{Array{Int,1}, Patch}
+function array2dict(mPatch::Array{Float64,2}, Nx::Int, Ny::Int, M::Int)::Dict{Array{Int,1}, Patch}
     dbase = Dict{Array{Int,1}, Patch}()
     for m in 1:M, n in 1:M
         dbase[[m,n]] = Patch([m,n], mPatch[1+(m-1)*(Nx+1):m*(Nx+1), 1+(n-1)*(Ny+1):n*(Ny+1)])
@@ -91,11 +91,12 @@ function savegrid(dbase::Dict, path::String)
     datetime =  DateTime(now())
     jldopen("$path/$datetime.jld", "w") do file
         addrequire(file, ScalarWave)
-        write(file, "patches", dbase)
+        write(file, "patch", dbase)
     end
+    return datetime
 end
 
 function loadgrid(path::String)::Dict
-    dbase = load("/tmp/myfile.jld")
+    dbase = load("$path")
     return dbase
 end

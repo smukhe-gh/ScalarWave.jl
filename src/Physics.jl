@@ -29,7 +29,11 @@ function boundaryOP{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}
     return bnd
 end
 
-function RHS{T<:Int}(Nx::T, Ny::T, fn::Function)::Array{Float64,2}
-    return zeros(Nx+1, Ny+1) 
+function RHS{T<:Int}(fn::Function, Nx::T, Ny::T)::Array{Float64,2}
+    return projectonPatchbyRestriction(fn, Nx, Ny) 
+end
+
+function RHS{T<:Int}(fn::Function, Nx::T, Ny::T, M::T, loc::Array{Int,1})::Array{Float64,2}
+    return projectonPatchbyRestriction(fn, Nx, Ny, M, loc) 
 end
 

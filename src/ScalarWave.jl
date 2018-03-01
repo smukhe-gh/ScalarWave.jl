@@ -8,8 +8,9 @@ using FastGaussQuadrature, JLD
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
-	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, LInfnorm, L1norm, L2norm, array2dict, dict2array, 
-       derivOP, boundaryOP,
+	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, 
+       LInfnorm, L1norm, L2norm, array2dict, dict2array, savegrid, loadgrid, 
+       derivOP, boundaryOP, RHS,
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, 
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
