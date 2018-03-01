@@ -2,7 +2,6 @@
 # Spacetime Discretization methods in Julia
 # Soham 01-2018
 #--------------------------------------------------------------------
-# TODO: One can test the convergence routines separately, just by representing functions on grids.
 
 function pconvergence(N::Int, fbnd1:: Function, fbnd2::Function, fsol::Function)::Float64
     dbase = distribute(N, 1, fbnd1, fbnd2)

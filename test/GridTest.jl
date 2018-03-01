@@ -73,13 +73,25 @@ function testrestrict1Dy(fn::Function, Ny::Int, M::Int)::Float64
     return L2error 
 end
 
-function testrProlongateThenRestrictPatch(fn::Function, Nx::Int, Ny::Int, M::Int)::Float64
+function testprolongatePatch(fn::Function, Nx::Int, Ny::Int, M::Int)::Float64 
+    sPatch = Float64[fn(x,y) for x in chebgrid(Nx), y in chebgrid(Ny)]
+    mPatch = prolongatePatch(Patch([1,1], sPatch), M)
+    L2err  = 0.0
+    for m in 1:M, n in 1:M
+        rPatch = Float64[fn(x,y) for x in chebgrid(Nx, M, m), y in chebgrid(Ny, M, n)]
+        L2err += L2norm(mPatch[[m,n]].value, rPatch, chebweights(Nx)/M, chebweights(Ny)/M)
+    end
+    return L2err
+end
+
+function testProlongateThenRestrictPatch(fn::Function, Nx::Int, Ny::Int, M::Int)::Float64
     sPatch   = Patch([1,1], Float64[fn(x,y) for x in chebgrid(Nx), y in chebgrid(Ny)])
     mPatch   = prolongatePatch(sPatch, M)
     m2sPatch = restrictPatch(mPatch)
     return L2norm(sPatch.value, m2sPatch.value, chebweights(Nx), chebweights(Ny))
 end
 
+@test testprolongatePatch((x,y)->x^9+y^8, 12, 12, 4) < 1e-14
 @test testrestrictmodes1D(x->x^9, 12, 4) > testrestrictmodes1D(x->x^9, 12, 5)
 @test testrestrictmodes2D((x,y)->x^9+y^8, 12, 12, 4, 5) > testrestrictmodes2D((x,y)->x^9+y^8, 12, 12, 7, 8)
 @test testprolongatemodes1D(x->x^9, 10, 12) == testprolongatemodes1D(x->x^9, 10, 13)
@@ -92,4 +104,4 @@ end
 @test testprolongate1Dy(x->x.^5, 12, 2) < 1e-14
 @test testrestrict1Dx(x->x.^5, 10, 4) < 1e-14
 @test testrestrict1Dy(x->x.^2, 4, 2) < 1e-14
-@test testrProlongateThenRestrictPatch((x,y)->x^2 + y^3, 12, 8, 2) < 1e-14
+@test testProlongateThenRestrictPatch((x,y)->x^2 + y^3, 12, 8, 2) < 1e-14
