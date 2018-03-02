@@ -7,40 +7,19 @@
 # Choose N points > restrict poly onto grid > 
 # compare with exact solution at N points
 function testpconv(fn::Function, Nx::Int, Ny::Int)::Float64
-    fpatch  = Float64[fn(x,y) for x in chebgrid(Nx), y in chebgrid(Ny)]
-    frpatch = projectonPatchbyRestriction(fn, Nx, Ny)
-    return L2norm(fpatch, frpatch, chebweights(Nx), chebweights(Ny))
-end
-
-print("------------------------------------------------\n")
-print("p-convergence in 1 to -1\n")
-print("------------------------------------------------\n")
-for n in 2:12
-    f(x,y) = x^9 + y^4 + x^3*y^7
-    L2error = testpconv(f, n, n)
-    @show n, L2error
+    fpatch  = Float64[fn(x,y) for x in chebgrid(2Nx), y in chebgrid(2Ny)]
+    frpatch = Patch([1,1], projectonPatchbyRestriction(fn, Nx, Ny))
+    return L2norm(fpatch, interpolatePatch(frpatch, 2Nx, 2Ny).value, chebweights(2Nx), chebweights(2Ny))
 end
 
 # Test p-convergence on -1 to 1
 # Choose N points > restrict poly onto grid > 
 # compare with exact solution at N points
 function testpconv(fn::Function, Nx::Int, Ny::Int, M::Int, loc::Array{Int,1})::Float64
-    fpatch  = Float64[fn(x,y) for x in chebgrid(Nx, M, loc[1]), y in chebgrid(Ny, M, loc[2])]
-    frpatch = projectonPatchbyRestriction(fn, Nx, Ny, M, loc)
-    return L2norm(fpatch, frpatch, chebweights(Nx)/M, chebweights(Ny)/M)
+    fpatch  = Float64[fn(x,y) for x in chebgrid(2Nx, M, loc[1]), y in chebgrid(2Ny, M, loc[2])]
+    frpatch = Patch([1,1], projectonPatchbyRestriction(fn, Nx, Ny, M, loc))
+    return L2norm(fpatch, interpolatePatch(frpatch, 2Nx, 2Ny).value, chebweights(2Nx)/M, chebweights(2Ny)/M)
 end
-
-print("\n------------------------------------------------\n")
-print("p-convergence on arbitrary patch\n")
-print("------------------------------------------------\n")
-olderror = 1
-for m in 2:12
-    f(x,y) = sin(x)^9 + y^4 + x^3*y^7
-    L2error = testpconv(f, 4, 4, m, [2,1])
-    @show m, L2error #, olderror/L2error
-    olderror = L2error 
-end
-
 
 # Test h-convergence
 # Choose N points > compute exact solution at N points > prolongate into many patches
@@ -48,23 +27,46 @@ end
 # sum all L2 norms
 
 function testhconv(fn::Function, Nx::Int, Ny::Int, M::Int)::Float64 
-    sPatch = Float64[fn(x,y) for x in chebgrid(Nx), y in chebgrid(Ny)]
-    mPatch = prolongatePatch(Patch([1,1], sPatch), M)
     L2err  = 0.0
     for m in 1:M, n in 1:M
-        rPatch = projectonPatchbyRestriction(fn, Nx, Ny, M, [m,n])
-        L2err += L2norm(mPatch[[m,n]].value, rPatch, chebweights(Nx)/M, chebweights(Ny)/M)
+        rPatch = Patch([1,1], projectonPatchbyRestriction(fn, Nx, Ny, M, [m,n]))
+        sPatch = Float64[fn(x,y) for x in chebgrid(2Nx, M, m), y in chebgrid(2Ny, M, n)]
+        L2err += L2norm(sPatch, interpolatePatch(rPatch, 2Nx, 2Ny).value, chebweights(2Nx)/M, chebweights(2Ny)/M)
     end
     return L2err
 end
 
+#=
+print("------------------------------------------------\n")
+print("p-convergence in 1 to -1\n")
+print("------------------------------------------------\n")
+for n in 1:12
+    np = 1
+    f(x,y) = x^9 + y^4 + x^3*y^7
+    L2error = testpconv(f, n, n)
+    @show n, np^2, L2error
+end
+
+
+print("\n------------------------------------------------\n")
+print("p-convergence on arbitrary patch\n")
+print("------------------------------------------------\n")
+olderror = 1
+for np in 1:44
+    n = 4
+    f(x,y) = x^9 + y^4 + x^3*y^7
+    L2error = testpconv(f, n, n, np, [1,1])
+    @show n, np^2, L2error
+end
+
+
 print("\n------------------------------------------------\n")
 print("h-convergence\n")
 print("------------------------------------------------\n")
-for m in 2:12
+for np in 1:44
+    n = 7
     f(x,y) = x^9 + y^4 + x^3*y^7
-    L2error = testhconv(f, 7, 7, 2*m)
-    @show 2*m, L2error
+    L2error = testhconv(f, n, n, np)
+    @show n, np^2, L2error
 end 
-
-
+=#

@@ -14,7 +14,6 @@ modules = ["SpecCalculus",
            "Projection",
            "Convergence"]
 
-
 for file in modules
     info("Testing $file")
     include("$(file)Test.jl")
