@@ -30,8 +30,8 @@ function testinterpolatePatch(Nx::Int, Ny::Int, fn::Function)::Float64
 end
 
 function testcalcPatch(bnd1fn::Function, bnd2fn::Function, rhsfn::Function, Nx::Int, Ny::Int)::Float64
-    bndx = getPatchIC(bnd1fn, 0, Nx, Ny, 1, [1,1]) 
-    bndy = getPatchIC(bnd2fn, 1, Nx, Ny, 1, [1,1])
+    bndx = getPatchIC(bnd1fn, 0, Ny, 1, 1) 
+    bndy = getPatchIC(bnd2fn, 1, Ny, 1, 1)
     rhs  = RHS(rhsfn, Nx, Ny)
     dop  = derivOP(Nx,Ny)
     bop  = boundaryOP(Nx,Ny) 
@@ -42,9 +42,9 @@ end
 
 fpatch = Float64[(x-1)^2 + (y-1)^2 for x in 1:10, y in 1:15]
 
-@test getPatchIC(x->x, 0, 4, 3, 2, [1,1]).value ≈ (chebgrid(4) + 1)/2
-@test getPatchIC(x->x, 1, 5, 6, 2, [2,1]).value ≈ (chebgrid(6) + 1)/2
-@test getPatchIC(x->x, 1, 4, 9, 2, [1,2]).value ≈ (chebgrid(9) - 1)/2
+@test getPatchIC(x->x, 0, 4, 2, 1).value ≈ (chebgrid(4) + 1)/2
+@test getPatchIC(x->x, 1, 6, 2, 1).value ≈ (chebgrid(6) + 1)/2
+@test getPatchIC(x->x, 1, 9, 2, 2).value ≈ (chebgrid(9) - 1)/2
 @test getPatchBnd(Patch([1,1], fpatch), 0).value == Float64[(x-1)^2 + 14^2 for x in 1:10]
 @test getPatchBnd(Patch([1,1], fpatch), 1).value == Float64[(y-1)^2 + 9^2 for y in 1:15]
 @test testextractPatchCoeffs(7,3) < 1e-14

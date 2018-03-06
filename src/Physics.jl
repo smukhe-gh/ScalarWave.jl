@@ -36,4 +36,3 @@ end
 function RHS{T<:Int}(fn::Function, Nx::T, Ny::T, M::T, loc::Array{Int,1})::Array{Float64,2}
     return projectonPatchbyRestriction(fn, Nx, Ny, M, loc) 
 end
-

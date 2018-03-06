@@ -3,7 +3,7 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function pconvergence(N::Int, fbnd1:: Function, fbnd2::Function, fsol::Function)::Float64
+function pconvergence(bnd1fn:: Function, bnd2fn::Function, fsol::Function, )::Float64
     dbase = distribute(N, 1, fbnd1, fbnd2)
     chebGrid        = Float64[chebx(i, N) for i in 1:N+1]
     chebGridData    = dbase[[1,1]]

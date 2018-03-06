@@ -3,11 +3,11 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function getPatchIC{T<:Integer}(fn::Function, s::T, Nx::T, Ny::T, M::T, loc::Array{T,1})::Boundary
+function getPatchIC{T<:Integer}(fn::Function, s::T, Nx::T, M::T, loc::Int)::Boundary
     if s == 0
-        return Boundary(0, projectonPatchBndbyRestriction(fn, Nx, M, loc[1]))
+        return Boundary(0, projectonPatchBndbyRestriction(fn, Nx, M, loc))
     elseif s == 1
-        return Boundary(1, projectonPatchBndbyRestriction(fn, Ny, M, loc[2]))
+        return Boundary(1, projectonPatchBndbyRestriction(fn, Nx, M, loc))
     else
         error("Unknown direction passed.")
     end

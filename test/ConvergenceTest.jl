@@ -5,7 +5,7 @@
 
 # Test p-convergence on -1 to 1
 # Choose N points > restrict poly onto grid > 
-# compare with exact solution at N points
+# compare L2 norm by evaluating at 2N points
 function testpconv(fn::Function, Nx::Int, Ny::Int)::Float64
     fpatch  = Float64[fn(x,y) for x in chebgrid(2Nx), y in chebgrid(2Ny)]
     frpatch = Patch([1,1], projectonPatchbyRestriction(fn, Nx, Ny))
@@ -14,7 +14,7 @@ end
 
 # Test p-convergence on -1 to 1
 # Choose N points > restrict poly onto grid > 
-# compare with exact solution at N points
+# compare with exact solution at 2N points
 function testpconv(fn::Function, Nx::Int, Ny::Int, M::Int, loc::Array{Int,1})::Float64
     fpatch  = Float64[fn(x,y) for x in chebgrid(2Nx, M, loc[1]), y in chebgrid(2Ny, M, loc[2])]
     frpatch = Patch([1,1], projectonPatchbyRestriction(fn, Nx, Ny, M, loc))
@@ -22,9 +22,8 @@ function testpconv(fn::Function, Nx::Int, Ny::Int, M::Int, loc::Array{Int,1})::F
 end
 
 # Test h-convergence
-# Choose N points > compute exact solution at N points > prolongate into many patches
 # restrict poly onto each patch > compare with exact poly prolongated onto patches
-# sum all L2 norms
+# sum all L2 norms at 2N points in each patch
 
 function testhconv(fn::Function, Nx::Int, Ny::Int, M::Int)::Float64 
     L2err  = 0.0

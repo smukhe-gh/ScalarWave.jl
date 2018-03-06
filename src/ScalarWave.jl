@@ -4,17 +4,17 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using FastGaussQuadrature, JLD
+using FastGaussQuadrature, JLD, Luxor, Colors
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
 	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, 
        LInfnorm, L1norm, L2norm, array2dict, dict2array, savegrid, loadgrid, 
-       derivOP, boundaryOP, RHS,
+       derivOP, boundaryOP, RHS, modal2nodal, nodal2modal,
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, 
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
-       distribute
+       distribute, drawpatch
 
 include("Types.jl")
 include("SpecCalculus.jl")

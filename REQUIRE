@@ -1,3 +1,5 @@
 julia 0.6
 FastGaussQuadrature
 JLD
+Luxor
+Colors
