@@ -13,6 +13,16 @@ function getPatchIC{T<:Integer}(fn::Function, s::T, Nx::T, M::T, loc::Int)::Boun
     end
 end
 
+function getPatchICwoProjection{T<:Integer}(fn::Function, s::T, Nx::T, M::T, loc::Int)::Boundary
+    if s == 0
+        return Boundary(0, Float64[fn(x) for x in chebgrid(Nx, M, loc)])
+    elseif s == 1
+        return Boundary(1, Float64[fn(x) for x in chebgrid(Nx, M, loc)])
+    else
+        error("Unknown direction passed.")
+    end
+end
+
 function getPatchBnd(patch::Patch, s::Int)::Boundary
     if s == 0
         boundary = Boundary(0, patch.value[:, end])
@@ -30,7 +40,9 @@ function calcPatch(bndx::Boundary, bndy::Boundary, RHS::Array{Float64,2},
     Nx   = size(bndx.value)[1] - 1
     Ny   = size(bndy.value)[1] - 1
     bval = zeros(Nx+1, Ny+1)
-    if bndx.value[1] != bndy.value[1]
+    # XXX: Removed absolute equality. Should this be the case? 
+    if abs(bndx.value[1] - bndy.value[1]) > 1e-15
+        @show bndx.value[1], bndy.value[1], bndx.value[1] - bndy.value[1]
         error("Inconsistent boundary conditions.")
     else
         bval[:, 1] = bndx.value

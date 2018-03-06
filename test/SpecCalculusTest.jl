@@ -46,5 +46,6 @@ end
 @test testchebw(rand(2:20)) ≈ 2.0
 @test chebgrid(4, 2, 1) == (chebgrid(4) + 1)/2
 @test chebgrid(4, 2, 2) == (chebgrid(4) - 1)/2
+@test chebgrid(2, 2, 1)[end] == chebgrid(2, 2, 2)[1]
 @test testchebdpoly(10) < 1e-13
 @test_broken testnodaltomodaltonodal(3,4) == true

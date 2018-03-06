@@ -13,7 +13,8 @@ modules = ["SpecCalculus",
            "Grid",
            "Projection",
            "Convergence",
-           "Visualization"]
+           "Visualization",
+           "Dispatch"]
 
 for file in modules
     info("Testing $file")

@@ -35,7 +35,6 @@ function testhconv(fn::Function, Nx::Int, Ny::Int, M::Int)::Float64
     return L2err
 end
 
-#=
 print("------------------------------------------------\n")
 print("p-convergence in 1 to -1\n")
 print("------------------------------------------------\n")
@@ -46,7 +45,7 @@ for n in 1:12
     @show n, np^2, L2error
 end
 
-
+#=
 print("\n------------------------------------------------\n")
 print("p-convergence on arbitrary patch\n")
 print("------------------------------------------------\n")
@@ -57,15 +56,14 @@ for np in 1:44
     L2error = testpconv(f, n, n, np, [1,1])
     @show n, np^2, L2error
 end
-
+=#
 
 print("\n------------------------------------------------\n")
 print("h-convergence\n")
 print("------------------------------------------------\n")
-for np in 1:44
-    n = 7
+for np in 1:12
+    n = 4
     f(x,y) = x^9 + y^4 + x^3*y^7
     L2error = testhconv(f, n, n, np)
     @show n, np^2, L2error
 end 
-=#

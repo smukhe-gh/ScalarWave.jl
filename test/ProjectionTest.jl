@@ -36,3 +36,8 @@ end
 @test testprojectonPatchBndbyRestriction(x->x^8, 7, 4, 1) >  testprojectonPatchBndbyRestriction(x->x^8, 8, 4, 1)
 @test testprojectonPatchbyRestriction((x,y)->x^8+y^9, 8, 8) > testprojectonPatchbyRestriction((x,y)->x^8+y^9, 8, 9)
 @test testprojectonPatchbyRestriction((x,y)->x^8+y^9, 8, 4, 7, [2,1]) > testprojectonPatchbyRestriction((x,y)->x^8+y^9, 5, 9, 3, [2,1])
+
+@test_broken projectonPatchBndbyRestriction(x->sin(pi*x), 2, 2, 1)[end] == projectonPatchBndbyRestriction(x->sin(pi*x), 2, 2, 2)[1]
+@test projectonPatchbyRestriction((x,y)->x+y, 2, 2, 2, [1,1])[:, end] ≈ projectonPatchbyRestriction((x,y)->x+y, 2, 2, 2, [1,2])[:, 1]
+@test projectonPatchbyRestriction((x,y)->x+y, 2, 2, 2, [1,1])[end, :] ≈ projectonPatchbyRestriction((x,y)->x+y, 2, 2, 2, [2,1])[1, :]
+
