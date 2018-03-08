@@ -22,11 +22,11 @@ end
 print("------------------------------------------------\n")
 print("p-convergence in 1 to -1\n")
 print("------------------------------------------------\n")
-for n in 1:24
+for p in 1:4
     np = 1
-    f(x,y) = x^9 + y^4 + x^3*y^7
-    L2error = testpconv(f, n, n)
-    @show n, np^2, L2error
+    f(x,y) = x^4 + y^4
+    L2error = testpconv(f, p, p)
+    @show p, np, L2error
 end
 
 print("\n------------------------------------------------\n")
@@ -34,10 +34,10 @@ print("h-convergence\n")
 print("------------------------------------------------\n")
 
 L20 = 1
-for np in 1:5
-    n = 2
-    f(x,y) = x^9 + y^4 + x^3*y^7
-    L2n = testhconv(f, n, n, 3^np)
-    @show n, (3^np)^2, L2n, L20/L2n
+for np in 0:5
+    p = 2
+    f(x,y) = x^4 + y^4
+    L2n = testhconv(f, p, p, 2^np)
+    @show p, 2^np, L2n, L20/L2n
     L20 = L2n
 end 
