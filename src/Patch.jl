@@ -30,17 +30,6 @@ function calcPatch(bndx::Boundary, bndy::Boundary, RHS::Array{Float64,2},
     Nx   = size(bndx.value)[1] - 1
     Ny   = size(bndy.value)[1] - 1
     bval = zeros(Nx+1, Ny+1)
-   
-    # XXX: Projections can be discontinous at the boundary. 
-    #=
-    if abs(bndx.value[1] - bndy.value[1]) > 1e-15
-        error("Inconsistent boundary conditions.")
-    else
-        bval[:, 1] = bndx.value
-        bval[1, :] = bndy.value 
-    end
-    =#
-
     bval[:, 1] = bndx.value
     bval[1, :] = bndy.value 
     return Patch(loc, shapeL2H(shapeH2L(derivOP + boundaryOP) \ shapeH2L(RHS + bval), Nx, Ny))  
