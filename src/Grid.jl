@@ -15,13 +15,25 @@ function restrictmodes!(coeffs::Array{Float64,1}, M::Int)::Array{Float64,1}
 end
 
 function restrictmodes!(coeffs::Array{Float64,2}, M::Int, N::Int)::Array{Float64,2}
+    #=
+    @show size(coeffs)
+    for i in 1:size(coeffs)[1]
+        @show coeffs[i, :]
+    end
+    =#
+
     if M+1 > size(coeffs)[1] || N+1 > size(coeffs)[2]
         error("Cannot restrict to larger number of modes")
     else    
         for index in CartesianRange(size(coeffs))
-            index[1] > M+1 || index[2] > N+1 ? coeffs[index] = 0 : coeffs[index] = coeffs[index] 
+            index[1] > M + 1 || index[2] > N + 1 ? coeffs[index] = 0 : coeffs[index] = coeffs[index] 
         end
     end
+    #=
+    for i in 1:size(coeffs)[1]
+        @show coeffs[i, :]
+    end
+    =#
     return coeffs
 end
 

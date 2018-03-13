@@ -6,7 +6,6 @@
 using ScalarWave
 using Base.Test
 
-#=
 modules = ["SpecCalculus",
            "Utilities",
            "Physics",
@@ -16,9 +15,7 @@ modules = ["SpecCalculus",
            "Visualization",
            "Dispatch",
            "Convergence"]
-=#
 
-modules = ["Convergence"]
 
 for file in modules
     info("Testing $file")
