@@ -14,24 +14,4 @@ function testdistribute(bnd1::Function, bnd2::Function, Nx::Int, Ny::Int, M::Int
     return sqrt(sumL2)
 end
 
-print("\n------------------------------------------------\n")
-print("h-convergence\n")
-print("------------------------------------------------\n")
-
-println("x->sin(pi*x), y->sin(pi*y)")
-L20 = 1
-for np in 0:5
-    p = 5
-    L2n = testdistribute(x->sin(pi*x), y->sin(pi*y), p, p, 3^np)
-    @show p, 3^np, L2n, L20/L2n
-    L20 = L2n
-end
-
-println("x->exp(-x^2/0.01), y->exp(-y^2/0.01)")
-L20 = 1
-for np in 0:5
-    p = 5
-    L2n = testdistribute(x->exp(-x^2/0.01), y->exp(-y^2/0.01), p, p, 3^np)
-    @show p, 3^np, L2n, L20/L2n
-    L20 = L2n
-end
+@test testdistribute(x->sin(pi*x), y->sin(pi*y), 24, 24, 1) < 1e-14

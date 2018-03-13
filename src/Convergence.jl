@@ -3,34 +3,37 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function pconvergence(bnd1fn:: Function, bnd2fn::Function, fsol::Function, )::Float64
-    dbase = distribute(N, 1, fbnd1, fbnd2)
-    chebGrid        = Float64[chebx(i, N) for i in 1:N+1]
-    chebGridData    = dbase[[1,1]]
-    gaussGrid, w    = gauss(2*N)
-    gaussGrid       = - gaussGrid
-    exactGridData   = Float64[fsol(i,j) for i in gaussGrid, j in gaussGrid]
-    interpGridData  = interpolatePatch(chebGridData, gaussGrid, gaussGrid).value
-    errorGridData   = interpGridData - exactGridData
-    L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
-    return L2errorGridData
+function pconv(bnd1::Function, bnd2::Function, Nx::Int, Ny::Int)::Float64
+    rPatch = distribute(bnd1, bnd2, (x,y)->0, Nx, Ny, 1)[[1,1]]
+    fPatch = Float64[bnd1(x) + bnd2(y) for x in chebgrid(4Nx, M, 1), y in chebgrid(4Ny, M, 1)]
+    return L2norm(sPatch, interpolatePatch(rPatch, 4Nx, 4Ny).value, chebweights(4Nx), chebweights(4Ny))
 end
 
-function hconvergence(N::Int, M::Int, fbnd1:: Function, fbnd2::Function, fsol::Function)::Float64
-    dbase = distribute(N, M, fbnd1, fbnd2)
-    chebGrid        = Float64[chebx(i, N) for i in 1:N+1]
-    gaussGrid, w    = gauss(2*N)
-    gaussGrid       = -gaussGrid
-    errorvec        = zeros(M*M)
-    for i in 1:M, j in 1:M
-        loc             = [i,j]
-        gaussLocalx     = Float64[coordtransL2G(M, loc[1], x) for x in gaussGrid]
-        gaussLocaly     = Float64[coordtransL2G(M, loc[1], y) for y in gaussGrid] 
-        exactGridData   = Float64[fsol(x,y) for x in gaussLocalx, y in gaussLocaly]
-        interpGridData  = interpolatePatch(dbase[loc], gaussGrid, gaussGrid).value
-        errorGridData   = interpGridData - exactGridData
-        L2errorGridData = sqrt((w'*(errorGridData.^2)*w)/(w'*(exactGridData.^2)*w))
-        errorvec[i+j]   = L2errorGridData
+function hconv(bnd1::Function, bnd2::Function, Nx::Int, Ny::Int, M::Int)::Float64
+    dbase = distribute(bnd1, bnd2, (x,y)->0, Nx, Ny, M)
+    sumL2 = 0.0
+    for m in 1:M, n in 1:M
+        sPatch = interpolatePatch(dbase[[m,n]], 2Nx, 2Ny).value
+        fPatch = Float64[bnd1(x) + bnd2(y) for x in chebgrid(2Nx, M, m), y in chebgrid(2Ny, M, n)]
+        sumL2 += (L2norm(fPatch, sPatch, chebweights(2Nx)/M, chebweights(2Ny)/M))^2
     end
-    return sum(errorvec)
+    return sqrt(sumL2)
+end
+
+function convergence(bnd1::Function, bnd2::Function, spanN::Array{Int,1}, spanM::Arrat{Int,1})::Float64
+    if size(spanM)[1] ==  1
+        println("==> Starting p convergence")
+        for p in spanN
+            L2errornorm = pconv(bnd1, bnd2, p, p)
+            println("p = $p np = $(spanM[1])  L2 error = $L2errornorm")
+        end
+    elseif size(spanN)[1] == 1
+        println("==> Starting h convergence")
+        L20 = 1
+        for m in spanM
+            L2errornorm = hconv(bnd1, bnd2, spanN[1], spanN[1], 2^m)
+            println("p = $(spanN[1]), np = $(2^m)  L2 error = $L2errornorm ratio = $(L20/L2n)")
+            L20 = L2n
+        end
+    end
 end
