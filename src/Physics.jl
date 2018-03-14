@@ -30,9 +30,21 @@ function boundaryOP{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}
 end
 
 function RHS{T<:Int}(fn::Function, Nx::T, Ny::T)::Array{Float64,2}
-    return projectonPatchbyRestriction(fn, Nx, Ny) 
+    rhs = projectonPatchbyRestriction(fn, Nx, Ny)
+    for index in CartesianRange(size(rhs))
+        i = index.I[1]
+        j = index.I[2]
+        rhs[i,j] = chebw(i, Nx)*chebw(i, Ny)*rhs[i,j]
+    end
+    return rhs
 end
 
 function RHS{T<:Int}(fn::Function, Nx::T, Ny::T, M::T, loc::Array{Int,1})::Array{Float64,2}
-    return projectonPatchbyRestriction(fn, Nx, Ny, M, loc) 
+    rhs = projectonPatchbyRestriction(fn, Nx, Ny, M, loc)
+    for index in CartesianRange(size(rhs))
+        i = index.I[1]
+        j = index.I[2]
+        rhs[i,j] = (chebw(i,Nx)/M)*(chebw(i,Ny)/M)*rhs[i,j]
+    end
+    return rhs
 end
