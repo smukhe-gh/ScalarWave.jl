@@ -133,12 +133,46 @@ function drawpatch(patch::Array{Float64,2})
     return canvas
 end
 
-function drawgrid(patch::Array{Float64,2})
+function drawgrid(dbase::Dict{Array{Int,1}, Patch})
+    M        = round(Int, sqrt(length(dbase)))
+    (Nx, Ny) = size(dbase[[1,1]].value) .- 1
+    (wx, wy) = (chebweights(Nx)/M, chebweights(Ny)/M)
+    grid     = dict2array(dbase)
+   
+    colormap = reshape(setcolormap(vec(grid), "Blues", 100000), size(grid))
+    canvas   = Drawing(800, 800, "luxor-patch.pdf")   
+    origin(400, 650)
+    rotate(-3pi/4)
+    setline(0.4)
+
+    for m in 1:M, n in 1:M
+        (lx, ly) = (sort(2.0 - cumsum(wx))*(200/M), sort(2.0 - cumsum(wy))*(200/M))
+        push!(lx, 400.0/M)
+        push!(ly, 400.0/M)
+        
+        # XXX: Shift the coordinates appropriately.
+        lx = lx + (m-1)*(200/M)
+        ly = ly + (n-1)*(200/M)
+            
+        cmap = colormap[1+(m-1)*(Nx+1):m*(Nx+1), 1+(n-1)*(Ny+1):n*(Ny+1)]
+        #-----------------------------------------------
+        # draw patch
+        #-----------------------------------------------
+        for i in 1:Nx+1, j in 1:Ny+1
+            sethue((cmap[i,j].r, cmap[i,j].g, cmap[i,j].b))
+            rect(lx[i], ly[j], lx[i+1] - lx[i], ly[j+1] - ly[j], :fill)
+        end
+    end
+    finish()
+    return canvas
+end
+
+function drawarray(patch::Array{Float64,2})
     M = size(patch)[1]
     (wx, wy) = (repeat([2/M], inner = M), repeat([2/M], inner = M))
     (lx, ly) = (sort(2.0 - cumsum(wx))*200, sort(2.0 - cumsum(wy))*200)
     cmap     = reshape(setcolormap(vec(patch), "Blues", 100000), size(patch))
-    canvas   = Drawing(800, 800, "luxor-grid.pdf")
+    canvas   = Drawing(800, 800, "luxor-array.pdf")
 
     #-----------------------------------------------
     # draw patch
@@ -220,9 +254,9 @@ function drawgrid(patch::Array{Float64,2})
     line(Point(-200, 107.5), Point(-200, 85), :stroke)
     line(Point(0, 107.5), Point(0, 85), :stroke)
     line(Point(200, 107.5), Point(200, 85), :stroke)
-    min = findmin(patch)[1] #round(Int, findmin(patch)[1])
-    max = findmax(patch)[1] #round(Int, findmax(patch)[1])
-    med = (min + max)/2 #round(Int, (min + max)/2)
+    min = findmin(patch)[1]
+    max = findmax(patch)[1]
+    med = (min + max)/2
 
     settext("$min", Point(-200, 80);
                 halign = "center",

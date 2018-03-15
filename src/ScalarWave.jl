@@ -14,7 +14,8 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, 
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
-       distribute, drawpatch, drawgrid
+       distribute, 
+       drawpatch, drawgrid, drawarray
 
 include("Types.jl")
 include("SpecCalculus.jl")
