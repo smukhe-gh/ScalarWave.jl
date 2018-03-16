@@ -76,7 +76,7 @@ print("------------------------------------------------\n")
 
 println("x->sin(pi*x), y->sin(pi*y)")
 L20 = 1
-for np in 0:5
+for np in 0:4
     p = 3
     L2n = testdistribute(x->sin(pi*x), y->sin(pi*y), p, p, 3^np)
     @show p, 3^np, L2n, L20/L2n
