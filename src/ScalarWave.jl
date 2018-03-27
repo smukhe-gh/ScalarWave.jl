@@ -15,7 +15,8 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
        distribute, sconv, showconv,
-       drawpatch, drawgrid, drawarray
+       drawpatch, drawgrid, drawarray,
+       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
 
 include("Types.jl")
 include("SpecCalculus.jl")
@@ -27,5 +28,6 @@ include("Projection.jl")
 include("Dispatch.jl")
 include("Convergence.jl")
 include("Visualization.jl")
+include("Futures.jl")
 
 end 

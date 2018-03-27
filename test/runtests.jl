@@ -14,7 +14,9 @@ modules = ["SpecCalculus",
            "Projection",
            "Visualization",
            "Dispatch",
-           "Convergence"]
+           "Futures"]
+
+#modules = ["Convergence"]
 
 for file in modules
     info("Testing $file")
