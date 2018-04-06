@@ -3,10 +3,13 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function fdistribute{T<:Integer}(fbndr::Function, fbndc::Function, frhs::Function, Nx::T, Ny::T, M::T)::Dict{Array{Int,1}, Future}
-    dop = derivOP(Nx, Ny)/M^4
+function fdistribute{T<:Integer}(fbndr::Function, fbndc::Function, frhs::Function, Nx::T, Ny::T, M::T)::Dict{Array{Int,1}, Patch}
+    dop = derivOP(Nx, Ny)
     bop = boundaryOP(Nx, Ny)
-    fdbase  = Dict{Array{Int, 1}, Future}()
+    fdbase = Dict{Array{Int, 1}, Future}()
+    dbase  = Dict{Array{Int, 1}, Patch}()
+
+    # This should run in parallel, scattered over multiple processes.
     for i in 2:2M, k in i-min(i-1,M):min(i-1,M) 
         loc  = [k, i-k]
         rhs  = fRHS(frhs, Nx, Ny, M, loc)
@@ -14,7 +17,16 @@ function fdistribute{T<:Integer}(fbndr::Function, fbndc::Function, frhs::Functio
         bndy = (loc[1]==1) ? fgetPatchIC(fbndc, 1, Ny, M, loc[2]) : fgetPatchBnd(fdbase[loc-[1,0]], 1)
         fdbase[loc] = fcalcPatch(bndx, bndy, rhs, dop, bop, loc)
     end
-    return fdbase
+    
+    # This is where we collect all the results
+    # We could improve this. Instead of fetching all, we could fetch only the last one.
+    # since the previous ones are already fetched.
+    for i in 2:2M, k in i-min(i-1,M):min(i-1,M) 
+        loc  = [k, i-k]
+        dbase[loc] = fetch(fdbase[loc]) 
+    end
+
+    return dbase
 end
 
 function fgetPatchIC{T<:Integer}(fbndr::Function, s::T, N::T, M::T, loc::T)::Future
