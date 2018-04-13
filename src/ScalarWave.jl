@@ -5,6 +5,7 @@
 
 module ScalarWave
 using FastGaussQuadrature, JLD, Luxor, Colors
+using BenchmarkTools, Compat
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,

@@ -3,3 +3,5 @@ FastGaussQuadrature
 JLD
 Luxor
 Colors
+Compat
+BenchmarkTools
