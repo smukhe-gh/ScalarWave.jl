@@ -20,17 +20,29 @@ function testderivOP(Nx::Int, Ny::Int)::Array{Float64,2}
     return WD
 end
 
+function testderivOPonfunc(Nx::Int, Ny::Int)
+    sfunc = Float64[(sinpi(x)^2)*(cospi(x)^4) for x in chebgrid(Nx), y in chebgrid(Ny)]
+    operator = testderivOP(Nx, Ny)
+end
+
 function testboundaryOP(Nx::Int, Ny::Int)::Array{Float64,2}
     bnd = zeros(Nx+1, Ny+1)
     bnd[1,:] = bnd[:,1] = 1
     return diagm(vec(bnd))
 end    
 
+function testRHS(Nx::Int, Ny::Int, M::Int, loc::Array{Int,1})
+    patch = projectonPatchbyRestriction((x,y)->x^8+y^9, Nx, Ny, M, loc)
+    for index in CartesianRange(size(patch))
+        i = index[1]
+        j = index[2]
+        patch[index] = chebw(i,Nx)*chebw(j,Ny)*patch[index]
+    end
+    return patch
+end
+
 @test testderivOP(2, 2) ≈ shapeH2L(derivOP(2, 2))
-@test_broken testderivOP(1, 2) == shapeH2L(derivOP(1, 2))
+@test_broken testderivOP(2, 4) ≈ shapeH2L(derivOP(2, 4))
 @test testboundaryOP(2,2) == shapeH2L(boundaryOP(2,2))
 @test testboundaryOP(2,4) == shapeH2L(boundaryOP(2,4))
-
-# XXX: These tests are broken since we need to include the integration weights in the calculation
-@test_broken RHS((x,y)->x^8+y^9, 8, 8) == projectonPatchbyRestriction((x,y)->x^8+y^9, 8, 8)
-@test_broken RHS((x,y)->x^8+y^9, 8, 4, 7, [2,1]) == projectonPatchbyRestriction((x,y)->x^8+y^9, 8, 4, 7, [2,1])
+@test RHS((x,y)->x^8+y^9, 8, 4, 7, [2,1]) ≈ testRHS(8, 4, 7, [2,1])

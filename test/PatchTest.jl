@@ -32,7 +32,7 @@ end
 function testcalcPatch(bnd1fn::Function, bnd2fn::Function, rhsfn::Function, Nx::Int, Ny::Int)::Float64
     bndx = getPatchIC(bnd1fn, 0, Ny, 1, 1) 
     bndy = getPatchIC(bnd2fn, 1, Ny, 1, 1)
-    rhs  = RHS(rhsfn, Nx, Ny)
+    rhs  = RHS(rhsfn, Nx, Ny, 1, [1,1])
     dop  = derivOP(Nx,Ny)
     bop  = boundaryOP(Nx,Ny) 
     npatch = calcPatch(bndx, bndy, rhs, dop, bop, [1,1])

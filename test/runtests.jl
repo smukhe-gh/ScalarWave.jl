@@ -6,19 +6,21 @@
 using ScalarWave
 using Base.Test
 
-modules = ["SpecCalculus",
-           "Utilities",
-           "Physics",
-           "Patch",
-           "Grid",
-           "Projection",
-           "Visualization",
-           "Dispatch",
-           "Futures"]
+libraries = ["SpecCalculus",
+             "Utilities",
+             "Physics",
+             "Patch",
+             "Grid",
+             "Projection",
+             "Visualization",
+             "Dispatch",
+             "Futures"]
 
-#modules = ["Convergence"]
+smodule = ["Potentials"]
+smodule = ["Physics"]
+smodule = ["Convergence"]
 
-for file in modules
+for file in smodule
     info("Testing $file")
     include("$(file)Test.jl")
 end

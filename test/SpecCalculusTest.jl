@@ -28,12 +28,6 @@ function testchebw(N::Int)
 	return sum(w)
 end
 
-function testnodaltomodaltonodal(Nx::Int, Ny::Int)::Bool
-    fpatch  = randn(Nx, Ny)
-    rfpatch = modal2nodal(nodal2modal(fpatch))
-    return fpatch == rfpatch 
-end
-
 @test chebx(3, 10) ≈ 0.8090169943749475
 @test chebw(9, 12) ≈ 0.2258075258075258
 @test vandermonde(10)[2,5] == cheb(4, chebx(2,10))
@@ -48,4 +42,3 @@ end
 @test chebgrid(4, 2, 2) == (chebgrid(4) - 1)/2
 @test chebgrid(2, 2, 1)[end] == chebgrid(2, 2, 2)[1]
 @test testchebdpoly(10) < 1e-13
-@test_broken testnodaltomodaltonodal(3,4) == true

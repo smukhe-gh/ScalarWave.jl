@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 function sconv(bnd1::Function, bnd2::Function, Nx::Int, Ny::Int, M::Int)::Float64
-    dbase = distribute(bnd1, bnd2, (x,y)->0, Nx, Ny, M)
+    dbase = fdistribute(bnd1, bnd2, (x,y)->0, Nx, Ny, M)
     sumL2 = 0.0
     for m in 1:M, n in 1:M
         sPatch = interpolatePatch(dbase[[m,n]], 4Nx, 4Ny).value

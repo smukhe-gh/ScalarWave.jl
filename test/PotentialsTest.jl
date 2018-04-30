@@ -1,7 +1,8 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Soham 01-2018
+# Soham 04-2018
 #--------------------------------------------------------------------
 
-@btime fdistribute(x->sin(x), y->sin(y), (x,y)->0, 40, 40, 20)
-@btime distribute(x->sin(x), y->sin(y), (x,y)->0,  40, 40, 20)
+patch = piedistribute(x->0, y->10*sin(pi*y), (x,y)->0, 20, 20, 1)
+drawpatch(patch[[1,1]].value)
+
