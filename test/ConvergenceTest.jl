@@ -21,7 +21,7 @@ end
 
 @test sconv(x->x^3-1, y->y^3-1, 3, 3, 2) < 1e-14
 
-showconv(x->x^5-1, y->y^5-1, 12, 1, 1)
-showconv(x->sin(pi*x), y->sin(pi*y), 2, 8, 2)
-showconv(x->sin(pi*x), y->sin(pi*y), 2, 6, 3)
-showconv(x->sin(pi*x), y->sin(pi*y), 3, 5, 3)
+#showconv(x->x^5-1, y->y^5-1, 12, 1, 1)
+#showconv(x->sin(pi*x), y->sin(pi*y), 2, 8, 2)
+#showconv(x->sin(pi*x), y->sin(pi*y), 2, 6, 3)
+showconv(x->sin(pi*x), y->sin(pi*y), 3, 6, 3)

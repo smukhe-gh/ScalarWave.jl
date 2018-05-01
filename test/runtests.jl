@@ -16,9 +16,10 @@ libraries = ["SpecCalculus",
              "Dispatch",
              "Futures"]
 
-smodule = ["Potentials"]
 smodule = ["Physics"]
 smodule = ["Convergence"]
+smodule = ["Visualization"]
+smodule = ["PIpotential"]
 
 for file in smodule
     info("Testing $file")

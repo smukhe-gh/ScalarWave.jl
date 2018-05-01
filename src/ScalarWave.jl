@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using FastGaussQuadrature, JLD, Luxor, Colors, Roots
+using FastGaussQuadrature, Luxor, Colors, Roots
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
@@ -15,9 +15,9 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
        distribute, sconv, showconv,
-       drawpatch, drawgrid, drawarray,
+       drawmultipatch,
        fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
-       perimeterpotential, piedistribute
+       PIdistribute, PIpotential 
 
 include("Types.jl")
 include("SpecCalculus.jl")
@@ -29,7 +29,7 @@ include("Projection.jl")
 include("Dispatch.jl")
 include("Convergence.jl")
 include("Futures.jl")
-include("../beta/Visualization.jl")
-include("../beta/Potentials.jl")
+include("Visualization.jl")
+include("../beta/PIpotential.jl")
 
 end 
