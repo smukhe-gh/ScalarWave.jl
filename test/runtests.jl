@@ -20,6 +20,7 @@ smodule = ["Physics"]
 smodule = ["Convergence"]
 smodule = ["Visualization"]
 smodule = ["PIpotential"]
+smodule = ["Compactification"]
 
 for file in smodule
     info("Testing $file")

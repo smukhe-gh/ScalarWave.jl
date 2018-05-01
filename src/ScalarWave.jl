@@ -17,7 +17,8 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        distribute, sconv, showconv,
        drawmultipatch,
        fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
-       PIdistribute, PIpotential 
+       PIdistribute, PIpotential,
+       CompactifiedMinkowskidistribute
 
 include("Types.jl")
 include("SpecCalculus.jl")
@@ -31,5 +32,6 @@ include("Convergence.jl")
 include("Futures.jl")
 include("Visualization.jl")
 include("../beta/PIpotential.jl")
+include("../beta/Compactification.jl")
 
 end 
