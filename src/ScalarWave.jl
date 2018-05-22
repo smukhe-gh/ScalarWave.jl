@@ -5,6 +5,7 @@
 
 module ScalarWave
 using FastGaussQuadrature, Luxor, Colors, Roots
+using SymEngine
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
@@ -14,11 +15,12 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, 
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
-       distribute, sconv, showconv,
-       drawmultipatch,
-       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
-       PIdistribute, PIpotential,
-       CompactifiedMinkowskidistribute
+       distribute, sconv, showconv, drawmultipatch,
+       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
+       
+export Params, Grid, Metric 
+export find_UV_from_TR, find_TR_from_UV, createmesh, creategrid, setmetric,
+       computeaction, computexpansion
 
 include("Types.jl")
 include("SpecCalculus.jl")
@@ -31,7 +33,8 @@ include("Dispatch.jl")
 include("Convergence.jl")
 include("Futures.jl")
 include("Visualization.jl")
-include("../beta/PIpotential.jl")
-include("../beta/Compactification.jl")
+
+include("../beta/Auxillary.jl")
+include("../beta/Schwarzschild.jl")
 
 end 

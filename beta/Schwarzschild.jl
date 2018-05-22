@@ -77,6 +77,8 @@ function creategrid(params::Params)::Grid
         U,V = UV[index]
         t_of_UV[index], 
         r_of_UV[index] = find_TR_from_UV(U, V) 
+        #@show r_of_UV[index]
+        @show t_of_UV[index]
     end
 
     # compute derivatives of (r,t) wrt (U,V)
@@ -124,6 +126,6 @@ function computeaction(grid::Grid, metric::Metric)::Float64
    riccis = metric.riccis
    detg   = metric.detg
    L      = riccis.*sqrt.(-detg)
-   action = chebweights(grid.params.size[1]-1)'*L*chebweights(grid.params.size[2]-1)
+   action = 4*pi*chebweights(grid.params.size[1]-1)'*L*chebweights(grid.params.size[2]-1)
 end
 

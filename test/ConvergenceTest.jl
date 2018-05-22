@@ -19,9 +19,12 @@ function testhconvforprojection(fn::Function, Nx::Int, Ny::Int, M::Int)::Float64
     return sqrt(L2err)
 end
 
-@test sconv(x->x^3-1, y->y^3-1, 3, 3, 2) < 1e-14
-
+#@test sconv(x->x^3-1, y->y^3-1, 3, 3, 2) < 1e-14
 #showconv(x->x^5-1, y->y^5-1, 12, 1, 1)
 #showconv(x->sin(pi*x), y->sin(pi*y), 2, 8, 2)
 #showconv(x->sin(pi*x), y->sin(pi*y), 2, 6, 3)
-showconv(x->sin(pi*x), y->sin(pi*y), 3, 6, 3)
+showconv(v->0, v->0, 
+        (u,v)-> exp(-u^2 - v^2)*(4v*(u*cos(2u)-u*cos(2v)+sin(2u))- 4u*sin(2v)),
+        (v,u)-> sin(v-u)*sin(v+u)*exp(-(u^2 + v^2)), 
+        3, 4, 3)
+        
