@@ -16,9 +16,7 @@ libraries = ["SpecCalculus",
              "Dispatch",
              "Futures"]
 
-smodule = ["PIpotential"]
 smodule = ["Convergence"]
-smodule = ["Auxillary"]
 smodule = ["Schwarzschild"]
 
 for file in smodule

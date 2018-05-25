@@ -1,28 +1,31 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Soham 04-2018
-# Test metric functions
+# Soham 05-2018
 #--------------------------------------------------------------------
 
-function testexpansion(grid::Grid, metric::Metric)::Float64
-    r = grid.r_of_UV[index]
-    M = grid.params.mass 
-    return -3/2\sqrt(2M/r^3)
+parameters = Dict("px"   => 4,
+                  "py"   => 4,
+                  "umin" => 0.5,
+                  "umax" => 0.8,
+                  "vmin" => 0.8,
+                  "vmax" => 0.5,
+                  "mass" => 1.0)
+
+params  = dict2struct(parameters)
+grid    = setgrid(params)
+varlist = setvarlist(grid) 
+
+# test coordinates
+for index in CartesianRange(params.size)
+    U = grid.U[index]
+    V = grid.V[index]
+    t = grid.t[index]
+    r = grid.r[index]
+    @test U ≈ find_UV_of_TR(t,r)[1] 
+    @test V ≈ find_UV_of_TR(t,r)[2] 
 end
 
-params = Params((4,4),              # no. of points in U, V 
-                (0.5, 0.8),       # span in U
-                (1.3, 1.45),       # span in V
-                1.0,                # BH mass
-                pi/2)               # theta 
-
-grid   = creategrid(params)
-metric = setmetric(grid)
-
-@show metric.riccis
-@show metric.R11
-@show metric.R22
-@show metric.R33
-@show metric.R41
-@show metric.R44
-@show computeaction(grid, metric)
+# test first derivatives
+# test second derivatives
+# test metric functions
+# test if Ricci scalar is zero at every point on the grid

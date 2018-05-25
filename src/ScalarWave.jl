@@ -4,8 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using FastGaussQuadrature, Luxor, Colors, Roots
-using SymEngine
+using FastGaussQuadrature, Luxor, Colors
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
@@ -18,9 +17,9 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        distribute, sconv, showconv, drawmultipatch,
        fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
        
-export Params, Grid, Metric 
-export find_UV_from_TR, find_TR_from_UV, createmesh, creategrid, setmetric,
-       computeaction, computexpansion
+using Roots, SymEngine
+export Direction, Params, Grid, VarList 
+export dict2struct, find_TR_of_UV, find_UV_of_TR, setgrid, setvarlist
 
 include("Types.jl")
 include("SpecCalculus.jl")
@@ -34,7 +33,9 @@ include("Convergence.jl")
 include("Futures.jl")
 include("Visualization.jl")
 
-include("../beta/Auxillary.jl")
-include("../beta/Schwarzschild.jl")
+include("../beta/Schwarzschild/Types.jl")
+include("../beta/Schwarzschild/Grid.jl")
+include("../beta/Schwarzschild/Utilities.jl")
+include("../beta/Schwarzschild/Schwarzschild.jl")
 
 end 
