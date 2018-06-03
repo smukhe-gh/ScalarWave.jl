@@ -139,7 +139,7 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch})
     
     for mx in 1:M, my in 1:M
         gsave()
-        translate(((my-1)/2M)*(maximum(lx)+400), ((mx-1)/2M)*(maximum(lx)+400))
+        Luxor.translate(((my-1)/2M)*(maximum(lx)+400), ((mx-1)/2M)*(maximum(lx)+400))
         scale(1/M)
         patch     = dbase[[mx, my]].value
         localcmap = globalcmap[(sub2ind((M, M), mx, my)-1)*length(patch) + 1:(sub2ind((M, M), mx, my))*length(patch)] 

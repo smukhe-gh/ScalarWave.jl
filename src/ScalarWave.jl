@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using FastGaussQuadrature, Luxor, Colors
+using Luxor, Colors, JLD
 
 export Patch, Boundary, LocalC, GlobalC
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
@@ -15,7 +15,8 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
        distribute, sconv, showconv, drawmultipatch,
-       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
+       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
+       derivOP_corrected
        
 using Roots, SymEngine
 export Direction, Params, Grid, VarList 

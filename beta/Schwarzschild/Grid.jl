@@ -31,7 +31,7 @@ function setgrid(params::Params)::Grid
     # create UV grid[DEBUG]
     for index in CartesianRange(params.size)
         grid.U[index] = ((umax + umin)/2*chebx(index[1], px)) + (umax + umin)/2
-        grid.V[index] = ((vmax + vmin)/2*chebx(index[1], py)) + (vmax + vmin)/2
+        grid.V[index] = ((vmax + vmin)/2*chebx(index[2], py)) + (vmax + vmin)/2
     end
 
     # create TR grid

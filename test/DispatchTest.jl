@@ -14,4 +14,4 @@ function testdistribute(bnd1::Function, bnd2::Function, Nx::Int, Ny::Int, M::Int
     return sqrt(sumL2)
 end
 
-@test testdistribute(x->sin(pi*x), y->sin(pi*y), 24, 24, 1) < 1e-14
+@test testdistribute(x->sin(pi*x), y->sin(pi*y), 20, 20, 2) < 1e-8
