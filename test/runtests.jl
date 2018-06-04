@@ -12,15 +12,13 @@ libraries = ["SpecCalculus",
              "Patch",
              "Grid",
              "Projection",
-             "Visualization",
              "Dispatch",
              "Futures",
              "Derivatives"]
 
-smodule = ["Convergence"]
 smodule = ["Schwarzschild"]
 
-for file in libraries
+for file in smodule 
     info("Testing $file")
     include("$(file)Test.jl")
 end
