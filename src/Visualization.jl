@@ -9,7 +9,7 @@ function setcolormap(vec::Array{Float64,1}, map::String, samples::Int)
     return clrs[round.(Int, (nvec*samples)+1)]
 end
 
-function drawmultipatch(dbase::Dict{Array{Int,1}, Patch})
+function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     M   = Int(sqrt(length(dbase)))
     AP  = Float64[]
 
@@ -33,7 +33,7 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch})
     #-----------------------------------------------
     # set-up canvas
     #-----------------------------------------------
-    canvas   = Drawing(800, 800, "luxor-multipatch.pdf")
+    canvas   = Drawing(800, 800, "$filename.pdf")
     push!(lx, 400.0)
     push!(ly, 400.0)
     origin(400, 650)

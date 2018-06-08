@@ -12,12 +12,3 @@ struct Boundary
     kind::Int
     value::Array{Float64,1}
 end
-
-struct LocalC
-    loc::Array{Float64,1}
-end
-
-struct GlobalC
-    loc::Array{Float64,1}
-end
-

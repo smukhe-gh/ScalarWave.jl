@@ -14,10 +14,7 @@ libraries = ["SpecCalculus",
              "Projection",
              "Dispatch",
              "Futures",
-             "Derivatives"]
-
-smodule = ["Schwarzschild"]
-smodule = ["Convergence"]
+             "Visualization"]
 
 for file in libraries
     info("Testing $file")
