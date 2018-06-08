@@ -1,7 +1,7 @@
 julia 0.6
-Roots
 JLD
 Luxor
 Colors
 Compat
+Roots
 SymEngine

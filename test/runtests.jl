@@ -16,6 +16,8 @@ libraries = ["SpecCalculus",
              "Futures",
              "Visualization"]
 
+libraries = ["Schwarzschild"]
+
 for file in libraries
     info("Testing $file")
     include("$(file)Test.jl")

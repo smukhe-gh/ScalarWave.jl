@@ -4,9 +4,8 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, JLD
-
-export Patch, Boundary
+using Luxor, Colors, JLD, SymEngine, Roots
+export Patch, Boundary, D, Params, Grid, VarList
 
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
 	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, 
@@ -16,8 +15,9 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
        distribute, sconv, showconv, drawmultipatch,
-       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
-       
+       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
+       dict2struct, setgrid, setvarlist, find_UV_of_TR, find_TR_of_UV
+
 include("Types.jl")
 include("SpecCalculus.jl")
 include("Utilities.jl")
@@ -29,5 +29,6 @@ include("Dispatch.jl")
 include("Convergence.jl")
 include("Visualization.jl")
 include("Futures.jl")
+include("Schwarzschild.jl")
 
 end 

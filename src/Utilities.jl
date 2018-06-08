@@ -100,3 +100,19 @@ function loadgrid(path::String)::Dict
     dbase = load("$path")
     return dbase
 end
+
+#--------------------------------------------------------------------
+# Additional types for handling generic backgrounds
+#--------------------------------------------------------------------
+
+function power(x, a)   
+    return x^a
+end
+
+function dict2struct(params::Dict)::Params
+    return Params((params["px"], params["py"]),
+                  (params["px"] + 1, params["py"] + 1),
+                  (params["umin"], params["vmin"]),
+                  (params["umax"], params["vmax"]),
+                   params["mass"])
+end

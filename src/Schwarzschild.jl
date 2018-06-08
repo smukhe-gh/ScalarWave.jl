@@ -4,6 +4,23 @@
 # Compactified coordinates Metric functions
 #--------------------------------------------------------------------
 
+function computemetricdet(grid::Grid, index::CartesianIndex)::Float64
+    r = grid.r[index]
+    t = grid.t[index]
+    M = grid.params.mass 
+    detg = (-1024*power(M,6)*power(r,2))/exp(r/M)
+    return detg
+end
+
+function computemetric(grid::Grid, index::CartesianIndex)::Tuple
+    r = grid.r[index]
+    t = grid.t[index]
+    M = grid.params.mass 
+    g01 = g10 = (-32*power(M,3))/(exp(r/(2.*M))*r)
+    g22 = g33 = power(r,2) 
+    return (g01, g10, g22, g33)
+end
+
 function setgrid(params::Params)::Grid
     grid = Grid(params,
                 Array{Float64,2}(params.size),
@@ -21,12 +38,12 @@ function setgrid(params::Params)::Grid
                 Array{Float64,2}(params.size),
                 Array{Float64,2}(params.size)) 
 
-    umin = params.xmin[1]
-    umax = params.xmax[1]
-    vmin = params.xmin[2]
-    vmax = params.xmax[2]
-    px   = params.p[1]
-    py   = params.p[2]
+    umin = params.dmin[1]
+    umax = params.dmax[1]
+    vmin = params.dmin[2]
+    vmax = params.dmax[2]
+    px   = params.mode[1]
+    py   = params.mode[2]
 
     # create UV grid
     for index in CartesianRange(params.size)
@@ -39,13 +56,13 @@ function setgrid(params::Params)::Grid
         grid.t[index], grid.r[index] = find_TR_of_UV(grid.U[index], grid.V[index]) 
     end
 
-    drdU = dX_of_var(grid.r, grid, du) 
-    drdV = dX_of_var(grid.r, grid, dv) 
-    dtdU = dX_of_var(grid.t, grid, du) 
-    dtdV = dX_of_var(grid.t, grid, dv) 
-    ddrdUdU = ddX_of_var(grid.r, grid, du, du)
-    ddrdUdV = ddX_of_var(grid.r, grid, du, dv)
-    ddrdVdV = ddX_of_var(grid.r, grid, dv, dv)
+    drdU = dX_of_var(grid.r, grid, D(u)) 
+    drdV = dX_of_var(grid.r, grid, D(v)) 
+    dtdU = dX_of_var(grid.t, grid, D(u)) 
+    dtdV = dX_of_var(grid.t, grid, D(v)) 
+    ddrdUdU = ddX_of_var(grid.r, grid, D(u), D(u))
+    ddrdUdV = ddX_of_var(grid.r, grid, D(u), D(v))
+    ddrdVdV = ddX_of_var(grid.r, grid, D(v), D(v))
 
     # it's time to compute the derivatives [FIX]
     for index in CartesianRange(params.size)
@@ -61,3 +78,21 @@ function setgrid(params::Params)::Grid
     return grid
 end
 
+function setvarlist(grid::Grid)::VarList
+    varlist = VarList(zeros(grid.params.size),
+                      zeros(grid.params.size),
+                      zeros(grid.params.size),
+                      zeros(grid.params.size),
+                      zeros(grid.params.size),
+                      zeros(grid.params.size)) 
+
+    for index in CartesianRange(grid.params.size)
+        varlist.detg[index]   = computemetricdet(grid, index)
+        varlist.g01[index], 
+        varlist.g10[index],
+        varlist.g22[index],
+        varlist.g33[index]    = computemetric(grid, index) 
+    end
+
+    return varlist
+end
