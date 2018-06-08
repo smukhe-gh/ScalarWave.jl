@@ -3,7 +3,8 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function sconv(bnd1::Function, bnd2::Function, frhs::Function, asol::Function, Nx::Int, Ny::Int, M::Int)::Float64
+function sconv(bnd1::Function, bnd2::Function, frhs::Function, asol::Function, 
+                                                                   Nx::Int, Ny::Int, M::Int)::Float64
     dbase = fdistribute(bnd1, bnd2, frhs, Nx, Ny, M)
     sumL2 = 0.0
     for m in 1:M, n in 1:M
@@ -14,27 +15,33 @@ function sconv(bnd1::Function, bnd2::Function, frhs::Function, asol::Function, N
     return sqrt(sumL2)
 end
 
-function showconv(bnd1::Function, bnd2::Function, frhs::Function, asol::Function, maxN::Int, maxM::Int, h::Int)
-    if maxM > 1
+function showconv(bnd1::Function, bnd2::Function, frhs::Function, analyticsol::Function, 
+                                                               maxmodes::Int, maxlevels::Int, h::Int)
+    if maxlevels > 1
         L2 = 1
-        println("---------------------------------------------------------------------------------")
+        p  = maxmodes
+        println("----------------------------------------------------------------------------------")
         println("==> h-convergence")
-        println("---------------------------------------------------------------------------------")
-        for m in 0:maxM
-            L2error = sconv(bnd1, bnd2, frhs, asol, maxN, maxN, h^m)
-            m == 0 ? R = 0 : R =  L2/L2error
-            @printf("p = %e | np = %e | R = %e | L2 error = %e \n", maxN, h^m, R, L2error)
+        println("----------------------------------------------------------------------------------")
+        for level in 0:maxlevels
+            L2error = sconv(bnd1, bnd2, frhs, analyticsol, p, p, h^level)
+            level == 0 ? R = 0 : R =  L2/L2error
+            @printf("p = %s | np = %s | h^(p+1) = %s | R = %e | L2 error = %e \n", 
+                    lpad(p,4," "), lpad(h^level,4," "),  lpad(h^(p+1),4," "), R, L2error)
             L2 = L2error
         end
     else
-        println("---------------------------------------------------------------------------------")
+        println("----------------------------------------------------------------------------------")
         println("==> p-convergence")
-        println("---------------------------------------------------------------------------------")
+        println("----------------------------------------------------------------------------------")
         L2 = 1
-        for n in 1:maxN
-            L2error = sconv(bnd1, bnd2, rhs, aol, n, n, maxM)
-            n == 1 ? R = 0 : R =  L2/L2error
-            @printf("p = %e | np = %e | R = %e | L2 error = %e \n", n, maxM, R, L2error)
+        h  = 1
+        level = 0
+        for p in 1:maxmodes
+            L2error = sconv(bnd1, bnd2, frhs, analyticsol, p, p, h^level)
+            p == 1 ? R = 0 : R =  L2/L2error
+            @printf("p = %s | np = %s | h^(p+1) = %s | R = %e | L2 error = %e \n", 
+                    lpad(p,4," "), lpad(h^level,4," "),  lpad(h^(p+1),4," "), R, L2error)
             L2 = L2error
         end
     end

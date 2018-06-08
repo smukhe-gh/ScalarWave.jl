@@ -1,9 +1,7 @@
 julia 0.6
-FastGaussQuadrature
 Roots
 JLD
 Luxor
 Colors
 Compat
 SymEngine
-BenchmarkTools
