@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, JLD, SymEngine, Roots, PyPlot
+using Luxor, Colors, JLD, Roots, PyPlot
 export Patch, Boundary, D, Params, Grid, VarList
 
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
@@ -17,7 +17,8 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        distribute, sconv, showconv, drawmultipatch,
        fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
        dict2struct, setgrid, setvarlist, 
-       find_UV_of_TR, find_TR_of_UV, plotcoordgrid
+       find_UV_of_TR, find_TR_of_UV, plotcoordgrid, SchwarzschildDerivOP,
+       SchwarzschildDistribute
 
 include("Types.jl")
 include("SpecCalculus.jl")

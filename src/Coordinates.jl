@@ -7,8 +7,8 @@
 
 function find_TR_of_UV(U::Float64, V::Float64, M::Float64)::Tuple
     @assert U*V < 1
-    @vars symx
-    r = find_zero(exp(symx/2M)*(symx/2M - 1) + U*V, (2*M))
+    f(x) = exp(x/2M)*(x/2M - 1) + U*V
+    r = find_zero(f, (2*M))
     t = -2M*log(abs(U/V))
     return (t, r)
 end
