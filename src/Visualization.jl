@@ -174,11 +174,10 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     return canvas
 end
 
-function plotcoordgrid(params::Dict)
-    params  = dict2struct(parameters)
+function plotcoordgrid(params::Params)
     grid    = setgrid(params)
-    levels  = [2, 5, 10, 20]
-    CS = contour(grid.U, grid.V, grid.r, colors="b")
+    levels  = [2, 5, 10, 20, 40, 60, 80, 100]
+    CS = contour(grid.V, grid.U, grid.r, colors="b")
     clabel(CS, inline=1, fontsize=10)
     CQ = contour(grid.V, grid.U, grid.t, colors="r")
     clabel(CQ, inline=1, fontsize=10)

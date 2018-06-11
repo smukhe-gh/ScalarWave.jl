@@ -16,7 +16,7 @@ libraries = ["SpecCalculus",
              "Futures",
              "Visualization"]
 
-libraries = ["Schwarzschild"]
+libraries = ["Coordinates"]
 
 for file in libraries
     info("Testing $file")

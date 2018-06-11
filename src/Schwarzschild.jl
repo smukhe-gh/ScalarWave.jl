@@ -53,7 +53,7 @@ function setgrid(params::Params)::Grid
 
     # create TR grid
     for index in CartesianRange(params.size)
-        grid.t[index], grid.r[index] = find_TR_of_UV(grid.U[index], grid.V[index]) 
+        grid.t[index], grid.r[index] = find_TR_of_UV(grid.U[index], grid.V[index], grid.params.mass) 
     end
 
     drdU = dX_of_var(grid.r, grid, D(u)) 

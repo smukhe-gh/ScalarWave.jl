@@ -5,10 +5,10 @@
 
 parameters = Dict("px"   => 4,
                   "py"   => 4,
-                  "umin" => 0.5,
-                  "umax" => 0.8,
-                  "vmin" => 0.8,
-                  "vmax" => 0.5,
+                  "umin" => 0.0,
+                  "umax" => 0.5,
+                  "vmin" => 0.2,
+                  "vmax" => 1.7,
                   "mass" => 1.0)
 
 params  = dict2struct(parameters)
@@ -25,4 +25,3 @@ for index in CartesianRange(params.size)
     @test V ≈ find_UV_of_TR(t,r)[2] 
 end
 
-# test metric functions

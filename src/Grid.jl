@@ -85,28 +85,6 @@ function restrictPatch(dbase::Dict{Array{Int, 1}, Patch})::Patch
     return Patch([1,1], Rx*sPatch*Ry')
 end
 
-#--------------------------------------------------------------------
-# Additional utility functions for computing coordinates
-# and their derivatives on the grid
-#--------------------------------------------------------------------
-
-function find_TR_of_UV(U::Float64, V::Float64)::Tuple
-    @vars x
-    u = tan(find_zero(atan((tan(x)/(sqrt(1+tan(x)^2)))*log(1+tan(x)^2)) - U, (-pi/2, pi/2)))
-    v = tan(find_zero(atan((tan(x)/(sqrt(1+tan(x)^2)))*log(1+tan(x)^2)) - V, (-pi/2, pi/2)))
-    t = u+v
-    r = v-u
-    return (t, r)
-end
-
-function find_UV_of_TR(t::Float64, r::Float64)::Tuple
-    u = (t-r)/2
-    v = (t+r)/2
-    U = atan((u/(sqrt(1+u^2)))*log(1+u^2))
-    V = atan((v/(sqrt(1+v^2)))*log(1+v^2))
-    return (U,V)
-end
-
 function dX_of_var(var::Array{Float64,2}, grid::Grid, X::D)
     dvar = zeros(grid.params.size)
     dXdU = 2/(grid.params.dmax[Int(X)] - grid.params.dmin[Int(X)])
