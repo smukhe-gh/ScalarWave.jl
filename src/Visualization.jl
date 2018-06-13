@@ -161,12 +161,12 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     setline(0.4)
     origin(700, 100)
     arrow(O, O .+ Point(40, -40))
-    settext("u", O .+ Point(40, -40);
+    settext("v", O .+ Point(40, -40);
                 halign = "top",
                 valign = "right")
     rotate(-pi/2)
     arrow(O, O .+ Point(40, -40))
-    settext("v", O .+ Point(40, -40);
+    settext("u", O .+ Point(40, -40);
                 halign = "bottom",
                 valign = "right")
     
