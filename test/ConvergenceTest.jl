@@ -34,7 +34,7 @@ showconv(x->sin(pi*x), y->sin(pi*y),
 showconv(x->sin(pi*x), y->sin(pi*y), 
         (x,y)-> 0, 
         (x,y)-> sin(pi*x) + sin(pi*y),
-        2,  # maxmodes 
-        8,  # maxlevels                      
-        2)  # h-factor                               
+        3,  # maxmodes 
+        4,  # maxlevels                      
+        3)  # h-factor                               
         

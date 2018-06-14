@@ -37,7 +37,7 @@ function showconv(bnd1::Function, bnd2::Function, frhs::Function, analyticsol::F
         L2 = 1
         h  = 1
         level = 0
-        for p in 1:maxmodes
+        for p in 1:2:maxmodes
             L2error = sconv(bnd1, bnd2, frhs, analyticsol, p, p, h^level)
             p == 1 ? R = 0 : R =  L2/L2error
             @printf("p = %s | np = %s | h^(p+1) = %s | R = %e | L2 error = %e \n", 
