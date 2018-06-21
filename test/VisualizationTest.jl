@@ -4,12 +4,20 @@
 #--------------------------------------------------------------------
 
 function testdrawmultipatch()
-    dict = distribute(u->0, v->0, 
-                     (u,v)-> -exp(-u^2 - v^2)*(4v*(u*cos(2u)-u*cos(2v)+sin(2u))- 4u*sin(2v)),
-                     4, 4, 2)
+    dict = distribute(u->0*exp(-u^2/0.1), v->exp(-v^2/0.1),
+                     (u,v)-> 0,
+                     30, 30, 1)
+    
+    patch = dict[[1,1]]
+    u = chebgrid(30)
+    plot(u, patch.value[1,:])
+    plot(u, patch.value[end,:])
+    savefig("boundary-profiles.pdf")
+    close()
     drawmultipatch(dict, "visualization-test")
     return true
 end
 
 @test testdrawmultipatch() == true
-run(`rm visualization-test.pdf`)
+#run(`rm visualization-test.pdf`)
+

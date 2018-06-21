@@ -15,6 +15,7 @@ function derivOP_corrected{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}
     return operator
 end
 
+#=
 function derivOP{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}
     @assert Nx == Ny
 	operator = zeros(Nx+1, Ny+1, Nx+1, Ny+1)
@@ -26,6 +27,34 @@ function derivOP{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}
         operator[index] = 2*chebw(i,Ny)*chebw(k,Nx)*chebd(k,l,Nx)*chebd(i,j,Ny)	
 	end
 	return operator
+end
+=#
+
+function derivOP{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}
+    @assert Nx == Ny
+    D  = Float64[chebd(i,j,Nx) for i in 1:Nx+1, j in 1:Nx+1]
+    w  = Float64[chebw(i,Nx)   for i in 1:Nx+1]
+    I  = eye(Nx+1)
+    DU = kron(I,D)
+    DV = kron(D,I)
+    W  = diagm(vec(kron(w,w)))
+
+    # Now distort the grid with rotation
+    theta = Float64[(pi/40)*cos((pi/2)*u)*cos((pi/2)*v) for u in chebgrid(Nx), v in chebgrid(Nx)] 
+    costheta = diagm(vec(cos.(theta)))
+    sintheta = diagm(vec(sin.(theta)))
+    u  = chebgrid(Nx)
+    v  = chebgrid(Nx)
+    U  = Float64[cos(theta[i,j])*u[i] - sin(theta[i,j])*v[j] for i in 1:Nx+1, j in 1:Nx+1] 
+    V  = Float64[sin(theta[i,j])*u[i] + cos(theta[i,j])*v[j] for i in 1:Nx+1, j in 1:Nx+1] 
+    if (false)
+        contour(u,v,U)
+        contour(u,v,V)
+        savefig("distorted-grid.pdf")
+        close()
+    end
+    operator = 2*W*((-sintheta*costheta)*DU*DU + (costheta*costheta)*DU*DV + (-sintheta*sintheta)*DV*DU + (sintheta*costheta)*DV*DV)
+    return reshape(operator, (Nx+1,Nx+1,Nx+1,Nx+1))
 end
 
 function boundaryOP{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}

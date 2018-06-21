@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 using ScalarWave
-using Base.Test
+using Base.Test, PyPlot
 
 libraries = ["SpecCalculus",
              "Utilities",
@@ -17,6 +17,7 @@ libraries = ["SpecCalculus",
              "Visualization"]
 
 libraries = ["Convergence"]
+libraries = ["Visualization"]
 
 for file in libraries
     info("Testing $file")
