@@ -16,12 +16,14 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
        distribute, sconv, showconv, drawmultipatch,
-       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
+       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
+       derivOP_efficient, derivOP_just_a_bit_more_efficient
        
 include("Types.jl")
 include("SpecCalculus.jl")
 include("Utilities.jl")
 include("Physics.jl")
+include("Operator.jl")
 include("Patch.jl")
 include("Grid.jl")
 include("Projection.jl")

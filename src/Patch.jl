@@ -32,7 +32,10 @@ function calcPatch(bndx::Boundary, bndy::Boundary, RHS::Array{Float64,2},
     bval = zeros(Nx+1, Ny+1)
     bval[:, 1] = bndx.value
     bval[1, :] = bndy.value 
-    return Patch(loc, shapeL2H(shapeH2L(derivOP + boundaryOP) \ shapeH2L(RHS + bval), Nx, Ny))  
+    L = shapeH2L(derivOP + boundaryOP) + transpose(shapeH2L(derivOP + boundaryOP))
+    B = shapeH2L(boundaryOP)
+    @show cond(L+B)
+    return Patch(loc, shapeL2H((L + B) \ shapeH2L(RHS + bval), Nx, Ny)) 
 end
 
 function extractPatchCoeffs(patch::Patch)::Array{Float64,2}

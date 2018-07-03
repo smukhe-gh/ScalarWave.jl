@@ -4,7 +4,8 @@
 #--------------------------------------------------------------------
 
 function distribute{T<:Integer}(fbndr::Function, fbndc::Function, frhs::Function, Nx::T, Ny::T, M::T)::Dict{Array{Int,1}, Patch}
-    dop = derivOP(Nx, Ny)/M^4
+    twist = 2e+4
+    @time dop = derivOP_efficient(Nx, Ny, twist)/M^4
     bop = boundaryOP(Nx, Ny)
     dbase  = Dict{Array{Int, 1}, Patch}()
     for i in 2:2M, k in i-min(i-1,M):min(i-1,M) 
