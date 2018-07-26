@@ -32,6 +32,7 @@ function calcPatch(bndx::Boundary, bndy::Boundary, RHS::Array{Float64,2},
     bval = zeros(Nx+1, Ny+1)
     bval[:, 1] = bndx.value
     bval[1, :] = bndy.value 
+    # NOTE: Adding the transpose of the operator 
     L = shapeH2L(derivOP + boundaryOP) + transpose(shapeH2L(derivOP + boundaryOP))
     B = shapeH2L(boundaryOP)
     @show cond(L+B)

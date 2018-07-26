@@ -35,7 +35,7 @@ function dV(i, ii, j, jj, Py)
     return delta(i, j)*chebd(ii, jj, Py)
 end
 
-function derivOP(Px::Int, Py::Int, twist::Float64)
+function derivOP(Px::Int, Py::Int)
     operator = zeros(Px+1, Py+1, Px+1, Py+1)
     arrW     = zeros(Px+1, Py+1, Px+1, Py+1)
     arrdU    = zeros(Px+1, Py+1, Px+1, Py+1)
@@ -50,10 +50,10 @@ function derivOP(Px::Int, Py::Int, twist::Float64)
         arrW[index]   = W(l, ll, m, mm, Px, Py) 
         arrdU[index]  = dU(l, ll, m, mm, Px) 
         arrdV[index]  = dV(l, ll, m, mm, Py) 
-        arrguu[index] = guu(l, ll, m, mm, Px, Py, twist) 
-        arrguv[index] = guv(l, ll, m, mm, Px, Py, twist) 
-        arrgvu[index] = gvu(l, ll, m, mm, Px, Py, twist) 
-        arrgvv[index] = gvv(l, ll, m, mm, Px, Py, twist) 
+        arrguu[index] = 1.0 #guu(l, ll, m, mm, Px, Py, 1) 
+        arrguv[index] = 1.0 #guv(l, ll, m, mm, Px, Py, 1) 
+        arrgvu[index] = 1.0 #gvu(l, ll, m, mm, Px, Py, 1) 
+        arrgvv[index] = 1.0 #gvv(l, ll, m, mm, Px, Py, 1) 
     end
 
     for index in CartesianRange(size(operator))
@@ -62,20 +62,24 @@ function derivOP(Px::Int, Py::Int, twist::Float64)
                  for i in 1:Px+1) 
         L2 = sum(arrW[l, ii, l, ii]*arrgvv[l, ii, l, ii]*arrdV[l, ii, l, ll]*arrdV[l, ii, m, mm] 
                  for ii in 1:Py+1) 
-        L3 = arrW[m, ll, m, ll]*arrdU[m, ll, l, ll]*arrdV[m, ll, m, mm] +
-             arrW[l, mm, l, mm]*arrdV[l, mm, l, ll]*arrdU[l, mm, m, mm]
-        operator[index] = L3
+        L3 = arrW[l, ll, l, ll]*arrguv[m, ll, m, ll]*arrdU[l, ll, m, ll]*arrdV[m, ll, m, mm] 
+            #+arrW[l, mm, l, mm]*arrgvu[l, mm, l, mm]*arrdV[l, mm, l, ll]*arrdU[l, mm, m, mm]
+        operator[index] = 2*L3
     end
     return operator
 end
 
-function boundaryOP{T<:Int}(Px::T, Py::T)::Array{Float64, 4}
-    bnd = zeros(Px+1, Py+1, Px+1, Py+1)
-    for index in CartesianRange(size(bnd))
-        i, ii, j, jj = index.I
-        if  i==1 || ii==1
-            bnd[index] = delta(ii,jj)*delta(i,j)
-        end
-    end
-    return bnd
+function derivOP_old{T<:Int}(Nx::T, Ny::T)::Array{Float64, 4}
+    @assert Nx == Ny
+	operator = zeros(Nx+1, Ny+1, Nx+1, Ny+1)
+    for index in CartesianRange(size(operator))    
+        k = index.I[1]
+        i = index.I[2]
+        l = index.I[3]
+        j = index.I[4]   
+        operator[index] = 2*chebw(i,Ny)*chebw(k,Nx)*chebd(k,l,Nx)*chebd(i,j,Ny)	
+	end
+	return operator
 end
+
+@test maximum(derivOP_old(2,2) == derivOP(2, 2))

@@ -17,8 +17,8 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
        distribute, sconv, showconv, drawmultipatch,
        fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
-       derivOP_efficient, derivOP_just_a_bit_more_efficient
-       
+       derivOP       
+
 include("Types.jl")
 include("SpecCalculus.jl")
 include("Utilities.jl")

@@ -4,14 +4,15 @@
 #--------------------------------------------------------------------
 
 function testdrawmultipatch()
-    dict = distribute(u->0*exp(-u^2/0.1), v->exp(-v^2/0.1),
+    P = 20
+    dict = distribute(u->0, v->exp(-v^2/0.1),
                      (u,v)-> 0,
-                     30, 30, 1)
+                     P, P, 1)
     
     patch = dict[[1,1]]
-    u = chebgrid(30)
-    plot(u, patch.value[1,:])
-    plot(u, patch.value[end,:])
+    u = chebgrid(P)
+    plot(u, patch.value[1,:], "m-")
+    plot(u, patch.value[end,:],"ro")
     savefig("boundary-profiles.pdf")
     close()
     drawmultipatch(dict, "visualization-test")

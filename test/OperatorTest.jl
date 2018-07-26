@@ -35,7 +35,7 @@ function dV(i, ii, j, jj, Py)
     return delta(i, j)*chebd(ii, jj, Py)
 end
 
-function derivOP(Px::Int, Py::Int, twist::Float64)
+function testderivOP(Px::Int, Py::Int)
     operator = zeros(Px+1, Py+1, Px+1, Py+1)
     arrW     = zeros(Px+1, Py+1, Px+1, Py+1)
     arrdU    = zeros(Px+1, Py+1, Px+1, Py+1)
@@ -50,10 +50,10 @@ function derivOP(Px::Int, Py::Int, twist::Float64)
         arrW[index]   = W(l, ll, m, mm, Px, Py) 
         arrdU[index]  = dU(l, ll, m, mm, Px) 
         arrdV[index]  = dV(l, ll, m, mm, Py) 
-        arrguu[index] = guu(l, ll, m, mm, Px, Py, twist) 
-        arrguv[index] = guv(l, ll, m, mm, Px, Py, twist) 
-        arrgvu[index] = gvu(l, ll, m, mm, Px, Py, twist) 
-        arrgvv[index] = gvv(l, ll, m, mm, Px, Py, twist) 
+        arrguu[index] = guu(l, ll, m, mm, Px, Py, 1) 
+        arrguv[index] = guv(l, ll, m, mm, Px, Py, 1) 
+        arrgvu[index] = gvu(l, ll, m, mm, Px, Py, 1) 
+        arrgvv[index] = gvv(l, ll, m, mm, Px, Py, 1) 
     end
 
     for index in CartesianRange(size(operator))
@@ -62,14 +62,14 @@ function derivOP(Px::Int, Py::Int, twist::Float64)
                  for i in 1:Px+1) 
         L2 = sum(arrW[l, ii, l, ii]*arrgvv[l, ii, l, ii]*arrdV[l, ii, l, ll]*arrdV[l, ii, m, mm] 
                  for ii in 1:Py+1) 
-        L3 = arrW[m, ll, m, ll]*arrdU[m, ll, l, ll]*arrdV[m, ll, m, mm] +
-             arrW[l, mm, l, mm]*arrdV[l, mm, l, ll]*arrdU[l, mm, m, mm]
-        operator[index] = L3
+        L3 = arrW[m, ll, m, ll]*arrguv[m, ll, m, ll]*arrdU[m, ll, l, ll]*arrdV[m, ll, m, mm] +
+             arrW[l, mm, l, mm]*arrgvu[l, mm, l, mm]*arrdV[l, mm, l, ll]*arrdU[l, mm, m, mm]
+        operator[index] = L1 + L2 + L3
     end
     return operator
 end
 
-function boundaryOP{T<:Int}(Px::T, Py::T)::Array{Float64, 4}
+function testboundaryOP{T<:Int}(Px::T, Py::T)::Array{Float64, 4}
     bnd = zeros(Px+1, Py+1, Px+1, Py+1)
     for index in CartesianRange(size(bnd))
         i, ii, j, jj = index.I
@@ -79,3 +79,11 @@ function boundaryOP{T<:Int}(Px::T, Py::T)::Array{Float64, 4}
     end
     return bnd
 end
+
+fH2L  = vec([x^3 + y^5 for x in chebgrid(Nx), y in chebgrid(Ny)])
+opH2L = shapeH2L(testderivOP(Nx, Ny), Nx, Ny)
+bpH2L = shapeH2L(testboundaryOP(Nx, Ny), Nx, Ny)
+
+# Now test the functions of both of these operators
+@show fH2L'*opH2L*fH2L
+@show bpH2L / fH2L
