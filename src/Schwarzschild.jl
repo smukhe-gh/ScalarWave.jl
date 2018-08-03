@@ -97,20 +97,56 @@ function setvarlist(grid::Grid)::VarList
 end
 
 function SchwarzschildDerivOP(grid::Grid, varlist::VarList)::Array{Float64, 4}
+    """
+    Modifying the operator function for testing. Will use vector-expressions
+    """
     Nx = grid.params.mode[1]
     Ny = grid.params.mode[2]
     @assert Nx == Ny
     dXdU = 2/(grid.params.dmax[1] - grid.params.dmin[1])
     dXdV = 2/(grid.params.dmax[2] - grid.params.dmin[2])
-	operator = zeros(Nx+1, Ny+1, Nx+1, Ny+1)
-    detg     = varlist.detg
-    g01      = varlist.g01
-    for index in CartesianRange(size(operator))    
-        k = index.I[1]
-        i = index.I[2]
-        l = index.I[3]
-        j = index.I[4]   
-        operator[index] = (dXdU*dXdV)^2*(2*g01[i,k]*chebw(i,Ny)*chebw(k,Nx)*chebd(k,l,Nx)*chebd(i,j,Ny))*sqrt(-detg[i,k])	
-	end
-	return operator
+    detg = varlist.detg
+    guv  = varlist.g01
+    gvu  = varlist.g10
+    g22  = varlist.g22
+    g33  = varlist.g33
+
+    du   = Float64[chebd(i,j, Nx) for i in 1:Nx+1, j in 1:Nx+1] 
+    dv   = Float64[chebd(i,j, Ny) for i in 1:Ny+1, j in 1:Ny+1] 
+    wu   = Float64[chebw(i, Nx) for i in 1:Nx+1]
+    wv   = Float64[chebw(i, Ny) for i in 1:Ny+1]
+
+    # Compute the inverse metric [Temporary fix]
+    invguv = zeros(Nx+1, Ny+1)
+    invgvu = zeros(Nx+1, Ny+1)
+    for i in 1:Nx+1, j in 1:Ny+1
+        gxx = [0 guv[i,j] 0 0; 
+               gvu[i,j] 0 0 0;
+               0 0 g22[i,j] 0;
+               0 0 0 g33[i,j]]
+        invgxx = inv(gxx)
+        invguv[i,j] = invgxx[1,2]
+        invgvu[i,j] = invgxx[2,1]
+    end
+
+    Mdetg = diagm(vec(detg)) 
+    Mguv  = diagm(vec(guv)) 
+    Mgvu  = diagm(vec(gvu)) 
+    Mwuv  = diagm(vec(kron(wu,wv)))
+    Mdv   = kron(eye(Nx+1, Ny+1), dv)
+    Mdu   = kron(du, eye(Nx+1, Ny+1))   
+    Minvguv = diagm(vec(invguv))
+    Minvgvu = diagm(vec(invgvu))
+
+    operator = (1./-Mdetg)*(Mdu*sqrt.(-Mdetg)*Minvguv*Mdv + Mdv*sqrt.(-Mdetg)*Minvgvu*Mdu)   
+
+    @show prod(vec(isnan.(1./-Mdetg)))
+    @show prod(vec(isnan.(sqrt.(-Mdetg))))
+    @show prod(vec(isnan.(Minvguv)))
+    @show prod(vec(isnan.(Minvgvu)))
+    @show prod(vec(isnan.(Mguv)))
+    @show prod(vec(isnan.(Mgvu)))
+    @show prod(vec(isnan.(operator)))
+
+    return shapeL2H(operator, Nx, Ny)
 end
