@@ -90,18 +90,20 @@ function testRHS(ufunc::Function, vfunc::Function, Px::Int, Py::Int)
 end
 
 Nx, Ny = 40, 40
-
-#=
+@assert Nx == Ny
 fH2L   = vec([x^3 + y^5 for x in chebgrid(Nx), y in chebgrid(Ny)])
 opH2L  = shapeH2L(testderivOP(Nx, Ny))
-L      = opH2L + bpH2L
-IntOP  = eye((Nx+1)*(Ny+1)) + diagm(b) 
-@show fH2L'*opH2L*fH2L
-=#
 
-@assert Nx == Ny
-bpH2L  = shapeH2L(testboundaryOP(Nx, Ny))
+# create a boundary operator that sets all the boundaries
+#bpH2L  = shapeH2L(testboundaryOP(Nx, Ny))
+Bmat   = zeros(Nx+1, Ny+1)
+Bmat[1, :] = Bmat[end, :] = Bmat[:, end] = Bmat[:, 1] = 1
+bpH2L  = diagm(vec(Bmat)) 
+L      = opH2L + bpH2L
+
 b      = shapeH2L(testRHS(u->0, v->10*exp(-v^2/0.2), Nx, Ny))
+
+#= Operator construction
 Du     = Float64[chebd(i, j, Nx) for i in 1:Nx+1, j in 1:Nx+1]
 Dv     = Float64[chebd(i, j, Ny) for i in 1:Ny+1, j in 1:Ny+1]
 Wu     = Float64[chebw(i, Nx) for i in 1:Nx+1]
@@ -119,6 +121,9 @@ gVV    = diagm(vec(Float64[+cos((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny
                             sin((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny)/2)) for i in 1:Nx+1, j in 1:Ny+1])) 
 
 L      = WUV*(gUU*DU*DU + gUV*DU*DV + gVU*DV*DU + gVV*DV*DV) 
+=#
+
+
 B      = bpH2L
 u      = (L + B)\ b  
 uL2H   = shapeL2H(u, Nx, Ny)
