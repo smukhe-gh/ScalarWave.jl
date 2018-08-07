@@ -16,8 +16,6 @@ libraries = ["SpecCalculus",
              "Futures",
              "Visualization"]
 
-libraries = ["Operator"]
-
 for file in libraries
     info("Testing $file")
     include("$(file)Test.jl")
