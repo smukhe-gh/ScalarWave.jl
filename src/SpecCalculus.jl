@@ -48,6 +48,10 @@ function chebweights(N::Int)::Array{Float64,1}
     return Float64[chebw(i,N) for i in 1:N+1]
 end
 
+function chebdiff(N::Int)::Array{Float64,2}
+    return Float64[chebd(i,j,N) for i in 1:N+1, j in 1:N+1] 
+end
+
 function vandermonde(N::Int)::Array{Float64,2}
     return Float64[cheb(m,x) for x in chebgrid(N), m in 0:N]
 end
@@ -55,17 +59,3 @@ end
 function pseudovandermonde(N::Int, collocationpts::Array{Float64, 1})::Array{Float64,2}
     return Float64[cheb(m,x) for x in collocationpts, m in 0:N]
 end
-
-function modal2nodal(fmodal::Array{Float64,2})::Array{Float64,2}
-    (Mx, My) = size(fmodal) .- 1
-    fnodal   = Float64[sum(cheb(m-1,x)*cheb(n-1,y)*fmodal[m,n] for m in 1:Mx+1, n in 1:My+1) for x in chebgrid(Mx), y in chebgrid(My)]
-end
-
-function nodal2modal(fnodal::Array{Float64,2})::Array{Float64,2}
-    (Nx, Ny) = size(fnodal) .- 1
-    invndmx  = inv(vandermonde(Nx))
-    invndmy  = inv(vandermonde(Ny))
-    fmodal   = Float64[sum(invndmy[n,y]*invndmx[m,x]*fnodal[m,n] for x in 1:Nx+1, y in 1:Ny+1) for m in 1:Nx+1, n in 1:Ny+1] 
-end
-
-

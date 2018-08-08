@@ -15,9 +15,8 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, 
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
-       distribute, sconv, showconv, drawmultipatch,
-       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
-       derivOP       
+       distribute, drawmultipatch,
+       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
 
 include("Types.jl")
 include("SpecCalculus.jl")
@@ -28,7 +27,6 @@ include("Patch.jl")
 include("Grid.jl")
 include("Projection.jl")
 include("Dispatch.jl")
-include("Convergence.jl")
 include("Visualization.jl")
 include("Futures.jl")
 
