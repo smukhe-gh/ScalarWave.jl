@@ -16,8 +16,8 @@ W  = [ 0.5  0.0  0.0  0.0;
        0.0  0.0  1.0  0.0;
        0.0  0.0  0.0  0.5]
 
-u = [x^2 for x in linspace(-1, 1, 4)]
-v = [x   for x in linspace(-1, 1, 4)]
+u = [x^5 for x in linspace(-1, 1, 4)]
+v = [x^3 for x in linspace(-1, 1, 4)]
 @test u'*W*D*v + v'*W*D*u == u[end]*v[end] - u[1]*v[1]
 
 # Now test the spectral discretization operators 
