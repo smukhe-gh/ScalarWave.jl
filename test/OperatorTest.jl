@@ -3,137 +3,112 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function guu(i, ii, j, jj, Px, Py, twist)
-    return -cos((pi/twist)*cospi(chebx(i,Px)/2)*cospi(chebx(ii,Py)/2))*
-            sin((pi/twist)*cospi(chebx(i,Px)/2)*cospi(chebx(ii,Py)/2))*
-            delta(i,j)*delta(ii, jj)
+# FIXME : Check the metric functions
+function fguu{T<:Int}(i::T, j::T, N::T, pibytwist::Float64)::Float64
+    return -cos((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))*
+            sin((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))
 end
 
-function guv(i, ii, j, jj, Px, Py, twist)
-    return +cos((pi/twist)*cospi(chebx(i,Px)/2)*cospi(chebx(ii,Py)/2))^2*delta(i,j)*delta(ii, jj)
+function fguv{T<:Int}(i::T, j::T, N::T, pibytwist::Float64)::Float64
+    return +cos((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))*
+            cos((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))
 end
 
-function gvu(i, ii, j, jj, Px, Py, twist)
-    return -sin((pi/twist)*cospi(chebx(i,Px)/2)*cospi(chebx(ii,Py)/2))^2*delta(i,j)*delta(ii, jj)
+function fgvu{T<:Int}(i::T, j::T, N::T, pibytwist::Float64)::Float64
+    return -cos((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))*
+            cos((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))
 end
 
-function gvv(i, ii, j, jj, Px, Py, twist)
-    return +cos((pi/twist)*cospi(chebx(i,Px)/2)*cospi(chebx(ii,Py)/2))*
-            sin((pi/twist)*cospi(chebx(i,Px)/2)*cospi(chebx(ii,Py)/2))*
-            delta(i,j)*delta(ii, jj)
+function fgvv{T<:Int}(i::T, j::T, N::T, pibytwist::Float64)::Float64
+    return +cos((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))*
+            sin((pibytwist)*cospi(chebx(i,N)/2)*cospi(chebx(j,N)/2))
 end
 
-function W(i, ii, j, jj, Px, Py)
-    return chebw(i, Px)*chebw(ii, Py)*delta(i,j)*delta(ii, jj) 
+N   = 2
+pibytwist = 0.0
+Du  = Float64[chebd(i, j, N) for i in 1:N+1, j in 1:N+1]
+Dv  = Float64[chebd(i, j, N) for i in 1:N+1, j in 1:N+1]
+Wu  = Float64[chebw(i, N) for i in 1:N+1]
+guu = Float64[fguu(i,j,N, pibytwist) for i in 1:N+1, j in 1:N+1]
+guv = Float64[fguv(i,j,N, pibytwist) for i in 1:N+1, j in 1:N+1]
+gvu = Float64[fgvu(i,j,N, pibytwist) for i in 1:N+1, j in 1:N+1]
+gvv = Float64[fgvv(i,j,N, pibytwist) for i in 1:N+1, j in 1:N+1]
+Wv  = Float64[chebw(i, N) for i in 1:N+1]
+
+ginvuu = zeros(N+1, N+1)
+ginvuv = zeros(N+1, N+1)
+ginvvu = zeros(N+1, N+1)
+ginvvv = zeros(N+1, N+1)
+
+for i in 1:N+1, j in 1:N+1 
+    gmatrix = [guu[i,j] guv[i,j] 0  0;
+               gvu[i,j] gvv[i,j] 0  0;
+               0        0        1  0;
+               0        0        0  1]
+    ginv    = inv(gmatrix)
+    ginvuu[i,j] = ginv[1,1]
+    ginvuv[i,j] = ginv[1,2]
+    ginvvu[i,j] = ginv[2,1]
+    ginvvv[i,j] = ginv[2,2]
 end
 
-function dU(i, ii, j, jj, Px)
-    return chebd(i, j, Px)*delta(ii, jj)  
+# Compute auxillary quantities
+WUV = diagm(vec(kron(Wu, Wv)))
+DV  = kron(eye(N+1), Dv)
+DU  = kron(Du, eye(N+1))
+
+ginvUU = diagm(vec(ginvuu))
+ginvUV = diagm(vec(ginvuv))
+ginvVU = diagm(vec(ginvvu))
+ginvVV = diagm(vec(ginvvv))
+
+dginvUUU = diagm(DU*vec(ginvuu))
+dginvUUV = diagm(DV*vec(ginvuu))
+dginvUVU = diagm(DU*vec(ginvuv))
+dginvUVV = diagm(DV*vec(ginvuv))
+dginvVUU = diagm(DU*vec(ginvvu))
+dginvVUV = diagm(DV*vec(ginvvu))
+dginvVVU = diagm(DU*vec(ginvvv))
+dginvVVV = diagm(DV*vec(ginvvv))
+
+# Compute the operator
+L   = ginvUU*DU*DU + ginvUV*DU*DV + ginvVU*DV*DU + ginvVV*DV*DV
++ dginvUUU*DU + (1/2)*dginvUUU*ginvUU*ginvUU*DU + (1/2)*dginvUUU*ginvUU*ginvUV*DV 
++ dginvUVU*DV + (1/2)*dginvUVU*ginvUU*ginvUV*DU + (1/2)*dginvUVU*ginvUV*ginvUV*DV
+              + (1/2)*dginvVUU*ginvUU*ginvVU*DU + (1/2)*dginvVUU*ginvUV*ginvVU*DV
+              + (1/2)*dginvVVU*ginvUU*ginvVV*DU + (1/2)*dginvVVU*ginvUV*ginvVV*DV
+              + (1/2)*dginvUUV*ginvUU*ginvVU*DU + (1/2)*dginvUUV*ginvUU*ginvVV*DV
+              + (1/2)*dginvUVV*ginvUV*ginvVU*DU + (1/2)*dginvUVV*ginvUV*ginvVV*DV
++ dginvVUV*DU + (1/2)*dginvVUV*ginvVU*ginvVU*DU + (1/2)*dginvVUV*ginvVU*ginvVV*DV
++ dginvVVV*DV + (1/2)*dginvVVV*ginvVU*ginvVV*DU + (1/2)*dginvVVV*ginvVV*ginvVV*DV
+
+# Now solve the system
+M     = 1
+Nx = Ny = N
+dop   = shapeL2H(L, N, N)/M^4
+
+@show ginvUU
+@show ginvUV
+@show ginvVU
+@show ginvVV
+
+#=
+@show prod(vec(isnan.(dop)))
+@show prod(vec(isinf.(dop)))
+
+bop   = boundaryOP(Nx, Ny)
+dbase = Dict{Array{Int, 1}, Patch}()
+frhs  = (u,v) -> 0 
+fbndr =  u    -> exp(-u^2/0.1) 
+fbndc =  v    -> exp(-v^2/0.1) 
+
+for i in 2:2M, k in i-min(i-1,M):min(i-1,M) 
+    loc  = [k, i-k]
+    rhs  = RHS(frhs, Nx, Ny, M, loc)
+    bndx = (loc[2]==1) ? (getPatchIC(fbndr, 0, Nx, M, loc[1])) : (getPatchBnd(dbase[loc-[0,1]], 0))
+    bndy = (loc[1]==1) ? (getPatchIC(fbndc, 1, Ny, M, loc[2])) : (getPatchBnd(dbase[loc-[1,0]], 1))
+    dbase[loc] = calcPatch(bndx, bndy, rhs, dop, bop, loc)
 end
 
-function dV(i, ii, j, jj, Py)
-    return delta(i, j)*chebd(ii, jj, Py)
-end
-
-function testderivOP(Px::Int, Py::Int)
-    operator = zeros(Px+1, Py+1, Px+1, Py+1)
-    arrW     = zeros(Px+1, Py+1, Px+1, Py+1)
-    arrdU    = zeros(Px+1, Py+1, Px+1, Py+1)
-    arrdV    = zeros(Px+1, Py+1, Px+1, Py+1)
-    arrguu   = zeros(Px+1, Py+1, Px+1, Py+1)
-    arrguv   = zeros(Px+1, Py+1, Px+1, Py+1)
-    arrgvu   = zeros(Px+1, Py+1, Px+1, Py+1)
-    arrgvv   = zeros(Px+1, Py+1, Px+1, Py+1)
-
-    for index in CartesianRange(size(operator))
-        l, ll, m, mm = index.I
-        arrW[index]   = W(l, ll, m, mm, Px, Py) 
-        arrdU[index]  = dU(l, ll, m, mm, Px) 
-        arrdV[index]  = dV(l, ll, m, mm, Py) 
-        arrguu[index] = 1.0 #guu(l, ll, m, mm, Px, Py, 1) 
-        arrguv[index] = 1.0 #guv(l, ll, m, mm, Px, Py, 1) 
-        arrgvu[index] = 1.0 #gvu(l, ll, m, mm, Px, Py, 1) 
-        arrgvv[index] = 1.0 #gvv(l, ll, m, mm, Px, Py, 1) 
-    end
-
-    for index in CartesianRange(size(operator))
-        l, ll, m, mm = index.I
-        L1 = sum(arrW[i, ll, i, ll]*arrguu[i, ll, i, ll]*arrdU[i, ll, l, ll]*arrdU[i, ll, m, mm] 
-                 for i in 1:Px+1) 
-        L2 = sum(arrW[l, ii, l, ii]*arrgvv[l, ii, l, ii]*arrdV[l, ii, l, ll]*arrdV[l, ii, m, mm] 
-                 for ii in 1:Py+1) 
-        L3 = arrW[m, ll, m, ll]*arrguv[m, ll, m, ll]*arrdU[m, ll, l, ll]*arrdV[m, ll, m, mm] +
-             arrW[l, mm, l, mm]*arrgvu[l, mm, l, mm]*arrdV[l, mm, l, ll]*arrdU[l, mm, m, mm]
-        operator[index] = L3 # + L1 + L2
-    end
-    return operator
-end
-
-function testboundaryOP{T<:Int}(Px::T, Py::T)::Array{Float64, 4}
-    bnd = zeros(Px+1, Py+1, Px+1, Py+1)
-    for index in CartesianRange(size(bnd))
-        i, ii, j, jj = index.I
-        if  i==1 || ii==1
-            bnd[index] = delta(ii,jj)*delta(i,j)
-        end
-    end
-    return bnd
-end
-
-function testRHS(ufunc::Function, vfunc::Function, Px::Int, Py::Int)
-    B = zeros(Px+1, Py+1)
-    u = chebgrid(Px)
-    v = chebgrid(Py)
-    B[:,1] = ufunc.(u)
-    B[1,:] = vfunc.(v)
-    return B
-end
-
-Nx, Ny = 40, 40
-@assert Nx == Ny
-fH2L   = vec([x^3 + y^5 for x in chebgrid(Nx), y in chebgrid(Ny)])
-opH2L  = shapeH2L(testderivOP(Nx, Ny))
-
-# create a boundary operator that sets all the boundaries
-#bpH2L  = shapeH2L(testboundaryOP(Nx, Ny))
-Bmat   = zeros(Nx+1, Ny+1)
-Bmat[1, :] = Bmat[end, :] = Bmat[:, end] = Bmat[:, 1] = 1
-bpH2L  = diagm(vec(Bmat)) 
-L      = opH2L + bpH2L
-
-b      = shapeH2L(testRHS(u->0, v->10*exp(-v^2/0.2), Nx, Ny))
-
-#= Operator construction
-Du     = Float64[chebd(i, j, Nx) for i in 1:Nx+1, j in 1:Nx+1]
-Dv     = Float64[chebd(i, j, Ny) for i in 1:Ny+1, j in 1:Ny+1]
-Wu     = Float64[chebw(i, Nx) for i in 1:Nx+1]
-Wv     = Float64[chebw(i, Ny) for i in 1:Ny+1]
-WUV    = diagm(vec(kron(Wu, Wv)))
-DV     = kron(eye(Nx+1), Dv)
-DU     = kron(Du, eye(Ny+1))
-
-twist  = 20
-gUU    = diagm(vec(Float64[-cos((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny)/2))*
-                            sin((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny)/2)) for i in 1:Nx+1, j in 1:Ny+1]))
-gUV    = diagm(vec(Float64[+cos((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny)/2))^2 for i in 1:Nx+1, j in 1:Ny+1]))
-gVU    = diagm(vec(Float64[-sin((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny)/2))^2 for i in 1:Nx+1, j in 1:Ny+1]))
-gVV    = diagm(vec(Float64[+cos((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny)/2))*
-                            sin((pi/twist)*cospi(chebx(i,Nx)/2)*cospi(chebx(j,Ny)/2)) for i in 1:Nx+1, j in 1:Ny+1])) 
-
-L      = WUV*(gUU*DU*DU + gUV*DU*DV + gVU*DV*DU + gVV*DV*DV) 
+drawmultipatch(dbase, "test-distorted-minkowski")
 =#
-
-
-B      = bpH2L
-u      = (L + B)\ b  
-uL2H   = shapeL2H(u, Nx, Ny)
-
-using PyPlot
-plot(uL2H[end, :])
-plot(uL2H[1, :])
-#show()
-
-@show cond(L + B)
-@show sort(abs.(eigvals(L + B)))[1:3]
-
-#drawmultipatch(Dict([1,1]=> Patch([1,1], uL2H)), "test-action-operator")

@@ -16,7 +16,6 @@ libraries = ["SpecCalculus",
              "Futures",
              "Visualization"]
 
-libraries = ["Visualization"]
 libraries = ["Operator"]
 
 for file in libraries
