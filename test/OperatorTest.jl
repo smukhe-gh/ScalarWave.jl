@@ -39,17 +39,20 @@ ginvuu = zeros(N+1, N+1)
 ginvuv = zeros(N+1, N+1)
 ginvvu = zeros(N+1, N+1)
 ginvvv = zeros(N+1, N+1)
+detg   = zeros(N+1, N+1)
 
 for i in 1:N+1, j in 1:N+1 
     gmatrix = [guu[i,j] guv[i,j] 0  0;
-               gvu[i,j] gvv[i,j] 0  0;
+              -gvu[i,j] gvv[i,j] 0  0;
                0        0        1  0;
                0        0        0  1]
-    ginv    = inv(gmatrix)
+    @show gmatrix
+    @show ginv
     ginvuu[i,j] = ginv[1,1]
     ginvuv[i,j] = ginv[1,2]
     ginvvu[i,j] = ginv[2,1]
     ginvvv[i,j] = ginv[2,2]
+    detg[i,j]   = det(gmatrix)
 end
 
 # Compute auxillary quantities
@@ -61,6 +64,7 @@ ginvUU = diagm(vec(ginvuu))
 ginvUV = diagm(vec(ginvuv))
 ginvVU = diagm(vec(ginvvu))
 ginvVV = diagm(vec(ginvvv))
+detG   = diagm(vec(detg))
 
 dginvUUU = diagm(DU*vec(ginvuu))
 dginvUUV = diagm(DV*vec(ginvuu))
@@ -70,9 +74,17 @@ dginvVUU = diagm(DU*vec(ginvvu))
 dginvVUV = diagm(DV*vec(ginvvu))
 dginvVVU = diagm(DU*vec(ginvvv))
 dginvVVV = diagm(DV*vec(ginvvv))
+ddetgU   = diagm(DU*vec(detg))
+ddetgV   = diagm(DV*vec(detg))
 
-# Compute the operator
-L   = ginvUU*DU*DU + ginvUV*DU*DV + ginvVU*DV*DU + ginvVV*DV*DV
+# Operator computation with derivatives of the determinant
+L1 = ginvUU*DU*DU + ginvUV*DU*DV + ginvVU*DV*DU + ginvVV*DV*DV
+   + dginvUUU*DU + dginvUVU*DV + dginvVUV*DU + dginvVVV*DV  
+   + (1./2.(detG))*(ddetgU*ginvUU*DU + ddetgU*ginvUV*DV + ddetgV*ginvVU*DU + ddetgV*ginvVV*DV) 
+
+
+# Compute the operator [long version] (L1 == L2)
+L2 = ginvUU*DU*DU + ginvUV*DU*DV + ginvVU*DV*DU + ginvVV*DV*DV
 + dginvUUU*DU + (1/2)*dginvUUU*ginvUU*ginvUU*DU + (1/2)*dginvUUU*ginvUU*ginvUV*DV 
 + dginvUVU*DV + (1/2)*dginvUVU*ginvUU*ginvUV*DU + (1/2)*dginvUVU*ginvUV*ginvUV*DV
               + (1/2)*dginvVUU*ginvUU*ginvVU*DU + (1/2)*dginvVUU*ginvUV*ginvVU*DV
@@ -84,18 +96,8 @@ L   = ginvUU*DU*DU + ginvUV*DU*DV + ginvVU*DV*DU + ginvVV*DV*DV
 
 # Now solve the system
 M     = 1
-Nx = Ny = N
-dop   = shapeL2H(L, N, N)/M^4
-
-@show ginvUU
-@show ginvUV
-@show ginvVU
-@show ginvVV
-
-#=
-@show prod(vec(isnan.(dop)))
-@show prod(vec(isinf.(dop)))
-
+Nx    = Ny = N
+dop   = shapeL2H(L1, N, N)/M^4
 bop   = boundaryOP(Nx, Ny)
 dbase = Dict{Array{Int, 1}, Patch}()
 frhs  = (u,v) -> 0 
@@ -111,4 +113,3 @@ for i in 2:2M, k in i-min(i-1,M):min(i-1,M)
 end
 
 drawmultipatch(dbase, "test-distorted-minkowski")
-=#
