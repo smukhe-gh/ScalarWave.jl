@@ -55,7 +55,7 @@ for i in 1:N+1, j in 1:N+1
     detg[i,j]   = det(gmatrix)
 end
 
-# Compute auxillary quantities
+# Compute auxiliary quantities
 WUV = diagm(vec(kron(Wu, Wv)))
 DV  = kron(eye(N+1), Dv)
 DU  = kron(Du, eye(N+1))
@@ -76,6 +76,18 @@ dginvVVU = diagm(DU*vec(ginvvv))
 dginvVVV = diagm(DV*vec(ginvvv))
 ddetgU   = diagm(DU*vec(detg))
 ddetgV   = diagm(DV*vec(detg))
+
+# u
+# detg# u
+# [DU u, DV u]
+# [DU u, DV u]
+# 
+
+# [DU, DV] 
+# gDU, gDV = detg*DU, detg*DV
+# ugDU, ugDV = ginvUU * gDU + ginvUV * gDV, ginvUV * gDU + ginvVV * gDV
+# DugD = DU * ugDU + DV * ugDV
+# L1 = 1/detg * DugD
 
 # Operator computation with derivatives of the determinant
 L1 = ginvUU*DU*DU + ginvUV*DU*DV + ginvVU*DV*DU + ginvVV*DV*DV
