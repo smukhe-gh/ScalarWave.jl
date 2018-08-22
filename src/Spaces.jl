@@ -7,17 +7,21 @@
 import Base: *, /, +, -, zeros, ones, range, identity
 
 #--- AbstractTypes.jl -----------------------------------------------
-abstract type Manifold end
-abstract type Space <: Manifold end
-abstract type Cardinal <: Space end
+abstract type Manifold{Tag} end
+abstract type Space{Tag} <: Manifold{Tag} end
+abstract type Cardinal{Tag} <: Space{Tag} end
 #--------------------------------------------------------------------
 
 #--- Spaces.jl ------------------------------------------------------
-struct Chebyshev <: Space 
+struct Chebyshev{Tag} <: Space{Tag} 
     order::Int
 end
+order(s::Chebyshev) = s.order
 
-struct GaussLobatto <: Cardinal
+struct ChebyshevN{Tag, N} <:Space{Tag} end
+order{Tag, N}(::ChebyshevN{Tag, N}) = N
+
+struct GaussLobatto{Tag} <: Cardinal{Tag}
     order::Int
 end
 
@@ -29,12 +33,37 @@ function dim(S::Space)
     return length(S.order)
 end
 
+dim(s::Chebyshev) = 1
+dim(s::ProductSpace{S1, S2}) = dim(s.space1) + dim(s.space2)
+dim(s::UnitSpace) = 0
+
+dim(s::Space) = length(range(s).start)
+
+range(s::Chebyshev) = CartesianRange(1:order(s))
+function range(s::ProductSpace(S1, S2))
+    start = CartesianIndex(range(s.space1).start, range(s.space2).start)
+    stop = CartesianIndex(range(s.space1).stop, range(s.space2).stop)
+    CartesianRange(start, stop)
+end
+range(s::UnitSpace) = CartesianRange(())
+
+function range(S::Space)
+
 struct Field{S<:Space, T<:AbstractArray} 
     space::S
     value::T
 end
 
-struct Operator{S<:Space, T<:Real}
+struct Field{S<:Space, D, T}
+    space::S
+    value::Array{T, D}
+    function Field{S, D, T}(s)
+        @assert D == dim(s)
+        new{S, D, T}(s, Array{T}(range(s)))
+    end
+end
+
+struct Operator{S<:Space, T}
     space::S
     value::Array{T}
 end
@@ -83,9 +112,20 @@ end
 #--------------------------------------------------------------------
 
 #--- ProductSpaces.jl -----------------------------------------------
-struct ProductSpace <: Space 
-    spaces::NTuple{} 
+struct ProductSpace{S1<:Space, S2<:Space} <: Space
+    space1::S1
+    space2::S2
 end
+
+struct ProductSpace{S<:NTuple{D,Space}} <: Space 
+    spaces::S
+end
+
+struct ProductSpace <: Space
+    spaces::NTuple{}
+end
+
+struct UnitSpace{Tag} <: Space end
 
 struct ProductSpaceOperator <: Space
     space::S where S<:ProductSpace
@@ -96,6 +136,8 @@ function dim(S::ProductSpace)
     return length(S.spaces)
 end
 
+dim(s::UnitSpace) = 0
+
 function ⦼{S<:Cardinal}(S1::S, S2::S)::ProductSpace 
     return ProductSpace((S1, S2))    
 end
@@ -104,9 +146,6 @@ function ⦼(S1::ProductSpace, S2::Cardinal)::ProductSpace
     return ProductSpace((S1.spaces..., S2))    
 end
 
-function ⦼{S<:Cardinal}(S1::S, S2::S)::ProductSpace 
-    return ProductSpace((S1, S2))    
-end
 function chebgrid(N::Tuple)::Array{NTuple} 
     X = Array{NTuple}(N.+1)
     for index in CartesianRange(size(X))
@@ -118,25 +157,29 @@ end
 Field(S::ProductSpace) = Field(S, chebgrid(map(s->s.order, S.spaces))) 
 Field(S::ProductSpace, umap::Function) = Field(S, map(x->umap.(x...), Field(S).value))
 
-function ⦼{A<:Operator}(A1::A, A2::A...)::ProductSpaceOperator 
-    return ProductSpaceOperator(ProductSpace((A1.space, A2.space...)), 
-                                kron(A1.value, A2.value...))    
+function ⦼(A1::Operator, A2::Operator...)::ProductSpaceOperator 
+    spaces =      (A1.space, map(x->x.space, A2)...)
+    value  = kron((A1.value, map(x->x.value, A2)...)..)
+    return ProductSpaceOperator(ProductSpace(spaces),
+                                tuple(value...))
 end
 
-function derivative(S<:ProductSpace)::ProductSpaceOperator
-   orders = map(x->x.order, S.spaces) 
-   operators = hcat(derivative, repeat(identity,dim(S)-1))
-   D = []
-   for combination in unique(collect(permutations((operators), dim(S))),1)
-       D = push!(D, ⊙(tuple(map((x, umap)->umap(x), orders, combination)...)...))
+function derivative(S::ProductSpace)::ProductSpaceOperator
+   order    = map(x->x.order, S.spaces) 
+   operator = hcat(derivative, repeat(identity, dim(S)-1))
+   D        = Array{ProductSpaceOperator, 1}
+
+   for (index, permutation) in enumerate(unique(collect(permutations((operators), dim(S))),1))
+       D[index] = ⊙(tuple(map((S, operator)->operator(S), spaces, permutation)...)...)
    end
+
    return ProductSpaceOperator(S, tuple(D...))
 end
 
-function derivative(S<:ProductSpace)::ProductSpaceOperator
+function integral(S::ProductSpace)::ProductSpaceOperator
    orders = map(x->x.order, S.spaces) 
-   W = ⊙(tuple(map((x, umap)->umap(x), orders, (integral)))...)
-   return ProductSpaceOperator(S, (W))
+   W = ⊙(tuple(map((S, operator)->operator(S), spaces, [integral])...)...)   
+   return ProductSpaceOperator(S, tuple(W...))
 end
 #--------------------------------------------------------------------
 

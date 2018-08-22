@@ -11,17 +11,31 @@ the moment.
     -- Go between spaces
 """
 
-S  = GaussLobatto(9)
+struct M end
+struct MU end
+struct MV end
+struct Mθ end
+
+S  = GaussLobatto{M}(9)
 x  = Field(S) 
 ϕ  = Field(S, x->exp(4x))
 D  = derivative(S)
+I  = identity(S)
 
-SU  = GaussLobatto(9)
-SV  = GaussLobatto(9)
-Sθ  = GaussLobatto(9)
+SU  = GaussLobatto{MU}(9)
+SV  = GaussLobatto{MV}(9)
+Sθ  = GaussLobatto{Mθ(9)
 
 SUV  = SU ⦼ SV
 SUVθ = SUV ⦼ Sθ
 xUV  = Field(SUV)
 xUVθ = Field(SUVθ)
 Γ    = Field(SUV, (x,y)->x+y)
+
+DI  = D ⦼ I
+DII = ⦼(D, I, I)
+DII = D ⊗ I ⊗ I
+DII = (D ⊗ I) ⊗ I
+
+#DEBUG
+SUV = derivative(SUV)
