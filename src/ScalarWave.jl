@@ -5,8 +5,12 @@
 
 module ScalarWave
 using Luxor, Colors, JLD, PyPlot
-
 export Patch, Boundary
+
+export Manifold, Space, Chebyshev, GaussLobatto, Field,
+       Operator, ProductSpace, ProductSpaceOperator
+
+export derivative, integral, solve, boundary, ⦼, range, dim
 
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
 	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, 
@@ -29,5 +33,7 @@ include("Projection.jl")
 include("Dispatch.jl")
 include("Visualization.jl")
 include("Futures.jl")
+include("Spaces.jl")
+include("AbstractTypes.jl")
 
 end 
