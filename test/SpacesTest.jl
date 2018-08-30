@@ -3,39 +3,28 @@
 # Soham 08-2018
 #--------------------------------------------------------------------
 
-"""
-We want to be able to define two operations at 
-the moment.
-    -- Multiplication of two fields [Done]
-    -- Derivative of a field [Done]
-    -- Go between spaces
-"""
+#--------------------------------------------------------------------
+# 1D Spaces
+#--------------------------------------------------------------------
 
 struct M end
-struct MU end
-struct MV end
-struct Mθ end
+S = GaussLobatto{M, 9}
+ϕ = Field(S, x->x+1)  
+D = derivative(S) 
 
-S  = GaussLobatto{M}(9)
-x  = Field(S) 
-ϕ  = Field(S, x->exp(4x))
-D  = derivative(S)
-I  = identity(S)
+#--------------------------------------------------------------------
+# 2D Spaces
+#--------------------------------------------------------------------
 
-SU  = GaussLobatto{MU}(9)
-SV  = GaussLobatto{MV}(9)
-Sθ  = GaussLobatto{Mθ(9)
+struct U end
+struct V end
+struct UV end
 
-SUV  = SU ⦼ SV
-SUVθ = SUV ⦼ Sθ
-xUV  = Field(SUV)
-xUVθ = Field(SUVθ)
-Γ    = Field(SUV, (x,y)->x+y)
-
-DI  = D ⦼ I
-DII = ⦼(D, I, I)
-DII = D ⊗ I ⊗ I
-DII = (D ⊗ I) ⊗ I
-
-#DEBUG
-SUV = derivative(SUV)
+SU  = GaussLobatto{U,3}
+SV  = GaussLobatto{V,5}
+SUV = ProductSpace{SU, SV}
+ϕ   = Field(SUV, (x,y)->x+y)  
+b   = Boundary(SUV, (x,y)->1)
+DU, DV = derivative(SUV)
+B   = boundary(SUV)
+L   = DV*DV + DU*DU
