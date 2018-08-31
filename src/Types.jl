@@ -7,8 +7,3 @@ struct Patch
     loc::Array{Int,1}
     value::Array{Float64,2}
 end
-
-struct Boundary
-    kind::Int
-    value::Array{Float64,1}
-end

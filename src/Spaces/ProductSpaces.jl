@@ -13,11 +13,6 @@ struct ProductSpaceOperator{S, D, T}
     value::Array{T, D}
 end
 
-struct Boundary{S, D, T} <: Field{S, D, T}
-    space::Type{S}
-    value::Array{T, D}
-end
-
 order{S1, S2}(PS::Type{ProductSpace{S1, S2}}) = (order(S1), order(S2)) 
 dim{S1, S2}(PS::Type{ProductSpace{S1, S2}})   = dim(S1) + dim(S2)  
 range{S1, S2}(PS::Type{ProductSpace{S1, S2}}) = CartesianRange((order(S1)+1, order(S2)+1))

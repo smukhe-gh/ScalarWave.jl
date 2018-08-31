@@ -8,15 +8,18 @@ using Luxor, Colors, JLD, PyPlot
 
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
-       Chebyshev, GaussLobatto, 
+       Chebyshev, GaussLobatto, Taylor, 
        Field, Operator, ProductSpaceOperator
 
 export order, dim, 
-       derivative, identity, boundary, boundaryconditions
+       derivative, identity, boundary, solve 
 
 include("Spaces/AbstractTypes.jl")
 include("Spaces/SingleSpaces.jl")
 include("Spaces/ProductSpaces.jl")
+
+export deriv, collocation
+include("Rationals.jl")
 
 export Patch, Boundary
 export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,

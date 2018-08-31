@@ -16,6 +16,7 @@ libraries = ["SpecCalculus",
              "Futures",
              "Visualization"]
 
+libraries = ["Rationals"]
 libraries = ["Spaces"]
 
 for file in libraries
