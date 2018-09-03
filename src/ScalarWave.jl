@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, JLD
+using Luxor, Colors
 
 export Patch, Boundary
 

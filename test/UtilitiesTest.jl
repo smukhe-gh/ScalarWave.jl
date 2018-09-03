@@ -54,14 +54,6 @@ function testarray2dict2array(Nx, Ny, M)::Bool
     return dict2array(array2dict(sPatch, Nx, Ny, M)) == sPatch
 end
 
-function testsaveandloadgrid(Nx::Int, Ny::Int, M::Int)::Bool
-    sPatch = rand((Nx+1)*M, (Ny+1)*M)
-    dbase  = array2dict(sPatch, Nx, Ny, M) 
-    datetime = savegrid(dbase, ".")
-    ldbase = loadgrid("./$datetime.jld")
-    run(`rm ./$datetime.jld`)
-    return ldbase["patch"][[1,1]].value == dbase[[1,1]].value
-end
 
 @test coordtransL2G(2, 1, -1.0) ≈ 0.0 
 @test coordtransL2G(2, 2,  1.0)  ≈ 0.0
@@ -73,4 +65,3 @@ end
 @test testL1norm(14, 11)  < 1e-14
 @test testL2norm(11, 14)  < 1e-14
 @test testarray2dict2array(4,5,3) == true
-@test testsaveandloadgrid(2, 2, 2) == true
