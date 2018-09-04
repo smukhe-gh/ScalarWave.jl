@@ -7,6 +7,7 @@
 # 1D Spaces
 #--------------------------------------------------------------------
 
+
 struct M end
 
 P = 5
@@ -19,7 +20,7 @@ B = boundary(S)
 L = D*D
 u = solve(L + B, ϕ + b)
 
-@testset "1D Rational space" begin
+@testset "1D space" begin
 @test order(S) == P
 @test dim(S)   == 1
 @test range(S) == 1:P+1
@@ -33,18 +34,17 @@ u = solve(L + B, ϕ + b)
 @test u.value       == γ.value 
 end;
 
+P = 20
 S = GaussLobatto{M, P}
-ϕ = Field(S, x->x^3)  
-γ = Field(S, x->x^5/20)  
-b = Boundary(S, x->1//20, x->(-1//20))
+ϕ = Field(S, x->exp(4x))  
+γ = Field(S, x->(exp(4x) - x*sinh(4.0) - cosh(4.0))/16)  
+b = Boundary(S, x->0, x->0)
 D = derivative(S) 
 B = boundary(S)
 L = D*D
 u = solve(L + B, ϕ + b)
-
-@testset "1D Float64 space" begin
+@testset "1D space" begin
 @test u.value ≈ γ.value 
-
 end;
 
 #--------------------------------------------------------------------
