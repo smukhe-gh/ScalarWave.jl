@@ -19,11 +19,11 @@ B = boundary(S)
 L = D*D
 u = solve(L + B, ϕ + b)
 
-@testset "1D spaces" begin
+@testset "1D Rational space" begin
 @test order(S) == P
 @test dim(S)   == 1
-@test range(S) == CartesianRange((P+1,))
-@test size(S)  == (P+1,)
+@test range(S) == 1:P+1
+@test len(S)  == P+1
 @test (ϕ + γ).value == Field(S, x->(x^5)/20 + x^3).value
 @test (γ - ϕ).value == Field(S, x->(x^5)/20 - x^3).value
 @test (γ * ϕ).value == Field(S, x->(x^5/20)*x^3).value
@@ -33,10 +33,25 @@ u = solve(L + B, ϕ + b)
 @test u.value       == γ.value 
 end;
 
+S = GaussLobatto{M, P}
+ϕ = Field(S, x->x^3)  
+γ = Field(S, x->x^5/20)  
+b = Boundary(S, x->1//20, x->(-1//20))
+D = derivative(S) 
+B = boundary(S)
+L = D*D
+u = solve(L + B, ϕ + b)
+
+@testset "1D Float64 space" begin
+@test u.value ≈ γ.value 
+
+end;
+
 #--------------------------------------------------------------------
 # 2D Spaces
 #--------------------------------------------------------------------
 
+#=
 struct U end
 struct V end
 struct UV end
@@ -47,6 +62,6 @@ SUV = ProductSpace{SU, SV}
 ϕ   = Field(SUV, (x,y)->x+y)  
 DU, DV = derivative(SUV)
 B   = boundary(SUV)
-L   = DV*DV + DU*DU
+L   = DU*DU + DV*DV
 
-
+=#

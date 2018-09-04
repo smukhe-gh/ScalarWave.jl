@@ -4,12 +4,8 @@
 # Define operations and data structures for 1D spaces
 #--------------------------------------------------------------------
 
-import Base: size, range, identity 
-import Base: +, -, *
-
-struct Chebyshev{Tag, N} <: Galerkin{Tag} end
-struct GaussLobatto{Tag ,N} <: Cardinal{Tag} end
-struct Taylor{Tag ,N} <: Cardinal{Tag} end
+struct GaussLobatto{Tag ,N} <: Cardinal{Tag, N} end
+struct Taylor{Tag ,N} <: Cardinal{Tag, N} end
 
 struct Field{S, D, T}
     space::Type{S}
@@ -26,120 +22,118 @@ struct Operator{S, D, T}
     value::Array{T, D}
 end
 
-order{Tag, N}(S::Type{GaussLobatto{Tag, N}}) = N 
-dim{Tag, N}(S::Type{GaussLobatto{Tag, N}})   = 1 
-range{Tag, N}(S::Type{GaussLobatto{Tag, N}}) = CartesianRange((N+1,)) 
-size{Tag, N}(S::Type{GaussLobatto{Tag, N}})  = range(S).stop.I
+import Base: range, identity 
+import Base: +, -, *
 
-order{Tag, N}(S::Type{Taylor{Tag, N}}) = N 
-dim{Tag, N}(S::Type{Taylor{Tag, N}})   = 1 
-range{Tag, N}(S::Type{Taylor{Tag, N}}) = CartesianRange((N+1,)) 
-size{Tag, N}(S::Type{Taylor{Tag, N}})  = range(S).stop.I
+order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N 
+dim(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}    = 1 
+range(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = 1:N+1 
+len(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N} = N+1 
 
-+{S}(A::Field{S}, B::Field{S}) = Field(S, A.value + B.value)
--{S}(A::Field{S}, B::Field{S}) = Field(S, A.value - B.value)
-*{S}(A::Field{S}, B::Field{S}) = Field(S, A.value .* B.value)
-+{S}(A::Operator{S}, B::Operator{S}) = Operator(S, A.value + B.value)
--{S}(A::Operator{S}, B::Operator{S}) = Operator(S, A.value - B.value)
++(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value + B.value)
+-(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value - B.value)
+*(A::Field{S}, B::Field{S}) where {S<:Cardinal{Tag,N}} where {Tag, N} = Field(S, A.value .* B.value)
 
-function Field{Tag, N}(S::Type{GaussLobatto{Tag,N}}, umap::Function)::Field{S}
-    value = zeros(size(S))
++(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value + B.value)
+-(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value - B.value)
+
+function Field(S::Type{GaussLobatto{Tag,N}}, umap::Function)::Field{S} where {Tag, N}
+    value = zeros(Float64, len(S))
     for index in range(S) 
-        value[index] = umap(chebx(index.I[1],N)) 
+        value[index] = umap(collocation(Float64, index, N)) 
     end
     return Field(S, value)
 end
 
-function Field{Tag, N}(S::Type{Taylor{Tag,N}}, umap::Function)::Field{S}
-    value = zeros(Rational{Int64}, size(S))
+function Field(S::Type{Taylor{Tag,N}}, umap::Function)::Field{S} where {Tag, N}
+    value = zeros(Rational, len(S))
     for index in range(S) 
-        value[index] = umap(collocation(Rational, index.I[1],N)) 
+        value[index] = umap(collocation(Rational, index, N)) 
+        typeof(value[index]) <: Rational ? 1 : error("The mapping doens't preserve eltype. Aborting.")
     end
     return Field(S, value)
 end
 
-function derivative{Tag, N}(S::Type{GaussLobatto{Tag,N}})::Operator{S}
-    DS = zeros(size(S)..., size(S)...) 
+function derivative(S::Type{GaussLobatto{Tag,N}})::Operator{S} where {Tag, N}
+    DS = zeros(len(S), len(S)) 
     for index in CartesianRange(size(DS))
-        i, j = index.I
-        DS[index] = chebd(i, j, N) 
+        DS[index] = derivative(Float64, index.I[1], index.I[2], N) 
     end
     return Operator(S, DS)
 end
 
-function derivative{Tag, N}(S::Type{Taylor{Tag,N}})::Operator{S}
-    DS = zeros(Rational, size(S)..., size(S)...) 
+function derivative(S::Type{Taylor{Tag,N}})::Operator{S} where {Tag, N}
+    DS = zeros(Rational, len(S), len(S)) 
     for index in CartesianRange(size(DS))
-        i, j = index.I
-        DS[index] = deriv(Rational, i, j, N)
+        DS[index] = derivative(Rational, index.I[1], index.I[2], N) 
     end
     return Operator(S, DS)
 end
 
-function identity{Tag, N}(S::Type{GaussLobatto{Tag,N}})::Operator{S}
-    I = zeros(size(S)..., size(S)...) 
-    for index in CartesianRange(size(I))
-        i ,j = index.I
-        I[index] = delta(i,j) 
-    end
-    return Operator(S, I)
+function identity(S::Type{GaussLobatto{Tag,N}})::Operator{S} where {Tag, N}
+    return Operator(S, eye(Float64, len(S)))
 end
 
-function *{S}(A::Operator{S}, B::Operator{S})::Operator{S} 
+function identity(S::Type{Taylor{Tag,N}})::Operator{S} where {Tag, N}
+    return Operator(S, eye(Rational, len(S)))
+end
+
+function boundary(S::Type{GaussLobatto{Tag,N}})::Operator{S} where {Tag, N}
+    B = zeros(Float64, len(S)) 
+    B[1] = B[end] = 1
+    return Operator(S, diagm(vec(B)))
+end
+
+function boundary(S::Type{Taylor{Tag,N}})::Operator{S} where {Tag, N}
+    B = zeros(Rational, len(S)) 
+    B[1] = B[end] = 1//1
+    return Operator(S, diagm(vec(B)))
+end
+
+function *(A::Operator{S}, B::Operator{S})::Operator{S} where {S} 
     C = similar(A.value)
     for index in CartesianRange(size(C))
-        i, j = index.I
-        C[index] = sum(A.value[i,k]*B.value[k,j] for k in 1:order(S)+1)
+        C[index] = sum(A.value[index.I[1],k]*B.value[k,index.I[2]] for k in range(S))
     end
     return Operator(S, C)
 end
 
-function *{S}(A::Operator{S}, u::Field{S})::Field{S} 
-    C = similar(u.value)
-    for index in CartesianRange(size(C))
-        i = index.I[1]
-        C[i] = sum(A.value[i,k]*u.value[k] for k in 1:order(S)+1)
+function *(A::Operator{S}, u::Field{S})::Field{S} where {S} 
+    v = similar(u.value)
+    for index in range(S)
+        v[index] = sum(A.value[index,k]*u.value[k] for k in range(S))
     end
-    return Field(S, C)
+    return Field(S, v)
 end
 
-function *{S}(u::Field{S}, A::Operator{S})::Operator{S} 
-    C = similar(A.value)
-    for index in CartesianRange(size(C))
-        i, j = index.I
-        C[index] = u.value[i]*A.value[i,j]
+function *(u::Field{S}, A::Operator{S})::Operator{S} where {S} 
+    B = similar(A.value)
+    for index in CartesianRange(size(B))
+        B[index] = u.value[index.I[1]]*A.value[index.I[1], index.I[2]]
     end
-    return Operator(S, C)
+    return Operator(S, B)
 end
 
-function boundary{Tag, N}(S::Type{GaussLobatto{Tag,N}})::Operator{S}
-    BS = zeros(size(S)) 
-    BS[1] = BS[end] = 1
-    return Operator(S, diagm(vec(BS)))
-end
-
-function boundary{Tag, N}(S::Type{Taylor{Tag,N}})::Operator{S}
-    BS = zeros(Rational, size(S)) 
-    BS[1] = BS[end] = 1//1
-    return Operator(S, diagm(vec(BS)))
-end
-
-
-function Boundary{Tag, N}(S::Type{Taylor{Tag,N}}, f::Function...)::Boundary{S}
-    @assert length(f) == 2
-    bnd1 = f[1]
-    bnd2 = f[2]
-    b    = zeros(Rational, size(S))
-    b[1] = bnd1(collocation(Rational, 1, order(S))) 
-    b[end] = bnd2(collocation(Rational, order(S)+1, order(S))) 
+function Boundary(S::Type{GaussLobatto{Tag,N}}, f::Function...)::Boundary{S} where {Tag, N}
+    b      = zeros(Float64, len(S))
+    b[1]   = f[1](collocation(Rational, 1, order(S))) 
+    b[end] = f[2](collocation(Rational, len(S), order(S))) 
     return Boundary(S, b) 
 end
 
-function +{S}(u::Field{S}, v::Boundary{S})::Field{S}
-    #v.value[2:end-1] = u.value[2:end-1]  
-    return Field(S, u.value + v.value)
+function Boundary(S::Type{Taylor{Tag,N}}, f::Function...)::Boundary{S} where {Tag, N}
+    b      = zeros(Rational, len(S))
+    bnd1val = f[1](collocation(Rational, 1, order(S))) 
+    bnd2val = f[2](collocation(Rational, len(S), order(S))) 
+    typeof(bnd1val) <: Rational ? b[1]   = bnd1val : error("Mapping doesn't preserve eltype. Aborting.")
+    typeof(bnd2val) <: Rational ? b[end] = bnd2val : error("Mapping doesn't preserve eltype. Aborting.")
+    return Boundary(S, b) 
 end
 
-function solve{S}(A::Operator{S}, u::Field{S})::Field{S}
+function +(u::Field{S}, b::Boundary{S})::Field{S} where {S}
+    return Field(S, u.value + b.value)
+end
+
+function solve(A::Operator{S}, u::Field{S})::Field{S} where {S}
     return Field(S, A.value \ u.value)
 end

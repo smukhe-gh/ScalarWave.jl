@@ -36,6 +36,7 @@ function ⦼(A::Operator, B::Operator)::ProductSpaceOperator
         i ,j ,k ,l = index.I
         AB[index]  = A.value[i,k]*B.value[j,l] 
     end
+    AB = reshape(kron(A.value, B.value), (size(A.space), size(B.space), size(A.space), size(B.space)))
     return ProductSpaceOperator(ProductSpace{A.space, B.space}, AB)
 end
 
@@ -50,6 +51,7 @@ function *{S}(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S})::ProductSp
         i, j, k, l = index.I
         C[index]   = sum(A.value[i,j,m,n]*B.value[m,n,k,l] for m in 1:order(S)[1]+1, n in 1:order(S)[2]+1)
     end
+
     return ProductSpaceOperator(S, C)
 end
 
