@@ -43,15 +43,13 @@ D = derivative(S)
 B = boundary(S)
 L = D*D
 v = solve(L + B, ϕ + b)
-@testset "1D space" begin
 @test v.value ≈ w.value 
-end;
 
 #--------------------------------------------------------------------
 # 2D Spaces
 #--------------------------------------------------------------------
 
-#=
+
 struct U end
 struct V end
 struct UV end
@@ -59,9 +57,10 @@ struct UV end
 SU  = GaussLobatto{U,3}
 SV  = GaussLobatto{V,5}
 SUV = ProductSpace{SU, SV}
+
+@test order(SUV) == (3,5)
 ϕ   = Field(SUV, (x,y)->x+y)  
 DU, DV = derivative(SUV)
 B   = boundary(SUV)
 L   = DU*DU + DV*DV
 
-=#

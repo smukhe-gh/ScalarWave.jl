@@ -1,10 +1,8 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 08-2018
-# Define operations and data structures for 1D spaces
+# Define operations and data structures for 2D spaces
 #--------------------------------------------------------------------
-
-import Base: +, -, *
 
 struct ProductSpace{S1<:Space, S2<:Space} end
 
@@ -13,91 +11,119 @@ struct ProductSpaceOperator{S, D, T}
     value::Array{T, D}
 end
 
-order{S1, S2}(PS::Type{ProductSpace{S1, S2}}) = (order(S1), order(S2)) 
-dim{S1, S2}(PS::Type{ProductSpace{S1, S2}})   = dim(S1) + dim(S2)  
-range{S1, S2}(PS::Type{ProductSpace{S1, S2}}) = CartesianRange((order(S1)+1, order(S2)+1))
-size{S1, S2}(PS::Type{ProductSpace{S1, S2}})  = range(PS).stop.I
+import Base: +, -, *, size, range
 
-+{S}(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S}) = ProductSpaceOperator(S, A.value + B.value)
--{S}(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S}) = ProductSpaceOperator(S, A.value - B.value)
+order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S1), order(S2)) 
+dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)  
+range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianRange((len(S1), len(S2)))
+size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (len(S1), len(S2)) 
 
-function Field{S1, S2}(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS}
-    value = zeros(size(PS))
++(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S}) where {S} = ProductSpaceOperator(S, A.value + B.value)
+-(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S}) where {S} = ProductSpaceOperator(S, A.value - B.value)
+
+function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N}
+    value = zeros(Rational, size(PS))
     for index in range(PS) 
-        value[index] = umap(chebx(index.I[1], order(S1)), chebx(index.I[2], order(S2))) 
+        value[index] = umap(collocation(Float64, index.I[1], order(S1)), 
+                            collocation(Float64, index.I[2], order(S2))) 
     end
     return Field(PS, value)
 end
 
-function ⦼(A::Operator, B::Operator)::ProductSpaceOperator
-    AB = zeros(size(A.space)..., size(B.space)..., 
-               size(A.space)..., size(B.space)...)
+function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: Taylor{Tag,N}} where {Tag, N}
+    value = zeros(Rational, size(PS))
+    for index in range(PS) 
+        value[index] = umap(collocation(Rational, index.I[1], order(S1)), 
+                            collocation(Rational, index.I[2], order(S2))) 
+    end
+    return Field(PS, value)
+end
+
+function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}} where {Tag, N}
+    AB = zeros(Float64, len(S2), len(S1), len(S2), len(S1)) 
     for index in CartesianRange(size(AB))
-        i ,j ,k ,l = index.I
-        AB[index]  = A.value[i,k]*B.value[j,l] 
+        i ,j ,ii ,jj = index.I
+        AB[index]    = A.value[j,jj]*B.value[i,ii] 
     end
-    AB = reshape(kron(A.value, B.value), (size(A.space), size(B.space), size(A.space), size(B.space)))
-    return ProductSpaceOperator(ProductSpace{A.space, B.space}, AB)
+    return ProductSpaceOperator(ProductSpace{S1, S2}, AB)
 end
 
-function derivative{S1, S2}(PS::Type{ProductSpace{S1, S2}})     
-    return (derivative(S1)⦼identity(S2), identity(S1)⦼derivative(S2))
+function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Taylor{Tag, N}} where {Tag, N}
+    AB = zeros(Rational, len(S2), len(S1), len(S2), len(S1)) 
+    for index in CartesianRange(size(AB))
+        i ,j ,ii ,jj = index.I
+        AB[index]    = A.value[j,jj]*B.value[i,ii] 
+    end
+    return ProductSpaceOperator(ProductSpace{S1, S2}, AB)
 end
 
-function *{S}(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S})::ProductSpaceOperator{S} 
+function derivative(PS::Type{ProductSpace{S1, S2}}) where {S1, S2}     
+    return (derivative(S1) ⦼ identity(S2), identity(S1) ⦼ derivative(S2))
+end 
+
+function *(A::ProductSpaceOperator{ProductSpace{S1,S2}}, 
+           B::ProductSpaceOperator{ProductSpace{S1,S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2}
     C = similar(A.value)
-    orders = order(S)
     for index in CartesianRange(size(C))
-        i, j, k, l = index.I
-        C[index]   = sum(A.value[i,j,m,n]*B.value[m,n,k,l] for m in 1:order(S)[1]+1, n in 1:order(S)[2]+1)
+        i, j, ii, jj = index.I
+        C[index]     = sum(A.value[i,j,k,kk]*B.value[k,kk,ii,jj] for k in range(S2), kk in range(S1))    
     end
-
-    return ProductSpaceOperator(S, C)
+    return ProductSpaceOperator(ProductSpace{S1, S2}, C)
 end
 
-function *{S}(A::ProductSpaceOperator{S}, B::Field{S})::Field{S} 
-    C = similar(B.value)
-    orders = order(S)
+function *(A::ProductSpaceOperator{ProductSpace{S1,S2}}, 
+           u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2} 
+    v = similar(B.value)
     for index in CartesianRange(size(C))
-        i, j = index.I
-        C[index]   = sum(A.value[i,j,m,n]*B.value[m,n] for m in 1:order(S)[1]+1, n in 1:order(S)[2]+1)
+        i, ii = index.I
+        C[index] = sum(A.value[i, ii, k, kk]*u.value[k, kk] for k in range(S2), kk in range(S1))
+    end
+    return Field(ProductSpace{S1, S2}, v)
+end
+
+function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} where {PS} 
+    B = similar(B.value)
+    for index in CartesianRange(size(C))
+        i, j, ii, jj = index.I
+        C[index]     = B[i, ii]*A.value[i, ii, j, jj]
     end
     return Field(S, C)
 end
 
-function *{S}(A::Field{S}, B::ProductSpaceOperator{S})::ProductSpaceOperator{S} 
-    C = similar(B.value)
-    orders = order(S)
-    for index in CartesianRange(size(C))
-        i, j ,k ,l = index.I
-        C[index]   = sum(B[i,j]*A.value[m,n,k,l] for m in 1:order(S)[1]+1, n in 1:order(S)[2]+1)
-    end
-    return Field(S, C)
+function boundary(PS::Type{ProductSpace{S1, S2}}) where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
+    B = zeros(Float64, len(S1), len(S2))
+    B[1, :] = B[:, 1] = B[end, :] = B[:, end] = 1
+    return ProductSpaceOperator(ProductSpace{S1, S2}, diagm(vec(B)))
 end
 
-function solve{S}(A::ProductSpaceOperator{S}, u::Field{S})::Field{S}
-    return Field(S, reshapeL2H(reshapeH2L(A.value) \ reshapeH2L(u.value), size(S)))
+function boundary(PS::Type{ProductSpace{S1, S2}}) where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
+    B = zeros(Rational, len(S1), len(S2))
+    B[1, :] = B[:, 1] = B[end, :] = B[:, end] = 1//1
+    return ProductSpaceOperator(ProductSpace{S1, S2}, diagm(vec(B)))
 end
 
-function boundary{S1, S2}(PS::Type{ProductSpace{S1, S2}})     
-    B = zeros(size(S1)..., size(S2)..., 
-              size(S1)..., size(S2)...)
-    for index in CartesianRange(size(B))
-        k, i, j, l = index.I
-        if  i==1 || k==1 || i == size(S1) || k == size(S2)
-            B[index] = delta(i,j)*delta(k,l)
-        end
-    end
+function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
+    B = zeros(Float64, len(S1), len(S2))
+    B[1, :]   = [bmap[1](collocation(Rational, ii, order(S1)) for ii in order(S1))]
+    B[:, 1]   = [bmap[2](collocation(Rational, i,  order(S2)) for i  in order(S2))]
+    B[:, end] = [bmap[3](collocation(Rational, jj, order(S1)) for jj in order(S1))]
+    B[end, :] = [bmap[4](collocation(Rational, j,  order(S2)) for j  in order(S2))]
     return ProductSpaceOperator(ProductSpace{S1, S2}, B)
 end
 
-function Boundary{S1, S2}(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Boundary{PS}
-    value = zeros(size(PS))
-    for index in range(PS) 
-        i, j = index.I
-        if  i==1 || j==1 || i == size(S1) || j == size(S2)
-            value[index] = umap(chebx(index.I[1], order(S1)), chebx(index.I[2], order(S2))) 
-        end
-    end
-    return Field(PS, value)
+function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
+    B = zeros(Rational, len(S1), len(S2))
+    bnd1 = [bmap[1](collocation(Rational, ii, order(S1)) for ii in order(S1))]
+    bnd2 = [bmap[2](collocation(Rational, i,  order(S2)) for i  in order(S2))]
+    bnd3 = [bmap[3](collocation(Rational, jj, order(S1)) for jj in order(S1))]
+    bnd4 = [bmap[4](collocation(Rational, j,  order(S2)) for j  in order(S2))]
+    eltype(bnd1) <: Rational ? B[1,:] = bnd1 : error("Mapping doesn't preserve eltype. Aborting") 
+    eltype(bnd2) <: Rational ? B[:,1] = bnd2 : error("Mapping doesn't preserve eltype. Aborting") 
+    eltype(bnd3) <: Rational ? B[end,:]  = bnd3 : error("Mapping doesn't preserve eltype. Aborting") 
+    eltype(bnd4) <: Rational ? B[:, end] = bnd4 : error("Mapping doesn't preserve eltype. Aborting") 
+    return ProductSpaceOperator(ProductSpace{S1, S2}, B)
+end
+
+function solve(A::ProductSpaceOperator{PS}, u::Field{PS})::Field{PS} where {PS}
+    return Field(S, reshapeL2H(reshapeH2L(A.value) \ reshapeH2L(u.value), size(PS)))
 end

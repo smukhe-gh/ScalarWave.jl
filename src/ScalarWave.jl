@@ -8,7 +8,7 @@ using Luxor, Colors, PyPlot
 
 include("Spaces/AbstractTypes.jl")
 include("Spaces/SingleSpaces.jl")
-#include("Spaces/ProductSpaces.jl")
+include("Spaces/ProductSpaces.jl")
 include("Rationals.jl")
 
 
