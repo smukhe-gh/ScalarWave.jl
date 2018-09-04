@@ -37,14 +37,14 @@ end;
 P = 20
 S = GaussLobatto{M, P}
 ϕ = Field(S, x->exp(4x))  
-γ = Field(S, x->(exp(4x) - x*sinh(4.0) - cosh(4.0))/16)  
+w = Field(S, x->(exp(4x) - x*sinh(4.0) - cosh(4.0))/16)  
 b = Boundary(S, x->0, x->0)
 D = derivative(S) 
 B = boundary(S)
 L = D*D
-u = solve(L + B, ϕ + b)
+v = solve(L + B, ϕ + b)
 @testset "1D space" begin
-@test u.value ≈ γ.value 
+@test v.value ≈ w.value 
 end;
 
 #--------------------------------------------------------------------
