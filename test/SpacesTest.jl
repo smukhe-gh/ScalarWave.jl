@@ -54,13 +54,35 @@ struct U end
 struct V end
 struct UV end
 
-SU  = GaussLobatto{U,3}
-SV  = GaussLobatto{V,5}
+P1, P2 = 3, 5
+SU  = Taylor{U,P1}
+SV  = Taylor{V,P2}
 SUV = ProductSpace{SU, SV}
 
-@test order(SUV) == (3,5)
 ϕ   = Field(SUV, (x,y)->x+y)  
+γ   = Field(SUV, (x,y)->0)  
+ψ   = Field(SUV, (x,y)->x^2+y^3)  
 DU, DV = derivative(SUV)
 B   = boundary(SUV)
 L   = DU*DU + DV*DV
+I   = identity(SU) ⦼ identity(SV)
+b   = Boundary(SUV, x->0//1, x->0//1, x->0//1, x->x^2) 
 
+@testset "2D spaces" begin
+@test order(SUV) == (P2, P1)
+@test dim(SUV)   == 2
+@test range(SUV) == CartesianRange((P2+1,P1+1))
+@test size(SUV)  == (P2+1,P1+1)
+@test (ϕ + ψ).value == Field(SUV, (x,y)->x^2 + y^3 + x + y).value 
+@test (ϕ - ψ).value == Field(SUV, (x,y)->x + y - x^2 - y^3).value 
+@test (ϕ * ψ).value == Field(SUV, (x,y)->(x^2 + y^3)*(x + y)).value 
+@test DU.value == reshape(kron(derivative(SU).value, identity(SV).value), (P2+1,P1+1,P2+1,P1+1))
+@test DV.value == reshape(kron(identity(SU).value, derivative(SV).value), (P2+1,P1+1,P2+1,P1+1))
+@test (DU*DV).value == reshape(kron(derivative(SU).value, identity(SV).value)*
+                               kron(identity(SU).value, derivative(SV).value), (P2+1,P1+1,P2+1,P1+1))
+@test (ϕ*I).value == reshape(diagm(vec(ϕ.value)), (P2+1, P1+1, P2+1, P1+1))
+@test (I*ψ).value == ψ.value 
+@test (DU*ψ).value == Field(SUV, (x,y)->3y^2).value
+@test (DU*DU*ψ).value == Field(SUV, (x,y)->6y).value
+@test (DV*ψ).value == Field(SUV, (x,y)->2x).value
+end;
