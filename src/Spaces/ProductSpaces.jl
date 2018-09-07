@@ -25,7 +25,7 @@ size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (len(S2), len(S1))
 -(A::ProductSpaceOperator{PS}, B::ProductSpaceOperator{PS}) where {PS} = ProductSpaceOperator(PS, A.value - B.value)
 
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N}
-    value = zeros(Rational, size(PS))
+    value = zeros(Float64, size(PS))
     for index in range(PS)
         value[index] = umap(collocation(Float64, index.I[1], order(S2)), 
                             collocation(Float64, index.I[2], order(S1))) 
@@ -34,7 +34,7 @@ function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where 
 end
 
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: Taylor{Tag,N}} where {Tag, N}
-    value = zeros(Rational, size(PS))
+    value = zeros(Rational{BigInt}, size(PS))
     for index in range(PS) 
         value[index] = umap(collocation(Rational, index.I[1], order(S2)), 
                             collocation(Rational, index.I[2], order(S1))) 
@@ -52,7 +52,7 @@ function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpac
 end
 
 function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Taylor{Tag, N}} where {Tag, N}
-    AB = zeros(Rational, len(S2), len(S1), len(S2), len(S1)) 
+    AB = zeros(Rational{BigInt}, len(S2), len(S1), len(S2), len(S1)) 
     for index in CartesianRange(size(AB))
         i ,j ,ii ,jj = index.I
         AB[index]    = A.value[j,jj]*B.value[i,ii] 
@@ -101,7 +101,7 @@ function boundary(PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductS
 end
 
 function boundary(PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
-    B = zeros(Rational, len(S2), len(S1))
+    B = zeros(Rational{BigInt}, len(S2), len(S1))
     B[1, :] = B[:, 1] = B[end, :] = B[:, end] = 1//1
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
 end
@@ -111,12 +111,16 @@ function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{P
     bnd1 = map(bmap[1], [collocation(Float64, i,  order(S2)) for i  in range(S2)])
     bnd2 = map(bmap[2], [collocation(Float64, ii, order(S1)) for ii in range(S1)])
     bnd3 = map(bmap[3], [collocation(Float64, j,  order(S2)) for j  in range(S2)])
-    bnd4 = map(bmap[4], [collocation(Float64, jj, order(S1)) for jj in range(S1)])
+    bnd4 = map(bmap[4], [collocation(Rational, jj, order(S1)) for jj in range(S1)])
+    B[:,1] = bnd1 
+    B[1,:] = bnd2 
+    B[:, end] = bnd3 
+    B[end, :] = bnd4 
     return Boundary(ProductSpace{S1, S2}, B)
 end
 
 function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
-    B = zeros(Rational, len(S2), len(S1))
+    B = zeros(Rational{BigInt}, len(S2), len(S1))
     bnd1 = map(bmap[1], [collocation(Rational, i,  order(S2)) for i  in range(S2)])
     bnd2 = map(bmap[2], [collocation(Rational, ii, order(S1)) for ii in range(S1)])
     bnd3 = map(bmap[3], [collocation(Rational, j,  order(S2)) for j  in range(S2)])
@@ -129,7 +133,14 @@ function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{P
 end
 
 function solve(A::ProductSpaceOperator{ProductSpace{S1, S2}}, u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
-    @show cond(reshape(A.value, (len(S2)*len(S1), len(S2)*len(S1))))
     return Field(ProductSpace{S1, S2}, 
                  reshape(reshape(A.value, (len(S2)*len(S1), len(S2)*len(S1))) \ reshape(u.value, len(S2)*len(S1)), (len(S2), len(S1))))
+end
+
+function +(u::Field{ProductSpace{S1,S2}}, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
+    return Field(ProductSpace{S1,S2}, u.value + b.value)
+end
+
+function +(u::Boundary{ProductSpace{S1,S2}}, b::Field{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
+    return Field(ProductSpace{S1,S2}, u.value + b.value)
 end

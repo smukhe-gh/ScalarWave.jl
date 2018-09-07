@@ -46,7 +46,7 @@ function Field(S::Type{GaussLobatto{Tag,N}}, umap::Function)::Field{S} where {Ta
 end
 
 function Field(S::Type{Taylor{Tag,N}}, umap::Function)::Field{S} where {Tag, N}
-    value = zeros(Rational, len(S))
+    value = zeros(Rational{BigInt}, len(S))
     for index in range(S) 
         value[index] = umap(collocation(Rational, index, N)) 
         typeof(value[index]) <: Rational ? 1 : error("The mapping doens't preserve eltype. Aborting.")
@@ -63,7 +63,7 @@ function derivative(S::Type{GaussLobatto{Tag,N}})::Operator{S} where {Tag, N}
 end
 
 function derivative(S::Type{Taylor{Tag,N}})::Operator{S} where {Tag, N}
-    DS = zeros(Rational, len(S), len(S)) 
+    DS = zeros(Rational{BigInt}, len(S), len(S)) 
     for index in CartesianRange(size(DS))
         DS[index] = derivative(Rational, index.I[1], index.I[2], N) 
     end
@@ -75,7 +75,7 @@ function identity(S::Type{GaussLobatto{Tag,N}})::Operator{S} where {Tag, N}
 end
 
 function identity(S::Type{Taylor{Tag,N}})::Operator{S} where {Tag, N}
-    return Operator(S, eye(Rational, len(S)))
+    return Operator(S, eye(Rational{BigInt}, len(S)))
 end
 
 function boundary(S::Type{GaussLobatto{Tag,N}})::Operator{S} where {Tag, N}
@@ -85,7 +85,7 @@ function boundary(S::Type{GaussLobatto{Tag,N}})::Operator{S} where {Tag, N}
 end
 
 function boundary(S::Type{Taylor{Tag,N}})::Operator{S} where {Tag, N}
-    B = zeros(Rational, len(S)) 
+    B = zeros(Rational{BigInt}, len(S)) 
     B[1] = B[end] = 1//1
     return Operator(S, diagm(vec(B)))
 end
@@ -122,7 +122,7 @@ function Boundary(S::Type{GaussLobatto{Tag,N}}, f::Function...)::Boundary{S} whe
 end
 
 function Boundary(S::Type{Taylor{Tag,N}}, f::Function...)::Boundary{S} where {Tag, N}
-    b      = zeros(Rational, len(S))
+    b      = zeros(Rational{BigInt}, len(S))
     bnd1val = f[1](collocation(Rational, 1, order(S))) 
     bnd2val = f[2](collocation(Rational, len(S), order(S))) 
     typeof(bnd1val) <: Rational ? b[1]   = bnd1val : error("Mapping doesn't preserve eltype. Aborting.")
