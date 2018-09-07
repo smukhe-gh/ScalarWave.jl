@@ -123,9 +123,8 @@ Dy, Dx = derivative(SUV)
 @test 𝕨.value == ψ.value
 end
 
-#=
 # Solve using Floats
-P1, P2 = 5, 7
+P1, P2 = 20, 21
 SU  = GaussLobatto{U,P1}
 SV  = GaussLobatto{V,P2}
 SUV = ProductSpace{SU, SV}
@@ -137,5 +136,5 @@ SUV = ProductSpace{SU, SV}
 𝕨   = solve(Ł + 𝔹, ψ + 𝕓) 
 
 patch = Patch([1,1], 𝕨.value)
-drawmultipatch(patch, "test-laplace.pdf")
-=#
+drawmultipatch(Dict([1,1]=>patch), "test-laplace.pdf")
+
