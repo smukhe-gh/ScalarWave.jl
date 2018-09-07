@@ -120,5 +120,22 @@ Dy, Dx = derivative(SUV)
 
 @test (Ł*ψ).value == ddxddyψ.value
 @test 𝕦 == vec(ψ.value)
-@show ψ.value == w.value
+@test 𝕨.value == ψ.value
 end
+
+#=
+# Solve using Floats
+P1, P2 = 5, 7
+SU  = GaussLobatto{U,P1}
+SV  = GaussLobatto{V,P2}
+SUV = ProductSpace{SU, SV}
+𝔻y, 𝔻x = derivative(SUV)
+𝔹   = boundary(SUV)
+ψ   = Field(SUV, (x,y)->10*sin(8*x*(y-1)))  
+𝕓   = Boundary(SUV, x->0, y->0, x->0, y->0)
+Ł   = 𝔻x*𝔻x + 𝔻y*𝔻y
+𝕨   = solve(Ł + 𝔹, ψ + 𝕓) 
+
+patch = Patch([1,1], 𝕨.value)
+drawmultipatch(patch, "test-laplace.pdf")
+=#

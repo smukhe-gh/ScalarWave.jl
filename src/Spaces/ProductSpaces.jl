@@ -153,6 +153,7 @@ function shape(PS::Type{ProductSpace{S1, S2}}, u::Array{T,1})::Array{eltype(u),2
 end
 
 function solve(A::ProductSpaceOperator{ProductSpace{S1, S2}}, u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
-    return Field(ProductSpace{S1, S2}, shape(ProductSpace{S1, S2}, vec(A) \ vec(u)))
+    X =  vec(A) \ vec(u)
+    return Field(ProductSpace{S1, S2}, shape(ProductSpace{S1, S2}, X))
 end
 
