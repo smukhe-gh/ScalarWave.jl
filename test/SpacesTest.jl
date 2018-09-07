@@ -107,6 +107,7 @@ Dy, Dx = derivative(SUV)
 Ł = Dx*Dx + Dy*Dy
 𝕓 = 𝔹*ψ
 𝕦 = reshape((Ł + 𝔹).value, (prod(size(SUV)), prod(size(SUV)))) \ vec((ddxddyψ + 𝕓).value)
+𝕨 = solve(Ł + 𝔹, ddxddyψ + 𝕓) 
 
 @testset "2D Laplace Solve" begin
 @test (Dx*ψ).value == dxψ.value 
@@ -119,4 +120,5 @@ Dy, Dx = derivative(SUV)
 
 @test (Ł*ψ).value == ddxddyψ.value
 @test 𝕦 == vec(ψ.value)
+@show ψ.value == w.value
 end

@@ -11,7 +11,7 @@ struct ProductSpaceOperator{S, D, T}
     value::Array{T, D}
 end
 
-import Base: +, -, *, size, range
+import Base: +, -, *, size, range, vec
 
 order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1)) 
 dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)  
@@ -132,11 +132,6 @@ function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{P
     return Boundary(ProductSpace{S1, S2}, B)
 end
 
-function solve(A::ProductSpaceOperator{ProductSpace{S1, S2}}, u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
-    return Field(ProductSpace{S1, S2}, 
-                 reshape(reshape(A.value, (len(S2)*len(S1), len(S2)*len(S1))) \ reshape(u.value, len(S2)*len(S1)), (len(S2), len(S1))))
-end
-
 function +(u::Field{ProductSpace{S1,S2}}, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
     return Field(ProductSpace{S1,S2}, u.value + b.value)
 end
@@ -144,3 +139,20 @@ end
 function +(u::Boundary{ProductSpace{S1,S2}}, b::Field{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
     return Field(ProductSpace{S1,S2}, u.value + b.value)
 end
+
+function vec(u::Field{ProductSpace{S1, S2}})::Array{eltype(u.value),1} where {S1, S2} 
+    return vec(u.value)
+end
+
+function vec(A::ProductSpaceOperator{ProductSpace{S1, S2}})::Array{eltype(A.value),2} where {S1, S2} 
+    return reshape(A.value, (prod(size(ProductSpace{S1, S2})), prod(size(ProductSpace{S1, S2}))))
+end
+
+function shape(PS::Type{ProductSpace{S1, S2}}, u::Array{T,1})::Array{eltype(u),2} where {S1, S2, T}
+    return reshape(u, size(PS))
+end
+
+function solve(A::ProductSpaceOperator{ProductSpace{S1, S2}}, u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
+    return Field(ProductSpace{S1, S2}, shape(ProductSpace{S1, S2}, vec(A) \ vec(u)))
+end
+

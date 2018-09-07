@@ -17,7 +17,7 @@ export Manifold, Space, ProductSpace,
        Chebyshev, GaussLobatto, Taylor, 
        Field, Operator, ProductSpaceOperator
 
-export order, dim, len, identity, boundary, solve, ⦼ 
+export order, dim, len, identity, boundary, solve, ⦼, shape 
 
 export collocation, derivative
 
