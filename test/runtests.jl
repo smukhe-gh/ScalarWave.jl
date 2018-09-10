@@ -16,8 +16,8 @@ libraries = ["SpecCalculus",
              "Futures",
              "Visualization"]
 
-libraries = ["Rationals"]
 libraries = ["Spaces"]
+libraries = ["MinkowskiDistorted"]
 
 for file in libraries
     info("Testing $file")

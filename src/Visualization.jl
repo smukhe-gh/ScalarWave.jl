@@ -9,6 +9,10 @@ function setcolormap(vec::Array{Float64,1}, map::String, samples::Int)
     return clrs[round.(Int, (nvec*samples)+1)]
 end
 
+function drawpatch(u::Field, filename)
+    drawmultipatch(Dict([1,1]=>Patch([1,1], u.value)), filename)
+end
+
 function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     M   = Int(sqrt(length(dbase)))
     AP  = Float64[]

@@ -11,6 +11,7 @@ include("Spaces/SingleSpaces.jl")
 include("Spaces/ProductSpaces.jl")
 include("Rationals.jl")
 
+export Null, Spatial
 
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
@@ -41,7 +42,7 @@ export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovand
        getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, 
        restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
        projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
-       distribute, drawmultipatch,
+       distribute, drawmultipatch, drawpatch
        fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch
 
 

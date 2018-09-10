@@ -6,23 +6,44 @@
 
 struct ProductSpace{S1<:Space, S2<:Space} end
 
+struct Null end
+struct Spatial end 
+
 struct ProductSpaceOperator{S, D, T}
     space::Type{S}
     value::Array{T, D}
 end
 
-import Base: +, -, *, size, range, vec
+import Base: +, -, *, /, size, range, vec
 
 order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1)) 
 dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)  
 range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianRange((len(S2), len(S1)))
 size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (len(S2), len(S1)) 
 
+#-----------------------------------------------------------------------------------
+-(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, -A.value)
++(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, +A.value)
+
++(A::Field{ProductSpace{S1, S2}}, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, A.value .+ B.value)
+-(A::Field{ProductSpace{S1, S2}}, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, A.value .- B.value)
+*(A::T, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, A .* B.value)
 *(A::Field{ProductSpace{S1, S2}}, 
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, A.value .* B.value)
+/(A::Field{ProductSpace{S1, S2}}, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, A.value ./ B.value)
+
+*(a::T, A::ProductSpaceOperator{PS}) where {T<:Real, PS} = ProductSpaceOperator(PS, a.*A.value)
+/(A::ProductSpaceOperator{PS}, b::T) where {T<:Real, PS} = ProductSpaceOperator(PS, A.value ./b)
+
+#-----------------------------------------------------------------------------------
 
 +(A::ProductSpaceOperator{PS}, B::ProductSpaceOperator{PS}) where {PS} = ProductSpaceOperator(PS, A.value + B.value)
 -(A::ProductSpaceOperator{PS}, B::ProductSpaceOperator{PS}) where {PS} = ProductSpaceOperator(PS, A.value - B.value)
+
 
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N}
     value = zeros(Float64, size(PS))
@@ -66,13 +87,14 @@ end
 
 function *(A::ProductSpaceOperator{ProductSpace{S1,S2}}, 
            B::ProductSpaceOperator{ProductSpace{S1,S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2}
-    C = similar(A.value)
-    for index in CartesianRange(size(C))
-        i, j, ii, jj = index.I
-        C[index]     = sum(A.value[i,j,k,kk]*B.value[k,kk,ii,jj] for k in range(S2), kk in range(S1))    
-    end
+    ni = len(S2)
+    nj = len(S1)
+    n = ni * nj
+    C = reshape(reshape(A.value, n, n) * reshape(B.value, n, n), ni, nj, ni, nj)
     return ProductSpaceOperator(ProductSpace{S1, S2}, C)
 end
+# getindex(x, i) = x.value[i1, i2]
+# getindex(A, i, j) = A.value[i1, i2, j1, j2]
 
 function *(A::ProductSpaceOperator{ProductSpace{S1,S2}}, 
            u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2} 
@@ -93,16 +115,31 @@ function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} 
     return ProductSpaceOperator(PS, B)
 end
 
-function boundary(PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
+# Spatial
+function boundary(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
     B = zeros(Float64, len(S2), len(S1))
     B[1, :] = B[:, 1] = B[end, :] = B[:, end] = 1
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
 
 end
 
-function boundary(PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
+function boundary(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
     B = zeros(Rational{BigInt}, len(S2), len(S1))
     B[1, :] = B[:, 1] = B[end, :] = B[:, end] = 1//1
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
+end
+
+#Null 
+function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
+    B = zeros(Float64, len(S2), len(S1))
+    B[1, :] = B[:, 1] = 1
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
+
+end
+
+function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
+    B = zeros(Rational{BigInt}, len(S2), len(S1))
+    B[1, :] = B[:, 1] =  1//1
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
 end
 
@@ -155,5 +192,15 @@ end
 function solve(A::ProductSpaceOperator{ProductSpace{S1, S2}}, u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
     X =  vec(A) \ vec(u)
     return Field(ProductSpace{S1, S2}, shape(ProductSpace{S1, S2}, X))
+end
+
+import Base: eigvals, cond
+
+function eigvals(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
+    return eigvals(vec(A))
+end
+
+function cond(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
+    return cond(vec(A))
 end
 

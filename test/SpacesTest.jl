@@ -53,6 +53,12 @@ struct U end
 struct V end
 struct UV end
 
+SS = Spatial
+NN = Null
+
+@show SS
+@show NN
+
 P1, P2 = 3, 5
 SU  = Taylor{U,P1}
 SV  = Taylor{V,P2}
@@ -61,8 +67,9 @@ SUV = ProductSpace{SU, SV}
 γ   = Field(SUV, (x,y)->0)  
 ϕ   = Field(SUV, (x,y)->x+y)
 ψ   = Field(SUV, (x,y)->x^2+y^3)  
+dψ   = Field(SUV, (x,y)->x^2+y^3+5)  
 DU, DV = derivative(SUV)
-B   = boundary(SUV)
+B   = boundary(Spatial, SUV)
 I   = identity(SU) ⦼ identity(SV)
 b   = Boundary(SUV, x->x^2 + 1, y->1+y^3, x->x^2 - 1, y->1+y^3)
 
@@ -74,6 +81,7 @@ b   = Boundary(SUV, x->x^2 + 1, y->1+y^3, x->x^2 - 1, y->1+y^3)
 @test (ϕ + ψ).value == Field(SUV, (x,y)->x^2 + y^3 + x + y).value 
 @test (ϕ - ψ).value == Field(SUV, (x,y)->x + y - x^2 - y^3).value 
 @test (ϕ * ψ).value == Field(SUV, (x,y)->(x^2 + y^3)*(x + y)).value 
+@test (ψ / dψ).value == Field(SUV, (x,y)->(x^2 + y^3)/(x^2 + y^3 + 5)).value 
 @test DU.value == reshape(kron(derivative(SU).value, identity(SV).value), (P2+1,P1+1,P2+1,P1+1))
 @test DV.value == reshape(kron(identity(SU).value, derivative(SV).value), (P2+1,P1+1,P2+1,P1+1))
 @test (DU*DV).value == reshape(kron(derivative(SU).value, identity(SV).value)*
@@ -98,10 +106,11 @@ dyψ = Field(SUV, (x,y)->3y^2 + 2*x^3*y)
 ddxddyψ = Field(SUV, (x,y)->2 + 2x^3 + 6y + 6x*y^2)
 
 # Now check if the boundary operator and values are causing trouble [This works too, and now I'm clueless]
-𝔹 = boundary(SUV)
+𝔹 = boundary(Spatial, SUV)
 B = zeros(Rational{BigInt}, size(SUV))
 B[1, :] = B[:, 1] = B[:, end] = B[end, :] = 1//1
 b = Boundary(SUV, x->x^2 + x^3 + 1, y->y^3 + y^2 + 1, x->x^2 - 1 + x^3, y->1 + y^3 - y^2)
+
 # Try solving a system. Maybe you really need to replace rows and not add the two systems? 
 Dy, Dx = derivative(SUV)
 Ł = Dx*Dx + Dy*Dy
@@ -123,13 +132,14 @@ Dy, Dx = derivative(SUV)
 @test 𝕨.value == ψ.value
 end
 
+#=
 # Solve using Floats
-P1, P2 = 20, 21
+P1, P2 = 100, 100
 SU  = GaussLobatto{U,P1}
 SV  = GaussLobatto{V,P2}
 SUV = ProductSpace{SU, SV}
 𝔻y, 𝔻x = derivative(SUV)
-𝔹   = boundary(SUV)
+𝔹   = boundary(Spatial, SUV)
 ψ   = Field(SUV, (x,y)->10*sin(8*x*(y-1)))  
 𝕓   = Boundary(SUV, x->0, y->0, x->0, y->0)
 Ł   = 𝔻x*𝔻x + 𝔻y*𝔻y
@@ -138,3 +148,18 @@ SUV = ProductSpace{SU, SV}
 patch = Patch([1,1], 𝕨.value)
 drawmultipatch(Dict([1,1]=>patch), "test-laplace.pdf")
 
+
+# Solve using Floats [Wave equation on 1+1 Minkowski]
+P1, P2 = 100, 100
+@time SU  = GaussLobatto{U,P1}
+@time SV  = GaussLobatto{V,P2}
+@time SUV = ProductSpace{SU, SV}
+@time 𝔻y, 𝔻x = derivative(SUV)
+@time 𝔹   = boundary(Null, SUV)
+@time ψ   = Field(SUV, (x,y)->0)  
+@time 𝕓   = Boundary(SUV, x->exp(-x^2/0.1), y->exp(-y^2/0.1), x->0, y->0)
+@time Ł   = 𝔻x*𝔻y
+@time 𝕨   = solve(Ł + 𝔹, ψ + 𝕓) 
+@time patch = Patch([1,1], 𝕨.value)
+@time drawmultipatch(Dict([1,1]=>patch), "test-wave.pdf")
+=#

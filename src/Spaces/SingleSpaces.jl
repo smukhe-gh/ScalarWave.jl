@@ -23,7 +23,7 @@ struct Operator{S, D, T}
 end
 
 import Base: range, identity 
-import Base: +, -, *
+import Base: +, -, *, /
 
 order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N 
 dim(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}    = 1 
@@ -33,6 +33,7 @@ len(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N} = N+1
 +(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value + B.value)
 -(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value - B.value)
 *(A::Field{S}, B::Field{S}) where {S<:Cardinal{Tag,N}} where {Tag, N} = Field(S, A.value .* B.value)
+/(A::Field{S}, B::Field{S}) where {S<:Cardinal{Tag,N}} where {Tag, N} = Field(S, A.value ./ B.value)
 
 +(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value + B.value)
 -(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value - B.value)
