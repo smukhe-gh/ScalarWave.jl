@@ -14,7 +14,7 @@ struct ProductSpaceOperator{S, D, T}
     value::Array{T, D}
 end
 
-import Base: +, -, *, /, size, range, vec
+import Base: +, -, *, /, size, range, vec, sqrt, abs
 
 order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1)) 
 dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)  
@@ -24,13 +24,19 @@ size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (len(S2), len(S1))
 #-----------------------------------------------------------------------------------
 -(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, -A.value)
 +(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, +A.value)
+sqrt(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, sqrt.(A.value))
+abs(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, abs.(A.value))
 
 +(A::Field{ProductSpace{S1, S2}}, 
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, A.value .+ B.value)
 -(A::Field{ProductSpace{S1, S2}}, 
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, A.value .- B.value)
-*(A::T, 
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, A .* B.value)
+
+*(a::T, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, a .* B.value)
+/(a::T, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, a ./ B.value)
+
 *(A::Field{ProductSpace{S1, S2}}, 
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, A.value .* B.value)
 /(A::Field{ProductSpace{S1, S2}}, 
