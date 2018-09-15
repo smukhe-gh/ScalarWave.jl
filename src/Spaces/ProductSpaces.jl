@@ -151,10 +151,11 @@ end
 
 function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
     B = zeros(Float64, len(S2), len(S1))
+    @assert length(bmap) == 4
     bnd1 = map(bmap[1], [collocation(Float64, i,  order(S2)) for i  in range(S2)])
     bnd2 = map(bmap[2], [collocation(Float64, ii, order(S1)) for ii in range(S1)])
     bnd3 = map(bmap[3], [collocation(Float64, j,  order(S2)) for j  in range(S2)])
-    bnd4 = map(bmap[4], [collocation(Rational, jj, order(S1)) for jj in range(S1)])
+    bnd4 = map(bmap[4], [collocation(Float64, jj, order(S1)) for jj in range(S1)])
     B[:,1] = bnd1 
     B[1,:] = bnd2 
     B[:, end] = bnd3 
