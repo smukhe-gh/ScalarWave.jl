@@ -34,6 +34,10 @@ abs(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} 
 
 *(a::T, 
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, a .* B.value)
++(a::T, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, a .+ B.value)
+-(a::T, 
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, a .- B.value)
 /(a::T, 
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, a ./ B.value)
 /(B::Field{ProductSpace{S1, S2}}, a::T) where {S1, S2 <: Cardinal{Tag}, T<:Real} where {Tag} = Field(ProductSpace{S1, S2}, B.value ./ a)
@@ -100,8 +104,6 @@ function *(A::ProductSpaceOperator{ProductSpace{S1,S2}},
     C = reshape(reshape(A.value, n, n) * reshape(B.value, n, n), ni, nj, ni, nj)
     return ProductSpaceOperator(ProductSpace{S1, S2}, C)
 end
-# getindex(x, i) = x.value[i1, i2]
-# getindex(A, i, j) = A.value[i1, i2, j1, j2]
 
 function *(A::ProductSpaceOperator{ProductSpace{S1,S2}}, 
            u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2} 
@@ -122,7 +124,9 @@ function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} 
     return ProductSpaceOperator(PS, B)
 end
 
+#--------------------------------------------------------------
 # Spatial
+#--------------------------------------------------------------
 function boundary(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
     B = zeros(Float64, len(S2), len(S1))
     B[1, :] = B[:, 1] = B[end, :] = B[:, end] = 1
@@ -136,7 +140,9 @@ function boundary(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpace
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
 end
 
+#--------------------------------------------------------------
 #Null 
+#--------------------------------------------------------------
 function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
     B = zeros(Float64, len(S2), len(S1))
     B[1, :] = B[:, 1] = 1
@@ -181,12 +187,18 @@ function +(u::Field{ProductSpace{S1,S2}}, b::Boundary{ProductSpace{S1,S2}})::Fie
     return Field(ProductSpace{S1,S2}, u.value + b.value)
 end
 
-function +(u::Boundary{ProductSpace{S1,S2}}, b::Field{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
-    return Field(ProductSpace{S1,S2}, u.value + b.value)
+function +(u::Real, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
+    return Field(ProductSpace{S1,S2}, u + b.value)
 end
 
 function vec(u::Field{ProductSpace{S1, S2}})::Array{eltype(u.value),1} where {S1, S2} 
     return vec(u.value)
+end
+
+import Base.maximum
+
+function maximum(u::Field{ProductSpace{S1, S2}}) where {S1, S2} 
+    return maximum(u.value)
 end
 
 function vec(A::ProductSpaceOperator{ProductSpace{S1, S2}})::Array{eltype(A.value),2} where {S1, S2} 
@@ -212,33 +224,3 @@ function cond(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
     return cond(vec(A))
 end
 
-function derivative(PS::Type{ProductSpace{S1, S2}}, 𝒖::Field{ProductSpace{S1, S2}}, 
-                    𝒗::Field{ProductSpace{S1, S2}}) where {S1, S2}
-
-    𝔻v, 𝔻u = derivative(ProductSpace{S1, S2})
-
-    𝔻uof𝒖 = 𝔻u*𝒖
-    𝔻vof𝒖 = 𝔻v*𝒖
-    𝔻uof𝒗 = 𝔻u*𝒗
-    𝔻vof𝒗 = 𝔻v*𝒗
-    
-    𝔻𝒖ofu = Field(ProductSpace{S1, S2}, similar(𝔻uof𝒖.value)) 
-    𝔻𝒖ofv = Field(ProductSpace{S1, S2}, similar(𝔻vof𝒖.value)) 
-    𝔻𝒗ofu = Field(ProductSpace{S1, S2}, similar(𝔻uof𝒗.value))
-    𝔻𝒗ofv = Field(ProductSpace{S1, S2}, similar(𝔻vof𝒗.value))
-    
-    for index in CartesianRange(size(𝔻uof𝒖.value)) 
-        Jacobian = [𝔻uof𝒖.value[index] 𝔻uof𝒗.value[index]; 
-                    𝔻vof𝒖.value[index] 𝔻vof𝒗.value[index]]
-        InverseJacobian    = inv(Jacobian)
-        𝔻𝒖ofu.value[index] = InverseJacobian[1,1] 
-        𝔻𝒖ofv.value[index] = InverseJacobian[1,2] 
-        𝔻𝒗ofu.value[index] = InverseJacobian[2,1] 
-        𝔻𝒗ofv.value[index] = InverseJacobian[2,2] 
-    end
-    
-    𝔻𝒖    = 𝔻𝒖ofu * 𝔻u + 𝔻𝒖ofv * 𝔻v  
-    𝔻𝒗    = 𝔻𝒗ofu * 𝔻u + 𝔻𝒗ofv * 𝔻v
-    
-    return(𝔻𝒗, 𝔻𝒖)
-end

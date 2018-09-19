@@ -13,17 +13,18 @@ export Manifold, Space, ProductSpace,
        Field, Boundary, Operator, ProductSpaceOperator
 
 export order, dim, len, identity, boundary, solve, ⦼, shape 
-export collocation, derivative
+export collocation, derivative, 
+       inversemetrictransform, inversemetricdet, derivativetransform
 
 export Patch
 export cheb, chebx, chebd, chebw, chebgrid,
 	   delta, drawpatch
 
-include("Types.jl")
-include("Spaces/AbstractTypes.jl")
-include("Spaces/SingleSpaces.jl")
-include("Spaces/ProductSpaces.jl")
-include("Spaces/Mathfunctions.jl")
+include("AbstractTypes.jl")
+include("SingleSpaces.jl")
+include("ProductSpaces.jl")
+include("MathFunctions.jl")
+include("CoordTransform.jl")
 include("SpecCalculus.jl")
 include("Visualization.jl")
 include("Rationals.jl")
