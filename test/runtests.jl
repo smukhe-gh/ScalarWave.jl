@@ -8,6 +8,7 @@ using Base.Test, PyPlot
 
 libraries = ["Spaces"]
 libraries = ["Wave"]
+libraries = ["BasisTransformation"]
 
 for file in libraries
     info("Testing $file")

@@ -1,7 +1,5 @@
 julia 0.6
-Roots
-JLD
 Luxor
 Colors
 Compat
-SymEngine
+FFTW

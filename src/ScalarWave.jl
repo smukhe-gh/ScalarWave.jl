@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors
+using Luxor, Colors, FFTW
 
 export Null, Spatial
 export Manifold, Space, ProductSpace, 
@@ -14,7 +14,8 @@ export Manifold, Space, ProductSpace,
 
 export order, dim, len, identity, boundary, solve, ⦼, shape 
 export collocation, derivative, 
-       inversemetrictransform, inversemetricdet, derivativetransform
+       inversemetrictransform, inversemetricdet, derivativetransform,
+       basistransform, interpolate
 
 export Patch
 export cheb, chebx, chebd, chebw, chebgrid,
@@ -28,5 +29,6 @@ include("CoordTransform.jl")
 include("SpecCalculus.jl")
 include("Visualization.jl")
 include("Rationals.jl")
+include("BasisTransformation.jl")
 
 end 

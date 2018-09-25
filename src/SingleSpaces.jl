@@ -6,6 +6,7 @@
 
 struct GaussLobatto{Tag ,N} <: Cardinal{Tag, N} end
 struct Taylor{Tag ,N} <: Cardinal{Tag, N} end
+struct Chebyshev{Tag ,N} <: Galerkin{Tag, N} end
 
 struct Field{S, D, T}
     space::Type{S}
