@@ -4,19 +4,11 @@
 #--------------------------------------------------------------------
 
 using ScalarWave
-using Base.Test
+using Base.Test, PyPlot
 
-libraries = ["SpecCalculus",
-             "Utilities",
-             "Physics",
-             "Patch",
-             "Grid",
-             "Projection",
-             "Dispatch",
-             "Futures",
-             "Visualization"]
-
-libraries = ["Coordinates"]
+libraries = ["Spaces"]
+libraries = ["Wave"]
+libraries = ["BasisTransformation"]
 libraries = ["Schwarzschild"]
 
 for file in libraries

@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Soham 04-2018
-# Wave equation on Schwarzschild
+# Soham 08-2018
+# Distorted Minkowski
 #--------------------------------------------------------------------
 
 struct U end
@@ -10,56 +10,52 @@ struct UV end
 
 #--------------------------------------------------------------------
 # Define boundary and the product space
+# Derivative tests fails for P <= 20
 #--------------------------------------------------------------------
+nullboundary = Null
 P1, P2 = 40, 40
-M   = 1
 SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 
 #--------------------------------------------------------------------
 # Define derivative and boundary operators
 #--------------------------------------------------------------------
-𝔹 = boundary(Null, SUV)
+𝔹 = boundary(nullboundary, SUV)
 
 #--------------------------------------------------------------------
 # Define coordinates and their associated derivatives
 #--------------------------------------------------------------------
 u = Field(SUV, (u,v)->u)
 v = Field(SUV, (u,v)->v)
+Ω = Field(SUV, (u,v)->(pi/8)*cospi(u/2)*cospi(v/2))
 
-t = Field(SUV, (u,v)->find_t_of_uv(u,v))
-r = Field(SUV, (u,v)->find_r_of_uv(u,v))
-θ = Field(SUV, (u,v)->pi/2)
-ϕ = Field(SUV, (u,v)->0)
-⊙ = Field(SUV, (u,v)->0)
-
-𝔻v, 𝔻u = derivative(SUV)
-
-#--------------------------------------------------------------------
-# Define metric functions 
-#--------------------------------------------------------------------
-𝒈uu = 𝒈vv = ⊙
-𝒈uv  = -32*(M^3/r)*(exp(r/M))
-𝒈θθ  = r^2
-𝒈ϕϕ  = (r*sin(θ))^2
-
-det𝒈 = -1024*(M^6)*r^2/exp((2*r)/M)
+𝒖 =  u*cos(Ω) + v*sin(Ω)
+𝒗 = -u*sin(Ω) + v*cos(Ω)
+𝔻𝒗, 𝔻𝒖 = derivativetransform(SUV, 𝒖, 𝒗)
 
 #--------------------------------------------------------------------
 # Set boundary conditions
 #--------------------------------------------------------------------
 ρ = 0 
-𝕤 = exp(-((u^2)/0.1)) 
+𝕤 = exp(-((𝒖^2)/0.1)) 
 𝕓 = 𝔹*𝕤
 
 #--------------------------------------------------------------------
-# Now construct the operator 
+# Construct the wave operator in curved spacetime
 #--------------------------------------------------------------------
-𝕃 = (𝒈uu*𝔻u*𝔻u + 𝒈vv*𝔻v*𝔻v + 𝒈uv*𝔻u*𝔻v + 𝒈vu*𝔻v*𝔻u
-     + sqrt(1/abs(det𝒈))*(𝔻u*(𝒈uu*sqrt(abs(det𝒈))) + 𝔻v*(𝒈vu*sqrt(abs(det𝒈))))*𝔻u
-     + sqrt(1/abs(det𝒈))*(𝔻u*(𝒈uv*sqrt(abs(det𝒈))) + 𝔻v*(𝒈vv*sqrt(abs(det𝒈))))*𝔻v)
+guu = Field(SUV, (u,v)-> 0)
+guv = Field(SUV, (u,v)->-2)
+gvv = Field(SUV, (u,v)-> 0)
+
+(𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗) = inversemetrictransform(guu, guv, gvv, 𝒖, 𝒗) 
+invsqrtdet𝕘     = 1/sqrt(abs(inversemetricdet(𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗))) 
+
+𝕘   = [𝕘𝒖𝒖 𝕘𝒖𝒗; 𝕘𝒖𝒗 𝕘𝒗𝒗]
+𝔻   = [𝔻𝒖, 𝔻𝒗]
+𝕃   = 𝕘𝒖𝒗*𝔻𝒖*𝔻𝒗 + 𝕘𝒖𝒗*𝔻𝒗*𝔻𝒖
 
 #--------------------------------------------------------------------
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
-drawpatch(𝕨, "plots/schwarzschild")
+drawpatch(𝕨, "plots/minkowski-distorted")
+@show maximum(abs(𝕃*𝕤))

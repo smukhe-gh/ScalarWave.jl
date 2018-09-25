@@ -9,6 +9,10 @@ function setcolormap(vec::Array{Float64,1}, map::String, samples::Int)
     return clrs[round.(Int, (nvec*samples)+1)]
 end
 
+function drawpatch(u::Field, filename)
+    drawmultipatch(Dict([1,1]=>Patch([1,1], u.value)), filename)
+end
+
 function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     M   = Int(sqrt(length(dbase)))
     AP  = Float64[]
@@ -33,6 +37,7 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     #-----------------------------------------------
     # set-up canvas
     #-----------------------------------------------
+    #canvas   = Drawing(800, 800, "$filename.pdf")
     canvas   = Drawing(800, 800, "$filename.pdf")
     push!(lx, 400.0)
     push!(ly, 400.0)
@@ -161,27 +166,15 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     setline(0.4)
     origin(700, 100)
     Luxor.arrow(O, O .+ Point(40, -40))
-    settext("u", O .+ Point(40, -40);
+    settext("v", O .+ Point(40, -40);
                 halign = "top",
                 valign = "right")
     rotate(-pi/2)
     Luxor.arrow(O, O .+ Point(40, -40))
-    settext("v", O .+ Point(40, -40);
+    settext("u", O .+ Point(40, -40);
                 halign = "bottom",
                 valign = "right")
     
     finish()
     return canvas
-end
-
-function plotcoordgrid(params::Params)
-    grid    = setgrid(params)
-    levels  = [2, 5, 10, 20, 40, 60, 80, 100]
-    CS = contour(grid.V, grid.U, grid.r, colors="b")
-    clabel(CS, inline=1, fontsize=10)
-    CQ = contour(grid.V, grid.U, grid.t, colors="r")
-    clabel(CQ, inline=1, fontsize=10)
-    ylabel("U")
-    xlabel("V")
-    show()
 end

@@ -4,34 +4,34 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, JLD, Roots, PyPlot
-export Patch, Boundary, D, Params, Grid, VarList
+using Luxor, Colors, FFTW
 
-export cheb, chebx, chebd, chebw, chebgrid, chebweights, vandermonde, pseudovandermonde,
-	   delta, coordtransL2G, coordtransG2L, jacobian, shapeH2L, shapeL2H, 
-       LInfnorm, L1norm, L2norm, array2dict, dict2array, savegrid, loadgrid, 
-       derivOP, boundaryOP, RHS, modal2nodal, nodal2modal,
-       getPatchIC, getPatchBnd, calcPatch, extractPatchCoeffs, interpolatePatch, 
-       restrictmodes!, prolongatemodes, restrictOP, prolongateOP, restrictPatch, prolongatePatch,
-       projectonPatchBndbyRestriction, projectonPatchbyRestriction, 
-       distribute, sconv, showconv, drawmultipatch,
-       fdistribute, fgetPatchBnd, fgetPatchIC, fRHS, fcalcPatch,
-       dict2struct, setgrid, setvarlist, 
-       find_UV_of_TR, find_TR_of_UV, plotcoordgrid, SchwarzschildDerivOP,
-       SchwarzschildDistribute
+export Null, Spatial
+export Manifold, Space, ProductSpace, 
+       Galerkin, Cardinal, 
+       Chebyshev, GaussLobatto, Taylor, 
+       Field, Boundary, Operator, ProductSpaceOperator
 
-include("Types.jl")
+export order, dim, len, identity, boundary, solve, ⦼, shape 
+export collocation, derivative, 
+       inversemetrictransform, inversemetricdet, derivativetransform,
+       basistransform, interpolate
+
+export find_t_of_uv, find_r_of_uv
+
+export Patch
+export cheb, chebx, chebd, chebw, chebgrid,
+	   delta, drawpatch
+
+include("AbstractTypes.jl")
+include("SingleSpaces.jl")
+include("ProductSpaces.jl")
+include("MathFunctions.jl")
+include("CoordTransform.jl")
 include("SpecCalculus.jl")
-include("Utilities.jl")
-include("Physics.jl")
-include("Patch.jl")
-include("Grid.jl")
-include("Projection.jl")
-include("Dispatch.jl")
-include("Convergence.jl")
 include("Visualization.jl")
-include("Futures.jl")
-include("Schwarzschild.jl")
+include("Rationals.jl")
+include("BasisTransformation.jl")
 include("Coordinates.jl")
 
 end 

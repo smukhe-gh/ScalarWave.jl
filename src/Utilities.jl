@@ -86,33 +86,3 @@ function array2dict(mPatch::Array{Float64,2}, Nx::Int, Ny::Int, M::Int)::Dict{Ar
     end
     return dbase
 end
-
-function savegrid(dbase::Dict, path::String)
-    datetime =  DateTime(now())
-    jldopen("$path/$datetime.jld", "w") do file
-        addrequire(file, ScalarWave)
-        write(file, "patch", dbase)
-    end
-    return datetime
-end
-
-function loadgrid(path::String)::Dict
-    dbase = load("$path")
-    return dbase
-end
-
-#--------------------------------------------------------------------
-# Additional types for handling generic backgrounds
-#--------------------------------------------------------------------
-
-function power(x, a)   
-    return x^a
-end
-
-function dict2struct(params::Dict)::Params
-    return Params((params["px"], params["py"]),
-                  (params["px"] + 1, params["py"] + 1),
-                  (params["umin"], params["vmin"]),
-                  (params["umax"], params["vmax"]),
-                   params["mass"])
-end

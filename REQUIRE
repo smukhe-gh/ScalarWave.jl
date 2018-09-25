@@ -1,8 +1,5 @@
 julia 0.6
-JLD
 Luxor
 Colors
 Compat
-Roots
-SymEngine
-PyPlot
+FFTW
