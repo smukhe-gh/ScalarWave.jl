@@ -37,6 +37,7 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     #-----------------------------------------------
     # set-up canvas
     #-----------------------------------------------
+    #canvas   = Drawing(800, 800, "$filename.pdf")
     canvas   = Drawing(800, 800, "$filename.pdf")
     push!(lx, 400.0)
     push!(ly, 400.0)
@@ -177,4 +178,3 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     finish()
     return canvas
 end
-

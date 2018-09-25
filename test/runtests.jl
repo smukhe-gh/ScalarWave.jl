@@ -6,11 +6,10 @@
 using ScalarWave
 using Base.Test, PyPlot
 
-libraries = ["MinkowskiDistortedRotation"]
+libraries = ["Spaces"]
+libraries = ["Wave"]
 
 for file in libraries
-    tic()
     info("Testing $file")
     include("$(file)Test.jl")
-    toc()
 end

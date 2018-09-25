@@ -13,7 +13,7 @@ struct UV end
 # Derivative tests fails for P <= 20
 #--------------------------------------------------------------------
 nullboundary = Null
-P1, P2 = 80, 80
+P1, P2 = 40, 40
 SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 
 #--------------------------------------------------------------------
@@ -26,16 +26,11 @@ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 #--------------------------------------------------------------------
 u = Field(SUV, (u,v)->u)
 v = Field(SUV, (u,v)->v)
-Ω = Field(SUV, (u,v)->(pi/2)*cospi(u/2)*cospi(v/2))
+Ω = Field(SUV, (u,v)->(pi/8)*cospi(u/2)*cospi(v/2))
 
 𝒖 =  u*cos(Ω) + v*sin(Ω)
 𝒗 = -u*sin(Ω) + v*cos(Ω)
 𝔻𝒗, 𝔻𝒖 = derivativetransform(SUV, 𝒖, 𝒗)
-
-#@test (𝔻𝒖*𝒖).value ≈ Field(SUV, (u,v)->1).value 
-#@test (𝔻𝒗*𝒗).value ≈ Field(SUV, (u,v)->1).value
-#@test maximum(abs.((𝔻𝒖*𝒗).value)) < 1e-12
-#@test maximum(abs.((𝔻𝒗*𝒖).value)) < 1e-12
 
 #--------------------------------------------------------------------
 # Set boundary conditions
@@ -54,9 +49,9 @@ gvv = Field(SUV, (u,v)-> 0)
 (𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗) = inversemetrictransform(guu, guv, gvv, 𝒖, 𝒗) 
 invsqrtdet𝕘     = 1/sqrt(abs(inversemetricdet(𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗))) 
 
-𝕘    = [𝕘𝒖𝒖 𝕘𝒖𝒗; 𝕘𝒖𝒗 𝕘𝒗𝒗]
-𝔻    = [𝔻𝒖, 𝔻𝒗]
-𝕃    = 𝕘𝒖𝒗*𝔻𝒖*𝔻𝒗 + 𝕘𝒖𝒗*𝔻𝒗*𝔻𝒖
+𝕘   = [𝕘𝒖𝒖 𝕘𝒖𝒗; 𝕘𝒖𝒗 𝕘𝒗𝒗]
+𝔻   = [𝔻𝒖, 𝔻𝒗]
+𝕃   = 𝕘𝒖𝒗*𝔻𝒖*𝔻𝒗 + 𝕘𝒖𝒗*𝔻𝒗*𝔻𝒖
 
 #--------------------------------------------------------------------
 # Solve the system [also check the condition number and eigen values]

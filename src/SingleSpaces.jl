@@ -23,12 +23,12 @@ struct Operator{S, D, T}
 end
 
 import Base: range, identity 
-import Base: +, -, *, /
+import Base: +, -, *, /, ==, ≈
 
 order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N 
 dim(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}    = 1 
 range(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = 1:N+1 
-len(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N} = N+1 
+len(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}    = N+1 
 
 +(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value + B.value)
 -(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value - B.value)
@@ -37,6 +37,11 @@ len(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N} = N+1
 
 +(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value + B.value)
 -(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value - B.value)
+
+==(A::Field{S}, B::Field{S}) where {S} = (A.value == B.value)
+==(A::Operator{S}, B::Operator{S}) where {S} = (A.value == B.value)
+≈(A::Field{S}, B::Field{S}) where {S} = (A.value ≈ B.value)
+≈(A::Operator{S}, B::Operator{S}) where {S} = (A.value ≈ B.value)
 
 function Field(S::Type{GaussLobatto{Tag,N}}, umap::Function)::Field{S} where {Tag, N}
     value = zeros(Float64, len(S))
