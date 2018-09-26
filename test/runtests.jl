@@ -10,6 +10,7 @@ libraries = ["Spaces"]
 libraries = ["Wave"]
 libraries = ["BasisTransformation"]
 libraries = ["Schwarzschild"]
+libraries = ["MetricFunctions"]
 
 for file in libraries
     info("Testing $file")

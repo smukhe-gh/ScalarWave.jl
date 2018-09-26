@@ -12,7 +12,7 @@ struct UV end
 # Define boundary and the product space
 #--------------------------------------------------------------------
 P1, P2 = 40, 40
-M   = 1
+M   = 1.0
 SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 
 #--------------------------------------------------------------------
@@ -23,11 +23,11 @@ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 #--------------------------------------------------------------------
 # Define coordinates and their associated derivatives
 #--------------------------------------------------------------------
-u = Field(SUV, (u,v)->u)
-v = Field(SUV, (u,v)->v)
+u = Field(SUV, (u,v)->u/2)
+v = Field(SUV, (u,v)->v/2)
 
-t = Field(SUV, (u,v)->find_t_of_uv(u,v))
-r = Field(SUV, (u,v)->find_r_of_uv(u,v))
+t = Field(SUV, (u,v)->find_t_of_uv(u,v, M))
+r = Field(SUV, (u,v)->find_r_of_uv(u,v, M))
 θ = Field(SUV, (u,v)->pi/2)
 ϕ = Field(SUV, (u,v)->0)
 ⊙ = Field(SUV, (u,v)->0)

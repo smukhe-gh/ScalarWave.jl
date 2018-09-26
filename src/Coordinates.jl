@@ -6,9 +6,9 @@
 #--------------------------------------------------------------------
 
 function find_t_of_uv(u::T, v::T, M::T)::T where {T<:Real}
+    @show u*v
     @assert u*v < 1
     f(x) = exp(x/2M)*(x/2M - 1) + u*v
-    r = find_zero(f, (2*M))
     t = -2M*log(abs(u/v))
     return t
 end
@@ -17,7 +17,6 @@ function find_r_of_uv(u::T, v::T, M::T)::T where {T<:Real}
     @assert u*v < 1
     f(x) = exp(x/2M)*(x/2M - 1) + U*V
     r = find_zero(f, (2*M))
-    t = -2M*log(abs(U/V))
     return r
 end
 

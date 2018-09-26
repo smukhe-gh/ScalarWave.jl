@@ -14,7 +14,7 @@ struct ProductSpaceOperator{S, D, T}
     value::Array{T, D}
 end
 
-import Base: +, -, *, /, size, range, vec, sqrt, abs
+import Base: +, -, *, /, size, range, vec, sqrt, abs, zero
 
 order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1)) 
 dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)  
@@ -131,7 +131,6 @@ function boundary(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpace
     B = zeros(Float64, len(S2), len(S1))
     B[1, :] = B[:, 1] = B[end, :] = B[:, end] = 1
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
-
 end
 
 function boundary(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Taylor{Tag, N}}  where {Tag, N}  
@@ -224,3 +223,7 @@ function cond(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
     return cond(vec(A))
 end
 
+function zero(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
+    B = zeros(Float64, len(S2), len(S1))
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
+end
