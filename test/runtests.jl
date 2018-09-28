@@ -6,11 +6,8 @@
 using ScalarWave
 using Base.Test, PyPlot
 
-libraries = ["Spaces"]
-libraries = ["Wave"]
-libraries = ["BasisTransformation"]
-libraries = ["Schwarzschild"]
 libraries = ["MetricFunctions"]
+libraries = ["Ricci"]
 
 for file in libraries
     info("Testing $file")

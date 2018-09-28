@@ -14,12 +14,21 @@ struct ProductSpaceOperator{S, D, T}
     value::Array{T, D}
 end
 
-import Base: +, -, *, /, size, range, vec, sqrt, abs, zero
+import Base: +, -, *, /, size, range, vec, sqrt, abs, zero, similar
 
 order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1)) 
 dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)  
 range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianRange((len(S2), len(S1)))
 size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (len(S2), len(S1)) 
+
+# FIXME: This is type-unstable? 
+zero(u::Type{T}) where {T<:Field} = 0.0 
+zero(::Type{ProductSpace{S1, S2}}) where {S1, S2}   = Field(ProductSpace{S1, S2}, (u,v)->0)  
+
+function zero(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
+    B = zeros(Float64, len(S2), len(S1))
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
+end
 
 #-----------------------------------------------------------------------------------
 -(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, -A.value)
@@ -223,7 +232,7 @@ function cond(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
     return cond(vec(A))
 end
 
-function zero(::Type{Spatial}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag, N}}  where {Tag, N}  
-    B = zeros(Float64, len(S2), len(S1))
-    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (len(S2), len(S1), len(S2), len(S1))))
+function similar(u::Field{S, D, T})::Field{S,D,T} where {S, D, T}
+    return Field(u.space, Array{T,D}(size(u.space)))
 end
+

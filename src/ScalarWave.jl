@@ -4,14 +4,15 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, FFTW
+using Luxor, Colors, FFTW, Einsum
 
-export Null, Spatial, uu, dd
+export Null, Spatial, uu, dd, u, d
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
        Chebyshev, GaussLobatto, Taylor, 
        Field, Boundary, Operator, ProductSpaceOperator,
-       Metric
+       Metric, Derivative, Christoffel, Ricci,
+       mapmetricindex
 
 export order, dim, len, identity, boundary, solve, ⦼, shape 
 export collocation, derivative, 
@@ -28,8 +29,8 @@ export cheb, chebx, chebd, chebw, chebgrid,
 include("AbstractTypes.jl")
 include("SingleSpaces.jl")
 include("ProductSpaces.jl")
-include("MathFunctions.jl")
 include("MetricFunctions.jl")
+include("MathFunctions.jl")
 include("CoordTransform.jl")
 include("SpecCalculus.jl")
 include("Visualization.jl")
