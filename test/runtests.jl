@@ -7,6 +7,7 @@ using ScalarWave
 using Base.Test, PyPlot
 
 libraries = ["MetricFunctions"]
+libraries = ["Schwarzschild"]
 libraries = ["Ricci"]
 
 for file in libraries

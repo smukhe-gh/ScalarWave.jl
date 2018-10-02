@@ -20,7 +20,7 @@ export collocation, derivative,
        basistransform, interpolate,
        metricinverse
 
-export find_t_of_uv, find_r_of_uv
+export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 
 export Patch
 export cheb, chebx, chebd, chebw, chebgrid,
