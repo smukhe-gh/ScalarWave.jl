@@ -7,8 +7,10 @@ using ScalarWave
 using Base.Test, PyPlot
 
 libraries = ["MetricFunctions"]
-libraries = ["Schwarzschild"]
 libraries = ["Ricci"]
+libraries = ["CoordinateTransform"]
+libraries = ["Schwarzschild"]
+libraries = ["SchwarzschildReggeWheeler"]
 
 for file in libraries
     info("Testing $file")

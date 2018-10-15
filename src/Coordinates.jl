@@ -12,9 +12,9 @@ function find_t_of_UV(U::T, V::T, M::T)::T where {T<:Real}
     if U*V == 0     # r = 2M 
         t = 2M*randn()
     elseif U > 0   # r < 2M
-        t = 2M*log(U/V)
+        t = -2M*log(U/V)
     elseif U < 0   # r > 2M
-        t = 2M*log(-U/V)
+        t = -2M*log(-U/V)
     else
         error("Domain error")
     end

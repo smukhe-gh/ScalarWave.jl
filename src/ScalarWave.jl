@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, FFTW, Einsum
+using Luxor, Colors, FFTW, Einsum, Roots
 
 export Null, Spatial, uu, dd, u, d
 export Manifold, Space, ProductSpace, 
@@ -12,7 +12,8 @@ export Manifold, Space, ProductSpace,
        Chebyshev, GaussLobatto, Taylor, 
        Field, Boundary, Operator, ProductSpaceOperator,
        Metric, Derivative, Christoffel, Ricci,
-       mapmetricindex
+       mapmetricindex, 
+       L2norm
 
 export order, dim, len, identity, boundary, solve, ⦼, shape 
 export collocation, derivative, 

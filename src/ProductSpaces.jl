@@ -64,6 +64,16 @@ abs(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} 
 +(A::ProductSpaceOperator{PS}, B::ProductSpaceOperator{PS}) where {PS} = ProductSpaceOperator(PS, A.value + B.value)
 -(A::ProductSpaceOperator{PS}, B::ProductSpaceOperator{PS}) where {PS} = ProductSpaceOperator(PS, A.value - B.value)
 
+# Added to compte r_of_UV
+function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function, 
+               u::Field{ProductSpace{S1, S2}}, 
+               v::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N}
+    value = zeros(Float64, size(PS))
+    for index in range(PS)
+        value[index] = umap(u.value[index], v.value[index]) 
+    end
+    return Field(PS, value)
+end
 
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N}
     value = zeros(Float64, size(PS))
@@ -203,10 +213,14 @@ function vec(u::Field{ProductSpace{S1, S2}})::Array{eltype(u.value),1} where {S1
     return vec(u.value)
 end
 
-import Base.maximum
+import Base: maximum, minimum
 
 function maximum(u::Field{ProductSpace{S1, S2}}) where {S1, S2} 
     return maximum(u.value)
+end
+
+function minimum(u::Field{ProductSpace{S1, S2}}) where {S1, S2} 
+    return minimum(u.value)
 end
 
 function vec(A::ProductSpaceOperator{ProductSpace{S1, S2}})::Array{eltype(A.value),2} where {S1, S2} 

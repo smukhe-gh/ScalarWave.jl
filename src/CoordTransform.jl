@@ -61,3 +61,39 @@ function derivativetransform(PS::Type{ProductSpace{S1, S2}}, 𝒖::Field{Product
     
     return(𝔻𝒗, 𝔻𝒖)
 end
+
+function derivativetransform(S::Type{Cardinal{Tag, N}}, 𝒖::Field{Cardinal{Tag, N}}) where {Tag, N}
+
+    𝔻v, 𝔻u = derivative(ProductSpace{S1, S2})
+
+    𝔻uof𝒖 = 𝔻u*𝒖
+    𝔻vof𝒖 = 𝔻v*𝒖
+    𝔻uof𝒗 = 𝔻u*𝒗
+    𝔻vof𝒗 = 𝔻v*𝒗
+    
+    𝔻𝒖ofu = Field(ProductSpace{S1, S2}, similar(𝔻uof𝒖.value)) 
+    𝔻𝒖ofv = Field(ProductSpace{S1, S2}, similar(𝔻vof𝒖.value)) 
+    𝔻𝒗ofu = Field(ProductSpace{S1, S2}, similar(𝔻uof𝒗.value))
+    𝔻𝒗ofv = Field(ProductSpace{S1, S2}, similar(𝔻vof𝒗.value))
+    
+    for index in CartesianRange(size(𝔻uof𝒖.value)) 
+        Jacobian = [𝔻uof𝒖.value[index] 𝔻uof𝒗.value[index]; 
+                    𝔻vof𝒖.value[index] 𝔻vof𝒗.value[index]]
+        InverseJacobian    = inv(Jacobian)
+        𝔻𝒖ofu.value[index] = InverseJacobian[1,1] 
+        𝔻𝒖ofv.value[index] = InverseJacobian[1,2] 
+        𝔻𝒗ofu.value[index] = InverseJacobian[2,1] 
+        𝔻𝒗ofv.value[index] = InverseJacobian[2,2] 
+
+        DxofX = [𝔻uof𝒖.value[index] 𝔻uof𝒗.value[index];
+                 𝔻vof𝒖.value[index] 𝔻vof𝒗.value[index]]
+
+        DXofx = [𝔻𝒖ofu.value[index] 𝔻𝒖ofv.value[index];
+                 𝔻𝒗ofu.value[index] 𝔻𝒗ofv.value[index]]
+    end
+
+    𝔻𝒖    = 𝔻𝒖ofu * 𝔻u + 𝔻𝒖ofv * 𝔻v  
+    𝔻𝒗    = 𝔻𝒗ofu * 𝔻u + 𝔻𝒗ofv * 𝔻v
+    
+    return(𝔻𝒗, 𝔻𝒖)
+end

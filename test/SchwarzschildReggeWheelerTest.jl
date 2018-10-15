@@ -1,28 +1,29 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 04-2018
-# Wave equation on Schwarzschild
+# Wave equation on Schwarzschild; compare with Regge-Wheeler
 #--------------------------------------------------------------------
 
+tic()
 using Einsum
 
 struct U end
 struct V end
 struct UV end
 
-tic()
 #--------------------------------------------------------------------
 # Define boundary and the product space
 #--------------------------------------------------------------------
-P1, P2 = 20, 20
-M   = 1.0
+P1, P2 = 10, 10
+M = 1.0
 Umin, Umax = -3M, -7M
 Vmin, Vmax =  3M,  7M
+
+SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 
 #--------------------------------------------------------------------
 # Define derivative and boundary operators
 #--------------------------------------------------------------------
-SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 𝔹 = boundary(Null, SUV)
 
 #--------------------------------------------------------------------
@@ -41,16 +42,35 @@ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 t = Field(SUV, (𝑼,𝑽)->find_t_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 r = Field(SUV, (𝑼,𝑽)->find_r_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 
+drawpatch(𝑼, "plots/U")
+drawpatch(𝑽, "plots/V")
+drawpatch(t, "plots/t_of_UV")
+drawpatch(r, "plots/r_of_UV")
+
 𝔻𝑼, 𝔻𝑽 = derivativetransform(SUV, 𝑼, 𝑽) 
 𝔻θ, 𝔻ϕ = Ø, Ø
 
 #--------------------------------------------------------------------
-# Set boundary conditions
+# Set boundary conditions [Use Regge Wheeler Initial Data]
 #--------------------------------------------------------------------
-ρ = 0 
-𝕤 = exp(-((-5M + 𝑽)^2)) 
+
+import Scattering.radialsolve
+import ApproxFun.evaluate
+
+𝒍 = 0 # for testing
+ω = 0.0
+rmin, rmax = minimum(r), maximum(r) 
+
+function phi_in_UV(t, r, ϕ, ω)
+    @assert r >= ϕ.space.domain.a && r <= ϕ.space.domain.b
+    return evaluate(ϕ, r)*cos(-ω*t)
+end
+
+ϕ = radialsolve(M, ω, 𝒍, rmin, rmax).u
+𝕤 = Field(SUV, (t,r)->phi_in_UV(t, r, ϕ, ω), t, r) 
+
 𝕓 = 𝔹*𝕤
-drawpatch(𝕤, "boundary-field")
+ρ = 0 
 
 #--------------------------------------------------------------------
 # Define metric functions 
@@ -74,8 +94,7 @@ drawpatch(𝕤, "boundary-field")
 Γ    = Christoffel(𝕘)
 @einsum Γ[m, i, j] = (1/2)*𝕘inv[m,k]*(𝔻[j]*𝕘[k,i]+  𝔻[i]*𝕘[k,j] - 𝔻[k]*𝕘[i,j])
 println("Finished computing auxilliary quantities. Computing the operator")
-toc()
-tic()
+
 #--------------------------------------------------------------------
 # Now construct the operator in 2 ways (just because you can)
 #--------------------------------------------------------------------
@@ -86,19 +105,12 @@ tic()
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃1 + 𝔹, ρ + 𝕓) 
-
 println("Finished solve")
-toc()
 
-using PyPlot
-plot(chebgrid(P2), 𝕨.value[:, end])
-plot(chebgrid(P1), 𝕨.value[end, :])
-plot(chebgrid(P1), 𝕨.value[1, :])
-plot(chebgrid(P1), 𝕨.value[:, 1])
-savefig("plots/boundary-R.pdf")
-
-drawpatch(𝑼, "plots/transformedU")
-drawpatch(𝑽, "plots/transformedV")
-drawpatch(t, "plots/t_of_UV")
-drawpatch(r, "plots/r_of_UV")
+drawpatch(𝕤, "plots/solution-field")
 drawpatch(𝕨, "plots/schwarzschild")
+drawpatch(𝕨-𝕤, "plots/error-schwarzschild")
+drawpatch(abs(𝕨-𝕤), "plots/abs-error-schwarzschild")
+
+@show maximum(abs(𝕨-𝕤))
+toc()
