@@ -10,9 +10,9 @@ libraries = ["MetricFunctions"]
 libraries = ["Ricci"]
 libraries = ["CoordinateTransform"]
 libraries = ["Schwarzschild"]
-libraries = ["SchwarzschildReggeWheeler"]
 libraries = ["SchwarzschildEigenValues"]
 libraries = ["RicciNull"]
+libraries = ["SchwarzschildReggeWheeler"]
 
 for file in libraries
     info("Testing $file")
