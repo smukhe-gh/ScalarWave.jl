@@ -11,8 +11,8 @@ libraries = ["Ricci"]
 libraries = ["CoordinateTransform"]
 libraries = ["Schwarzschild"]
 libraries = ["SchwarzschildReggeWheeler"]
-libraries = ["RicciNull"]
 libraries = ["SchwarzschildEigenValues"]
+libraries = ["RicciNull"]
 
 for file in libraries
     info("Testing $file")
