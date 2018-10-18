@@ -122,3 +122,20 @@ function metricdet(g::Metric{dd, 4})::Field
     end
     return detg
 end
+
+import Base: eigvals
+
+function eigvals(g::Metric{dd, 4}) 
+    eigU = similar(g[1,1]) 
+    eigV = similar(g[1,1]) 
+    for index in CartesianRange(size(g[1,1].space))
+        tempg = [g[1,1].value[index]  g[1,2].value[index] g[1,2].value[index] g[1,4].value[index];
+                 g[2,1].value[index]  g[2,2].value[index] g[2,2].value[index] g[2,4].value[index];
+                 g[3,1].value[index]  g[3,2].value[index] g[3,2].value[index] g[3,4].value[index];
+                 g[4,1].value[index]  g[4,2].value[index] g[4,2].value[index] g[4,4].value[index]]
+        eigenvals = eigvals(tempg) 
+        eigU.value[index] = abs(eigenvals[1])
+        eigV.value[index] = abs(eigenvals[2])
+    end
+    return eigU, eigV
+end

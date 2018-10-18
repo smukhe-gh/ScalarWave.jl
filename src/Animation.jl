@@ -9,7 +9,6 @@ function backdrop(scene, framenumber)
     background("white")
 end
 
-
 struct U end
 struct V end
 

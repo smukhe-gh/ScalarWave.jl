@@ -25,7 +25,8 @@ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 
 export Patch
 export cheb, chebx, chebd, chebw, chebgrid,
-	   delta, drawpatch
+	   delta, drawpatch, setcolormap,
+       drawtensorfield
 
 include("AbstractTypes.jl")
 include("SingleSpaces.jl")
@@ -38,5 +39,6 @@ include("Visualization.jl")
 include("Rationals.jl")
 include("BasisTransformation.jl")
 include("Coordinates.jl")
+include("TensorVisualization.jl")
 
 end 
