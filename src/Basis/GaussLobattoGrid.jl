@@ -35,27 +35,3 @@ function chebw{T<:Int}(i::T, N::T)::Float64
 	end
 	return W
 end
-
-function chebgrid(N::Int)::Array{Float64,1}
-    return Float64[chebx(i,N) for i in 1:N+1]
-end
-
-function chebgrid(N::Int, M::Int, loc::Int)::Array{Float64,1}
-    return Float64[coordtransL2G(M, loc, chebx(i,N)) for i in 1:N+1]
-end
-
-function chebweights(N::Int)::Array{Float64,1}
-    return Float64[chebw(i,N) for i in 1:N+1]
-end
-
-function chebdiff(N::Int)::Array{Float64,2}
-    return Float64[chebd(i,j,N) for i in 1:N+1, j in 1:N+1] 
-end
-
-function vandermonde(N::Int)::Array{Float64,2}
-    return Float64[cheb(m,x) for x in chebgrid(N), m in 0:N]
-end
-
-function pseudovandermonde(N::Int, collocationpts::Array{Float64, 1})::Array{Float64,2}
-    return Float64[cheb(m,x) for x in collocationpts, m in 0:N]
-end

@@ -6,39 +6,38 @@
 module ScalarWave
 using Luxor, Colors, FFTW, Einsum, Roots
 
-export Null, Spatial, uu, dd, u, d
+export Null, Space, U, V, UV, uu, dd
+export Patch
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
-       Chebyshev, GaussLobatto, Taylor, 
-       Field, Boundary, Operator, ProductSpaceOperator,
-       Metric, Derivative, Christoffel, Ricci,
-       mapmetricindex, 
-       L2norm
-
-export order, dim, len, identity, boundary, solve, ⦼, shape 
+       Chebyshev, GaussLobatto, Taylor 
+export Field, Boundary, Operator, ProductSpaceOperator,
+       Metric, Derivative, Christoffel, Ricci
+export order, dim, boundary, solve, ⦼, shape, delta 
 export collocation, derivative, 
-       inversemetrictransform, inversemetricdet, derivativetransform,
-       basistransform, interpolate,
-       metricinverse
-
+       derivativetransform,
+       basistransform, mapmetricindex 
+export cheb, chebx, chebd, chebw,
+export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 
-export Patch
-export cheb, chebx, chebd, chebw, chebgrid,
-	   delta, drawpatch, setcolormap,
-       drawtensorfield
+include("DataTypes/AbstractTypes.jl")
+include("DataTypes/DataTypes.jl")
+include("DataTypes/MetricDataTypes.jl")
+include("Spaces/SingleSpaces.jl")
+include("Spaces/ProductSpaces.jl")
+include("Spaces/MetricSpaces.jl")
+include("Basis/TaylorGrid.jl")
+include("Basis/GaussLobattoGrid.jl")
+include("Basis/SpecBasis.jl")
+include("Basis/BasisTransformation.jl")
 
-include("AbstractTypes.jl")
-include("SingleSpaces.jl")
-include("ProductSpaces.jl")
 include("MetricFunctions.jl")
 include("MathFunctions.jl")
-include("CoordTransform.jl")
-include("SpecCalculus.jl")
+
+include("CoordinateTransform.jl")
+include("DoubleNullCoordinates.jl")
+
 include("Visualization.jl")
-include("Rationals.jl")
-include("BasisTransformation.jl")
-include("Coordinates.jl")
-include("TensorVisualization.jl")
 
 end 

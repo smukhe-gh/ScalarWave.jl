@@ -1,11 +1,9 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Coordinate transformatins for (compactified) 
-# Schwarzschild background in double-null coordinates
-# See A Relativist's Toolkit, Eric Poisson
 # Soham 06-2018
+# Coordinate transformatins for Schwarzschild background in 
+# double-null coordinates. See 'A Relativist's Toolkit, Eric Poisson'
 #--------------------------------------------------------------------
-# Assert you're in region I or II, and not III and IV
 
 function find_t_of_UV(U::T, V::T, M::T)::T where {T<:Real}
     @assert V > 0   # ensure you're in region I or II
