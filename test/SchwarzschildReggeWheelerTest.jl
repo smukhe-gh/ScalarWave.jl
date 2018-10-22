@@ -4,12 +4,7 @@
 # Wave equation on Schwarzschild; compare with Regge-Wheeler
 #--------------------------------------------------------------------
 
-tic()
 using Einsum
-
-struct U end
-struct V end
-struct UV end
 
 #--------------------------------------------------------------------
 # Set grid size and initial data 
@@ -36,7 +31,7 @@ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 θ = Field(SUV, (𝑼,𝑽)->pi/2)
 ϕ = Field(SUV, (𝑼,𝑽)->0)
 ø = zero(SUV) 
-Ø = zero(Spatial, SUV) 
+Ø = zero(Null, SUV) 
 
 𝑼 = (Umax + Umin)/2 + (Umax - Umin)/2*𝕌  
 𝑽 = (Vmax + Vmin)/2 - (Vmax - Vmin)/2*𝕍  
@@ -44,10 +39,10 @@ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 t = Field(SUV, (𝑼,𝑽)->find_t_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 r = Field(SUV, (𝑼,𝑽)->find_r_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 
-drawpatch(𝑼, "plots/U")
-drawpatch(𝑽, "plots/V")
-drawpatch(t, "plots/t_of_UV")
-drawpatch(r, "plots/r_of_UV")
+drawpatch(𝑼, "../output/U")
+drawpatch(𝑽, "../output/V")
+drawpatch(t, "../output/t_of_UV")
+drawpatch(r, "../output/r_of_UV")
 
 𝔻𝑼, 𝔻𝑽 = derivativetransform(SUV, 𝑼, 𝑽) 
 𝔻θ, 𝔻ϕ = Ø, Ø
@@ -131,7 +126,7 @@ b[1, :] = ϕr
                                 𝒈θθ, 𝒈θϕ,
                                      𝒈ϕϕ])
 
-𝕘inv = metricinverse(𝕘) 
+𝕘inv = inv(𝕘) 
 𝔻    = Derivative{u, 4}([𝔻𝑼, 𝔻𝑽, 𝔻θ, 𝔻ϕ])
 Γ    = Christoffel(𝕘)
 @einsum Γ[m, i, j] = (1/2)*𝕘inv[m,k]*(𝔻[j]*𝕘[k,i]+  𝔻[i]*𝕘[k,j] - 𝔻[k]*𝕘[i,j])
@@ -163,12 +158,11 @@ println("Finished solve. Generating plots.")
 # Compute the operator on the solution from ApproxFun
 𝕤res = 𝕃1*𝕤
 
-drawpatch(𝕨, "plots/schwarzschild-field")
-drawpatch(𝕤, "plots/solution-field")
-drawpatch(𝕤res, "plots/solution-res-field")
-drawpatch(𝕨-𝕤, "plots/error-schwarzschild")
+drawpatch(𝕨,    "../output/schwarzschild-field")
+drawpatch(𝕤,    "../output/solution-field")
+drawpatch(𝕤res, "../output/solution-res-field")
+drawpatch(𝕨-𝕤,  "../output/error-schwarzschild")
 
 @show maximum(abs(𝕨-𝕤))
 @show maximum(abs(𝕤res))
 
-toc()

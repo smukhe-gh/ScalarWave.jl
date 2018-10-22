@@ -1,16 +1,16 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 01-2018
-# Rationals Test
-# Choose uniform collocation points in a cardinal basis (polynomial)
-# and compute the derivative and the integral
+# Uniformly spaced collocation points for testing with 
+# Rational numbers
+# TODO: Avoid redefinition of functions
 #--------------------------------------------------------------------
 
-function collocation(::Type{Rational}, i::Int, N::Int)::Rational
+function Tcollocation(::Type{Rational}, i::Int, N::Int)::Rational
     return -(-1 + (2*(i-1)//N))
 end
 
-function derivative(::Type{Rational}, i::Int, j::Int, N::Int)::Rational
+function Tderivative(::Type{Rational}, i::Int, j::Int, N::Int)::Rational
     x = [collocation(Rational, k, N) for k in 1:N+1]
     if i == j
         return sum((k==j ? 0 : 1/(x[j] - x[k])) for k in 1:N+1)

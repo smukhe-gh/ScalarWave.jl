@@ -6,6 +6,10 @@
 # TODO: Avoid repetition of code
 #--------------------------------------------------------------------
 
+function chebweights(Nx)
+    return [chebw(i, Nx) for i in 1:Nx+1]
+end
+
 function setcolormap(vec::Array{Float64,1}, map::String, samples::Int)
     nvec = (vec .- minimum(vec))./(maximum(vec) .- minimum(vec))
     clrs = colormap(map, samples+1)

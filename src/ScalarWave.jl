@@ -6,18 +6,18 @@
 module ScalarWave
 using Luxor, Colors, FFTW, Einsum, Roots
 
-export Null, Space, U, V, UV, uu, dd
+export Null, Spacelike, U, V, UV, uu, dd, u, d, udd
 export Patch
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
-       Chebyshev, GaussLobatto, Taylor 
+       Chebyshev, GaussLobatto, Taylor, spacetype 
 export Field, Boundary, Operator, ProductSpaceOperator,
        Metric, Derivative, Christoffel, Ricci
 export order, dim, boundary, solve, ⦼, shape, delta 
 export collocation, derivative, 
        derivativetransform,
        basistransform, mapmetricindex 
-export cheb, chebx, chebd, chebw,
+export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 
