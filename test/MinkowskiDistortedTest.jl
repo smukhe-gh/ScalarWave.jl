@@ -4,10 +4,6 @@
 # Distorted Minkowski
 #--------------------------------------------------------------------
 
-struct U end
-struct V end
-struct UV end
-
 #--------------------------------------------------------------------
 # Define boundary and the product space
 # Derivative tests fails for P <= 20
@@ -47,8 +43,6 @@ guv = Field(SUV, (u,v)->-2)
 gvv = Field(SUV, (u,v)-> 0)
 
 (𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗) = inversemetrictransform(guu, guv, gvv, 𝒖, 𝒗) 
-invsqrtdet𝕘     = 1/sqrt(abs(inversemetricdet(𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗))) 
-
 𝕘   = [𝕘𝒖𝒖 𝕘𝒖𝒗; 𝕘𝒖𝒗 𝕘𝒗𝒗]
 𝔻   = [𝔻𝒖, 𝔻𝒗]
 𝕃   = 𝕘𝒖𝒗*𝔻𝒖*𝔻𝒗 + 𝕘𝒖𝒗*𝔻𝒗*𝔻𝒖
@@ -57,5 +51,4 @@ invsqrtdet𝕘     = 1/sqrt(abs(inversemetricdet(𝕘𝒖𝒖, 𝕘𝒖𝒗, �
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
-drawpatch(𝕨, "plots/minkowski-distorted")
-@show maximum(abs(𝕃*𝕤))
+drawpatch(𝕨, "../output/minkowski-distorted")

@@ -35,8 +35,4 @@ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
                              𝒈θθ, 𝒈θϕ, 
                                   𝒈ϕϕ])
 
-@show typeof(𝕘)
-@show dim(𝕘)
 @test 𝕘[2,3] ==  𝕘[3,2]
-@show metricdet(𝕘)
-

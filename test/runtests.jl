@@ -6,13 +6,8 @@
 using ScalarWave
 using Base.Test, PyPlot
 
-libraries = ["MetricFunctions"]
-libraries = ["Ricci"]
-libraries = ["CoordinateTransform"]
 libraries = ["Schwarzschild"]
-libraries = ["SchwarzschildEigenValues"]
-libraries = ["RicciNull"]
-libraries = ["SchwarzschildReggeWheeler"]
+libraries = ["MinkowskiDistorted"]
 
 for file in libraries
     info("Testing $file")

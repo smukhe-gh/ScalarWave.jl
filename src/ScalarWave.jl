@@ -12,7 +12,8 @@ export Manifold, Space, ProductSpace,
        Galerkin, Cardinal, 
        Chebyshev, GaussLobatto, Taylor, spacetype 
 export Field, Boundary, Operator, ProductSpaceOperator,
-       Metric, Derivative, Christoffel, Ricci
+       Metric, Derivative, Christoffel, Ricci,
+       inversemetrictransform
 export order, dim, boundary, solve, ⦼, shape, delta 
 export collocation, derivative, 
        derivativetransform,
