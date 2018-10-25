@@ -10,7 +10,8 @@ import Base: +, -, *, /, ==, ≈, range, length, eye
 order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N
 dim(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}    = 1
 range(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = 1:N+1
-length(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}    = N+1
+length(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N} = N+1
+length(S::Type{T}) where {T<:Galerkin{Tag, N}} where {Tag, N} = N+1
 
 # type of space
 spacetype(S::Type{T}) where {T<:GaussLobatto{Tag, N}} where {Tag, N} = Float64

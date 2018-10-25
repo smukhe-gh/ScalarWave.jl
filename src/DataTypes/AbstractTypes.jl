@@ -6,4 +6,3 @@
 
 abstract type Manifold{Tag} end
 abstract type Space{Tag} <: Manifold{Tag} end
-abstract type Galerkin{Tag, N} <: Space{Tag} end

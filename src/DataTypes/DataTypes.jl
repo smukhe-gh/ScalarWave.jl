@@ -21,7 +21,9 @@ struct GaussLobatto{Tag ,N} <: Space{Tag} end
 struct Chebyshev{Tag ,N} <: Space{Tag} end
 struct Taylor{Tag ,N} <:Space{Tag} end
 
+# add new basis representations here.
 Cardinal{Tag, N} = Union{GaussLobatto{Tag, N}, Taylor{Tag, N}} 
+Galerkin{Tag, N} = Union{Chebyshev{Tag, N}} 
 
 struct Field{S, D, T}
     space::Type{S}

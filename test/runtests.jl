@@ -8,6 +8,7 @@ using Base.Test, PyPlot
 
 libraries = ["MinkowskiDistorted"]
 libraries = ["Schwarzschild"]
+libraries = ["BasisTransformation"]
 
 for file in libraries
     info("Testing $file")
