@@ -2,7 +2,8 @@
 # Spacetime Discretization methods in Julia
 # Soham 09-2018
 # 1D and 2D Basis transformation functions with Type-I DFT
-# TODO: Add ability to do this with partial summations
+# and partial summations. Note that we use a convention where the
+# first and the last coefficents are divided by 2. 
 #--------------------------------------------------------------------
 
 function basistransform(u::Field{GaussLobatto{Tag, N}}, ::Type{Chebyshev{Tag, N}})::Field{Chebyshev{Tag, N}} where {Tag, N}  
@@ -15,20 +16,54 @@ function basistransform(u::Field{Chebyshev{Tag, N}}, ::Type{GaussLobatto{Tag, N}
     return Field(GaussLobatto{Tag, N}, n)
 end
 
-function basistransform(u::Field{ProductSpace{GaussLobatto{Tag, N1}, 
-                                              GaussLobatto{Tag, N2}}}, 
-                          ::Type{ProductSpace{Chebyshev{Tag, N1},
-                                              Chebyshev{Tag, N2}}})::Field{ProductSpace{Chebyshev{Tag, N1},
-                                                                                        Chebyshev{Tag, N2}}} where {Tag, N1, N2}  
+function basistransform(u::Field{T}) where T<:ProductSpace{GaussLobatto{Tag1, N1}, GaussLobatto{Tag2, N2}} where {Tag1, Tag2, N1, N2}
     c = (1/(N1*N2))*(FFTW.r2r(u.value, FFTW.REDFT00))
-    return Field(ProductSpace{Chebyshev{Tag, N1}, Chebyshev{Tag, N2}}, c)
+    return Field(ProductSpace{Chebyshev{Tag1, N1}, Chebyshev{Tag2, N2}}, c)
 end
 
-function basistransform(u::Field{ProductSpace{Chebyshev{Tag, N1}, 
-                                              Chebyshev{Tag, N2}}}, 
-                          ::Type{ProductSpace{GaussLobatto{Tag, N1},
-                                              GaussLobatto{Tag, N2}}})::Field{ProductSpace{GaussLobatto{Tag, N1},
-                                                                                           GaussLobatto{Tag, N2}}} where {Tag, N1, N2}  
-    n = (FFTW.r2r((N1*N2)*u.value, FFTW.REDFT00))/(2*(N1*N2))
-    return Field(ProductSpace{GaussLobatto{Tag, N1}, GaussLobatto{Tag, N2}}, n)
+function basistransform(u::Field{T}) where T<:ProductSpace{Chebyshev{Tag1, N1}, Chebyshev{Tag2, N2}} where {Tag1, Tag2, N1, N2}
+    n = (FFTW.r2r((N1*N2)*u.value, FFTW.REDFT00))/(4*(N1*N2))
+    return Field(ProductSpace{GaussLobatto{Tag1, N1}, GaussLobatto{Tag2, N2}}, n)
+end
+
+function basistransform(u::Field{T}, method::Symbol) where T<:ProductSpace{Chebyshev{Tag1, N1}, Chebyshev{Tag2, N2}} where {Tag1, Tag2, N1, N2}
+    @assert method == :partialsummation
+    @assert N1 == N2 # FIXME: Fix this case
+    A = u.value
+    α = zeros(N2+1, N1+1)
+    f = zeros(N1+1, N2+1) 
+
+
+    A[1, :]   = A[1, :]/2      
+    A[:, 1]   = A[:, 1]/2     
+    A[end, :] = A[end, :]/2  
+    A[:, end] = A[:, end]/2 
+
+    for m in 0:N1, j in 0:N2
+        yj = chebx(j+1, N2)
+        α[j+1,m+1] = sum(A[m+1,n+1]*cheb(n, yj) for n in 0:N2)
+    end
+
+    println("Finished computing alpha")
+
+    for j in 0:N2, i in 0:N1
+        xi = chebx(i+1, N1)
+        f[i+1,j+1] = sum(α[j+1,m+1]*cheb(m, xi) for m in 0:N1) 
+    end
+
+    return Field(ProductSpace{GaussLobatto{Tag1, N1}, GaussLobatto{Tag2, N2}}, f)
+end
+
+function basistransformtest(u::Field{T}, method::Symbol) where T<:ProductSpace{Chebyshev{Tag1, N1}, Chebyshev{Tag2, N2}} where {Tag1, Tag2, N1, N2}
+    A = u.value
+    @show size(A)
+    f = similar(A) 
+
+    for i in 0:N1, j in 0:N2
+        xi = chebx(i+1, N1)
+        yj = chebx(j+1, N2)
+        f[i+1,j+1] = sum(A[m+1,n+1]*cheb(m, xi)*cheb(n, yj) for n in 0:N2, m in 0:N1)
+    end
+
+    return Field(ProductSpace{GaussLobatto{Tag1, N1}, GaussLobatto{Tag2, N2}}, f)
 end
