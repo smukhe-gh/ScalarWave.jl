@@ -10,11 +10,10 @@ struct U end
 struct V end
 struct UV end
 
-tic()
 #--------------------------------------------------------------------
 # Define boundary and the product space
 #--------------------------------------------------------------------
-P1, P2 = 20, 20
+P1, P2 = 2, 4
 M   = 1.0
 Umin, Umax = -3M, -7M
 Vmin, Vmax =  3M,  7M
@@ -33,7 +32,7 @@ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 θ = Field(SUV, (𝑼,𝑽)->pi/2)
 ϕ = Field(SUV, (𝑼,𝑽)->0)
 ø = zero(SUV) 
-Ø = zero(Spatial, SUV) 
+Ø = zero(Null, SUV) 
 
 𝑼 = (Umax + Umin)/2 + (Umax - Umin)/2*𝕌  
 𝑽 = (Vmax + Vmin)/2 - (Vmax - Vmin)/2*𝕍  
@@ -50,7 +49,6 @@ r = Field(SUV, (𝑼,𝑽)->find_r_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 ρ = 0 
 𝕤 = exp(-((-5M + 𝑽)^2)) 
 𝕓 = 𝔹*𝕤
-drawpatch(𝕤, "boundary-field")
 
 #--------------------------------------------------------------------
 # Define metric functions 
@@ -69,13 +67,11 @@ drawpatch(𝕤, "boundary-field")
                                 𝒈θθ, 𝒈θϕ,
                                      𝒈ϕϕ])
 
-𝕘inv = metricinverse(𝕘) 
+𝕘inv = inv(𝕘) 
 𝔻    = Derivative{u, 4}([𝔻𝑼, 𝔻𝑽, 𝔻θ, 𝔻ϕ])
 Γ    = Christoffel(𝕘)
 @einsum Γ[m, i, j] = (1/2)*𝕘inv[m,k]*(𝔻[j]*𝕘[k,i]+  𝔻[i]*𝕘[k,j] - 𝔻[k]*𝕘[i,j])
-println("Finished computing auxilliary quantities. Computing the operator")
-toc()
-tic()
+
 #--------------------------------------------------------------------
 # Now construct the operator in 2 ways (just because you can)
 #--------------------------------------------------------------------
@@ -87,18 +83,18 @@ tic()
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃1 + 𝔹, ρ + 𝕓) 
 
-println("Finished solve")
-toc()
+𝕔_rfft = basistransform(𝕨)
+𝕨_rfft = basistransform(𝕔_rfft)
 
-using PyPlot
-plot(chebgrid(P2), 𝕨.value[:, end])
-plot(chebgrid(P1), 𝕨.value[end, :])
-plot(chebgrid(P1), 𝕨.value[1, :])
-plot(chebgrid(P1), 𝕨.value[:, 1])
-savefig("plots/boundary-R.pdf")
+𝕨_mmt  = basistransform(𝕔_rfft, :MMT)
 
-drawpatch(𝑼, "plots/transformedU")
-drawpatch(𝑽, "plots/transformedV")
-drawpatch(t, "plots/t_of_UV")
-drawpatch(r, "plots/r_of_UV")
-drawpatch(𝕨, "plots/schwarzschild")
+# FIXME: This is changing 𝕨_mmt
+𝕔_mmt  = basistransform(𝕨_mmt, :MMT)
+
+@test 𝕨 ≈ 𝕨_rfft
+@test 𝕨 ≈ 𝕨_mmt
+
+#=
+@show 𝕔_rfft.value
+@show 𝕔_mmt.value
+=#

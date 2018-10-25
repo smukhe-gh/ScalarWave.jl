@@ -17,7 +17,8 @@ export Field, Boundary, Operator, ProductSpaceOperator,
 export order, dim, boundary, solve, ⦼, shape, delta 
 export collocation, derivative, 
        derivativetransform,
-       basistransform, mapmetricindex 
+       basistransform, mapmetricindex,
+       basistransformtest
 export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr

@@ -6,8 +6,8 @@
 using ScalarWave
 using Base.Test, PyPlot
 
-libraries = ["Schwarzschild"]
 libraries = ["MinkowskiDistorted"]
+libraries = ["Schwarzschild"]
 
 for file in libraries
     info("Testing $file")
