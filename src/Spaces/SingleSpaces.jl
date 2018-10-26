@@ -4,7 +4,7 @@
 # Define operations for 1D spaces
 #--------------------------------------------------------------------
 
-import Base: +, -, *, /, ==, ≈, range, length, eye
+import Base: +, -, *, /, ==, ≈, range, length
 
 # dimensions and shape
 order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N
@@ -33,7 +33,7 @@ spacetype(S::Type{T}) where {T<:Taylor{Tag, N}} where {Tag, N} = Rational{BigInt
 
 function *(A::Operator{S}, B::Operator{S})::Operator{S} where {S}
     C = similar(A.value)
-    for index in CartesianRange(size(C))
+    for index in CartesianIndices(size(C))
         C[index] = sum(A.value[index.I[1],k]*B.value[k,index.I[2]] for k in range(S))
     end
     return Operator(S, C)
@@ -50,7 +50,7 @@ end
 
 function *(u::Field{S}, A::Operator{S})::Operator{S} where {S}
     B = similar(A.value)
-    for index in CartesianRange(size(B))
+    for index in CartesianIndices(size(B))
         B[index] = u.value[index.I[1]]*A.value[index.I[1], index.I[2]]
     end
     return Operator(S, B)
@@ -72,21 +72,21 @@ end
 # compute derivative
 function derivative(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
     DS = zeros(spacetype(S), length(S), length(S))
-    for index in CartesianRange(size(DS))
+    for index in CartesianIndices(size(DS))
         DS[index] = derivative(spacetype(S), index.I[1], index.I[2], order(S))
     end
     return Operator(S, DS)
 end
 
-# compute identity matrix
+# compute identity matrixV
 function eye(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
-    return Operator(S, eye(spacetype(S), length(S)))
+    return Operator(S, Matrix{spacetype(S)}(I, length(S), length(S)))
 end
 
 function boundary(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
     B = zeros(spacetype(S), length(S))
     B[1] = B[end] = 1
-    return Operator(S, diagm(vec(B)))
+    return Operator(S, diagm(0 => vec(B)))
 end
 
 # map boundaries

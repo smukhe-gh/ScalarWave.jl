@@ -27,36 +27,14 @@ SUV = ProductSpace{GaussLobatto{U,2}, GaussLobatto{V,4}}
 𝕨 = exp(-((-5 + 𝑽)^2)) 
 
 # basis transformation using DFT
-𝕔_rfft = basistransform(𝕨)
-𝕨_rfft = basistransform(𝕔_rfft)
+𝕔_mmt = basistransform(𝕨)
+𝕨_mmt = basistransform(𝕔_mmt)
 
 # basis transformation using MMT
-𝕨_mmt  = basistransform(𝕔_rfft, :MMT)
-𝕔_mmt  = basistransform(𝕨_mmt,  :MMT) 
+𝕨_dft  = basistransform(𝕔_mmt, :dft)
+𝕔_dft  = basistransform(𝕨_mmt,  :dft) 
 
-@test 𝕨 ≈ 𝕨_rfft
 @test 𝕨 ≈ 𝕨_mmt
-@test 𝕨_rfft ≈ 𝕨_mmt
-@test 𝕔_rfft ≈ 𝕔_mmt
-
-#---------------------------------------------
-# Compare performance
-#---------------------------------------------
-
-using BenchmarkTools
-
-for NN in 2:100
-    SUV = ProductSpace{GaussLobatto{U,NN}, GaussLobatto{V,NN}}
-    𝕌 = Field(SUV, (U,V)->U)
-    𝕍 = Field(SUV, (U,V)->V)
-    𝕨 = exp(-(𝕌^2 + 𝕍^2)) 
-
-    if NN > 2
-        println("DFT", @btime 𝕔_rfft = basistransform(𝕨))
-        println("MMT", @btime 𝕔_mmt  = basistransform(𝕨_mmt,  :MMT))
-    else
-        𝕔_rfft = basistransform(𝕨)
-        𝕔_mmt  = basistransform(𝕨_mmt,  :MMT) 
-    end
-
-end 
+@test 𝕨 ≈ 𝕨_dft
+@test 𝕨_dft ≈ 𝕨_mmt
+@test 𝕔_dft ≈ 𝕔_mmt

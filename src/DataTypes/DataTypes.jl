@@ -8,11 +8,11 @@ struct U  end
 struct V  end
 struct UV end
 
-struct uu end
-struct dd end
-struct u  end
-struct d  end
-struct udd end
+struct _uu end
+struct _dd end
+struct _u  end
+struct _d  end
+struct _udd end
 
 struct Null end
 struct Spacelike end 

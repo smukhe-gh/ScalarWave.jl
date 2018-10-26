@@ -32,7 +32,7 @@ function derivativetransform(PS::Type{ProductSpace{S1, S2}}, 𝒖::Field{Product
     𝔻𝒗ofu = Field(ProductSpace{S1, S2}, similar(𝔻uof𝒗.value))
     𝔻𝒗ofv = Field(ProductSpace{S1, S2}, similar(𝔻vof𝒗.value))
     
-    for index in CartesianRange(size(𝔻uof𝒖.value)) 
+    for index in CartesianIndices(size(𝔻uof𝒖.value)) 
         # TODO: This can be made faster, by moving array 
         #       allocation outside the loop.
         Jacobian = [𝔻uof𝒖.value[index] 𝔻uof𝒗.value[index]; 

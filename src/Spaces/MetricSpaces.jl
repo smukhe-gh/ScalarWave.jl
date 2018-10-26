@@ -17,8 +17,8 @@ size(d::Derivative{Tag, D}, ::Int) where {Tag, D} = D
 size(d::Christoffel{Tag, D}, ::Int) where {Tag, D} = D
 size(d::Ricci{Tag, D}, ::Int) where {Tag, D} = D
 
-Christoffel(g::Metric) = Christoffel{udd, dim(g)}(fill(zero(g[1,1].space), (dim(g), dim(g), dim(g))))
-Ricci(g::Metric) = Ricci{dd, dim(g)}(fill(zero(g[1,1].space), (Int(dim(g)*((dim(g)+1)/2)))))
+Christoffel(g::Metric) = Christoffel{_udd, dim(g)}(fill(zero(g[1,1].space), (dim(g), dim(g), dim(g))))
+Ricci(g::Metric) = Ricci{_dd, dim(g)}(fill(zero(g[1,1].space), (Int(dim(g)*((dim(g)+1)/2)))))
 
 function mapmetricindex(i::Int, j::Int, D::Int)
     return Int(i + D*(j-1) + ((j/2)*(1-j)))

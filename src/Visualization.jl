@@ -4,6 +4,7 @@
 # Codes to visualize a single field, or a dictionary of patches
 # Also added ability to visualize eigenvalues of tensor fields
 # TODO: Avoid repetition of code
+# FIXME: Julia 1.0 complains about missing bracket issue
 #--------------------------------------------------------------------
 
 function chebweights(Nx)
@@ -12,8 +13,8 @@ end
 
 function setcolormap(vec::Array{Float64,1}, map::String, samples::Int)
     nvec = (vec .- minimum(vec))./(maximum(vec) .- minimum(vec))
-    clrs = colormap(map, samples+1)
-    return clrs[round.(Int, (nvec*samples)+1)]
+    clrs = colormap(map, samples .+ 1)
+    return clrs[round.(Int, (nvec*samples) .+ 1)]
 end
 
 function drawpatch(u::Field, filename)
@@ -39,8 +40,9 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     samplepatch = dbase[[1,1]].value
     (Nx, Ny) = size(samplepatch) .- 1
     (wx, wy) = (chebweights(Nx), chebweights(Ny))
-    (lx, ly) = (sort(2.0 - cumsum(wx))*200, sort(2.0 - cumsum(wy))*200)
+    (lx, ly) = (sort(2.0 .- cumsum(wx))*200, sort(2.0 .- cumsum(wy))*200)
 
+    println("Not here 1")
     #-----------------------------------------------
     # set-up canvas
     #-----------------------------------------------
@@ -49,12 +51,14 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     push!(lx, 400.0)
     push!(ly, 400.0)
     origin(400, 650)
-    rotate(-3pi/4)
+    Luxor.rotate(-3pi/4)
    
     setline(0.4)
     for i in 1:Nx+1, j in 1:Ny+1
         rect(lx[i], ly[j], lx[i+1] - lx[i], ly[j+1] - ly[j], :stroke)
     end
+
+    println("Not here 2")
 
     #-----------------------------------------------
     # set ticks
@@ -110,8 +114,8 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     #-----------------------------------------------
     
     gsave()
-    rotate(3pi/4)
-    x   = collect(linspace(-200, 200, length(AP)))
+    Luxor.rotate(3pi/4)
+    x   = collect(range(-200, stop=200, length=length(AP)))
     clr = colormap("Blues", length(AP))
 
     for i in 1:length(AP)-1
@@ -154,7 +158,7 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
         Luxor.translate(((my-1)/2M)*(maximum(lx)+400), ((mx-1)/2M)*(maximum(lx)+400))
         scale(1/M)
         patch     = dbase[[mx, my]].value
-        localcmap = globalcmap[(sub2ind((M, M), mx, my)-1)*length(patch) + 1:(sub2ind((M, M), mx, my))*length(patch)] 
+        localcmap = globalcmap[(LinearIndices((M, M))[mx,my]-1)*length(patch) + 1:(LinearIndices((M, M))[mx, my])*length(patch)] 
         cmap = reshape(localcmap, size(patch))
 
         for i in 1:Nx+1, j in 1:Ny+1
@@ -176,7 +180,7 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     settext("v", O .+ Point(40, -40);
                 halign = "top",
                 valign = "right")
-    rotate(-pi/2)
+    Luxor.rotate(-pi/2)
     Luxor.arrow(O, O .+ Point(40, -40))
     settext("u", O .+ Point(40, -40);
                 halign = "bottom",
@@ -220,7 +224,7 @@ function drawtensorfield(g::Metric, filename)
     push!(lx, 400.0)
     push!(ly, 400.0)
     origin(400, 650)
-    rotate(-3pi/4)
+    Luxor.rotate(-3pi/4)
    
     setline(0.4)
     for i in 1:Nx+1, j in 1:Ny+1
@@ -281,7 +285,7 @@ function drawtensorfield(g::Metric, filename)
     #-----------------------------------------------
     
     gsave()
-    rotate(3pi/4)
+    Luxor.rotate(3pi/4)
     x   = collect(linspace(-200, 200, length(AP)))
     clr = colormap("Blues", length(AP))
 
@@ -349,7 +353,7 @@ function drawtensorfield(g::Metric, filename)
     settext("v", O .+ Point(40, -40);
                 halign = "top",
                 valign = "right")
-    rotate(-pi/2)
+    Luxor.rotate(-pi/2)
     Luxor.arrow(O, O .+ Point(40, -40))
     settext("u", O .+ Point(40, -40);
                 halign = "bottom",

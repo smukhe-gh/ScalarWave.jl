@@ -1,0 +1,640 @@
+Binary files ScalarWave/.DS_Store and /Users/soham/Projects/ScalarWave/.DS_Store differ
+Only in /Users/soham/Projects/ScalarWave: .codecov.yml
+Only in /Users/soham/Projects/ScalarWave: .git
+Only in /Users/soham/Projects/ScalarWave: .gitignore
+Only in ScalarWave: Manifest.toml
+Only in ScalarWave: Project.toml
+diff -bur ScalarWave/README.md /Users/soham/Projects/ScalarWave/README.md
+--- ScalarWave/README.md	2018-10-25 14:29:01.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/README.md	2018-10-22 14:39:33.000000000 -0400
+@@ -5,5 +5,3 @@
+ [![codecov](https://codecov.io/gh/soham1112/ScalarWave.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/soham1112/ScalarWave.jl)
+ 
+ Solving the scalar wave equation using spacetime discretization methods in Julia.
+-
+-UPDATED to Julia 1.0
+Only in /Users/soham/Projects/ScalarWave: REQUIRE
+Only in /Users/soham/Projects/ScalarWave/output: U.pdf
+Only in /Users/soham/Projects/ScalarWave/output: V.pdf
+Only in /Users/soham/Projects/ScalarWave/output: coeffs.pdf.pdf
+Only in /Users/soham/Projects/ScalarWave/output: error-schwarzschild.pdf
+Only in ScalarWave/output: minkowski-distorted-coefficents.pdf
+Binary files ScalarWave/output/minkowski-distorted.pdf and /Users/soham/Projects/ScalarWave/output/minkowski-distorted.pdf differ
+Only in /Users/soham/Projects/ScalarWave/output: r_of_UV.pdf
+Only in /Users/soham/Projects/ScalarWave/output: schwarzschild-field.pdf
+Only in /Users/soham/Projects/ScalarWave/output: solution-field.pdf
+Only in /Users/soham/Projects/ScalarWave/output: solution-res-field.pdf
+Only in /Users/soham/Projects/ScalarWave/output: t_of_UV.pdf
+diff -bur ScalarWave/src/Basis/BasisTransformation.jl /Users/soham/Projects/ScalarWave/src/Basis/BasisTransformation.jl
+--- ScalarWave/src/Basis/BasisTransformation.jl	2018-10-25 17:03:48.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/Basis/BasisTransformation.jl	2018-10-25 12:46:49.000000000 -0400
+@@ -18,19 +18,18 @@
+     return Field(GaussLobatto{Tag, N}, n)
+ end
+ 
+-function basistransform(u::Field{T}, method::Symbol) where T<:ProductSpace{GaussLobatto{Tag1, N1}, GaussLobatto{Tag2, N2}} where {Tag1, Tag2, N1, N2}
+-    @assert method == :dft
++function basistransform(u::Field{T}) where T<:ProductSpace{GaussLobatto{Tag1, N1}, GaussLobatto{Tag2, N2}} where {Tag1, Tag2, N1, N2}
+     c = (1/(N1*N2))*(FFTW.r2r(u.value, FFTW.REDFT00))
+     return Field(ProductSpace{Chebyshev{Tag1, N1}, Chebyshev{Tag2, N2}}, c)
+ end
+ 
+-function basistransform(u::Field{T}, method::Symbol) where T<:ProductSpace{Chebyshev{Tag1, N1}, Chebyshev{Tag2, N2}} where {Tag1, Tag2, N1, N2}
+-    @assert method == :dft
++function basistransform(u::Field{T}) where T<:ProductSpace{Chebyshev{Tag1, N1}, Chebyshev{Tag2, N2}} where {Tag1, Tag2, N1, N2}
+     n = (FFTW.r2r((N1*N2)*u.value, FFTW.REDFT00))/(4*(N1*N2))
+     return Field(ProductSpace{GaussLobatto{Tag1, N1}, GaussLobatto{Tag2, N2}}, n)
+ end
+ 
+-function basistransform(u::Field{T}) where T<:ProductSpace{Chebyshev{Tag2, N2}, Chebyshev{Tag1, N1}} where {Tag1, Tag2, N1, N2}
++function basistransform(u::Field{T}, method::Symbol) where T<:ProductSpace{Chebyshev{Tag2, N2}, Chebyshev{Tag1, N1}} where {Tag1, Tag2, N1, N2}
++    @assert method == :MMT 
+     A = u.value
+     α = zeros(reverse(size(u.space)))
+     f = zeros(size(u.space)) 
+@@ -48,7 +47,8 @@
+     return Field(ProductSpace{GaussLobatto{Tag2, N2}, GaussLobatto{Tag1, N1}}, f)
+ end
+ 
+-function basistransform(u::Field{T}) where T<:ProductSpace{GaussLobatto{Tag2, N2}, GaussLobatto{Tag1, N1}} where {Tag1, Tag2, N1, N2}
++function basistransform(u::Field{T}, method::Symbol) where T<:ProductSpace{GaussLobatto{Tag2, N2}, GaussLobatto{Tag1, N1}} where {Tag1, Tag2, N1, N2}
++    @assert method == :MMT
+     B = u.value
+     α = zeros(reverse(size(u.space)))
+     f = zeros(size(u.space)) 
+diff -bur ScalarWave/src/Basis/GaussLobattoGrid.jl /Users/soham/Projects/ScalarWave/src/Basis/GaussLobattoGrid.jl
+--- ScalarWave/src/Basis/GaussLobattoGrid.jl	2018-10-25 13:54:35.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/Basis/GaussLobattoGrid.jl	2018-10-22 14:34:19.000000000 -0400
+@@ -7,11 +7,11 @@
+     return cos(m*acos(x))
+ end
+ 
+-function chebx(i::T, N::T)::Float64 where {T<:Int}
++function chebx{T<:Int}(i::T, N::T)::Float64
+     return cospi((i-1)/N)
+ end
+ 
+-function chebd(i::T, j::T, N::T)::Float64 where {T<:Int}
++function chebd{T<:Int}(i::T, j::T, N::T)::Float64
+ 	if i==j==1
+ 		return (2N^2 + 1)/6
+ 	elseif i==j==N+1
+@@ -26,10 +26,10 @@
+ 	end
+ end
+ 
+-function chebw(i::T, N::T)::Float64 where {T<:Int}
++function chebw{T<:Int}(i::T, N::T)::Float64
+ 	W = 0.0
+ 	for j in 1:N+1
+-		w = (j == 1 ? 1 : (j-1)%2 == 0 ? 2/(1-(j-1)^2) : 0)
++		w = (j == 1 ? 1 : (j-1)%2 == 0 ? 2/(1-(j-1)^2): 0)
+ 		l = (i == 1 || i == N+1 ? (1/N)*cospi((i-1)*(j-1)/N) : (2/N)*cospi((i-1)*(j-1)/N))
+ 		W +=  w*l
+ 	end
+diff -bur ScalarWave/src/CoordinateTransform.jl /Users/soham/Projects/ScalarWave/src/CoordinateTransform.jl
+--- ScalarWave/src/CoordinateTransform.jl	2018-10-25 14:25:38.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/CoordinateTransform.jl	2018-10-22 22:29:14.000000000 -0400
+@@ -32,7 +32,7 @@
+     𝔻𝒗ofu = Field(ProductSpace{S1, S2}, similar(𝔻uof𝒗.value))
+     𝔻𝒗ofv = Field(ProductSpace{S1, S2}, similar(𝔻vof𝒗.value))
+     
+-    for index in CartesianIndices(size(𝔻uof𝒖.value)) 
++    for index in CartesianRange(size(𝔻uof𝒖.value)) 
+         # TODO: This can be made faster, by moving array 
+         #       allocation outside the loop.
+         Jacobian = [𝔻uof𝒖.value[index] 𝔻uof𝒗.value[index]; 
+diff -bur ScalarWave/src/DataTypes/DataTypes.jl /Users/soham/Projects/ScalarWave/src/DataTypes/DataTypes.jl
+--- ScalarWave/src/DataTypes/DataTypes.jl	2018-10-25 20:39:02.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/DataTypes/DataTypes.jl	2018-10-25 12:48:30.000000000 -0400
+@@ -8,11 +8,11 @@
+ struct V  end
+ struct UV end
+ 
+-struct _uu end
+-struct _dd end
+-struct _u  end
+-struct _d  end
+-struct _udd end
++struct uu end
++struct dd end
++struct u  end
++struct d  end
++struct udd end
+ 
+ struct Null end
+ struct Spacelike end 
+diff -bur ScalarWave/src/MathFunctions.jl /Users/soham/Projects/ScalarWave/src/MathFunctions.jl
+--- ScalarWave/src/MathFunctions.jl	2018-10-25 17:07:57.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/MathFunctions.jl	2018-10-22 14:08:44.000000000 -0400
+@@ -7,20 +7,20 @@
+ import Base: sqrt, abs, sin, cos, sinpi, cospi,  exp, ^, log
+ import Base: maximum, minimum
+ 
+-sqrt(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, sqrt.(A.value))
+-abs(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, abs.(A.value))
+-sin(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, sin.(A.value))
+-cos(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, cos.(A.value))
+-sinpi(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, sinpi.(A.value))
+-cospi(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, cospi.(A.value))
+-exp(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, exp.(A.value))
+-log(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, log.(A.value))
+-^(B::Field{ProductSpace{S1, S2}}, a::Int) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, B.value.^a)
++sqrt(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, sqrt.(A.value))
++abs(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, abs.(A.value))
++sin(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, sin.(A.value))
++cos(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, cos.(A.value))
++sinpi(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, sinpi.(A.value))
++cospi(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, cospi.(A.value))
++exp(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, exp.(A.value))
++log(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, log.(A.value))
++^(B::Field{ProductSpace{S1, S2}}, a::Int) where {S1, S2 <: Cardinal{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, B.value.^a)
+ 
+ maximum(u::Field{ProductSpace{S1, S2}}) where {S1, S2} = maximum(u.value)
+ minimum(u::Field{ProductSpace{S1, S2}}) where {S1, S2}  = minimum(u.value)
+ 
+-import LinearAlgebra: eigvals, cond
++import Base: eigvals, cond
+ 
+ function eigvals(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
+     return eigvals(vec(A))
+diff -bur ScalarWave/src/MetricFunctions.jl /Users/soham/Projects/ScalarWave/src/MetricFunctions.jl
+--- ScalarWave/src/MetricFunctions.jl	2018-10-25 21:48:58.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/MetricFunctions.jl	2018-10-22 13:27:10.000000000 -0400
+@@ -4,15 +4,15 @@
+ # Define operations on the metric 
+ #--------------------------------------------------------------------
+ 
+-import LinearAlgebra: inv, det, eigvals
++import Base: inv, det, eigvals
+ 
+-function inv(g::Metric{_dd, 4})::Metric{_uu, 4}   
+-    ginv = Metric{_uu, 4}([similar(g[1,1]),
++function inv(g::Metric{dd, 4})::Metric{uu, 4}   
++    ginv = Metric{uu, 4}([similar(g[1,1]),
+                           similar(g[2,1]), similar(g[2,2]),
+                           similar(g[3,1]), similar(g[3,2]), similar(g[3,3]),
+                           similar(g[4,1]), similar(g[4,2]), similar(g[4,3]), similar(g[4,4])])
+ 
+-    for index in CartesianIndices(size(g[1,1].space))
++    for index in CartesianRange(size(g[1,1].space))
+         # TODO: Remove array allocations from inside the loop to make things faster.
+         tempg = [g[1,1].value[index]  g[1,2].value[index] g[1,3].value[index] g[1,4].value[index];
+                  g[2,1].value[index]  g[2,2].value[index] g[2,3].value[index] g[2,4].value[index];
+@@ -39,34 +39,35 @@
+     return ginv
+ end
+ 
+-function det(g::Metric{_dd, 4})::Field
++function det(g::Metric{dd, 4})::Field
+     detg = similar(g[1,1])
+ 
+-    for index in CartesianIndices(size(g[1,1].space))
++    for index in CartesianRange(size(g[1,1].space))
+         # TODO: Remove array allocations from inside the loop to make things faster.
+         tempg = [g[1,1].value[index]  g[1,2].value[index] g[1,3].value[index] g[1,4].value[index];
+                  g[2,1].value[index]  g[2,2].value[index] g[2,3].value[index] g[2,4].value[index];
+                  g[3,1].value[index]  g[3,2].value[index] g[3,3].value[index] g[3,4].value[index];
+                  g[4,1].value[index]  g[4,2].value[index] g[4,3].value[index] g[4,4].value[index]]
++
+         detg.value[index] = det(tempg)    
++
+     end
+     return detg
+ end
+ 
+-function eigvals(g::Metric{_dd, 4})
+-    E1 = similar(g[1,1])
+-    E2 = similar(g[1,1])
+-    E3 = similar(g[1,1])
+-    E4 = similar(g[1,1])
+     
+-    for index in CartesianIndices(size(g[1,1].space))
++function eigvals(g::Metric{dd, 4})::Field
++    detg = similar(g[1,1])
++
++    for index in CartesianRange(size(g[1,1].space))
+         # TODO: Remove array allocations from inside the loop to make things faster.
+         tempg = [g[1,1].value[index]  g[1,2].value[index] g[1,3].value[index] g[1,4].value[index];
+                  g[2,1].value[index]  g[2,2].value[index] g[2,3].value[index] g[2,4].value[index];
+                  g[3,1].value[index]  g[3,2].value[index] g[3,3].value[index] g[3,4].value[index];
+                  g[4,1].value[index]  g[4,2].value[index] g[4,3].value[index] g[4,4].value[index]]
+-        E1, E2, E3, E4 = eigvals(tempg)    
+-    end
+ 
+-    return (E1, E2, E3, E4)
++        detg.value[index] = det(tempg)    
++
++    end
++    return detg
+ end
+diff -bur ScalarWave/src/ScalarWave.jl /Users/soham/Projects/ScalarWave/src/ScalarWave.jl
+--- ScalarWave/src/ScalarWave.jl	2018-10-25 20:38:48.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/ScalarWave.jl	2018-10-24 23:58:50.000000000 -0400
+@@ -4,10 +4,9 @@
+ #--------------------------------------------------------------------
+ 
+ module ScalarWave
+-using Luxor, Colors, FFTW, Einsum, Roots, LinearAlgebra, Plots
++using Luxor, Colors, FFTW, Einsum, Roots
+ 
+-export Null, Spacelike, U, V, UV, 
+-       _uu, _dd, _u, _d, _udd
++export Null, Spacelike, U, V, UV, uu, dd, u, d, udd
+ export Patch
+ export Manifold, Space, ProductSpace, 
+        Galerkin, Cardinal, 
+@@ -18,7 +17,8 @@
+ export order, dim, boundary, solve, ⦼, shape, delta 
+ export collocation, derivative, 
+        derivativetransform,
+-       basistransform, mapmetricindex, eye
++       basistransform, mapmetricindex,
++       basistransformtest
+ export cheb, chebx, chebd, chebw
+ export drawpatch, setcolormap, drawtensorfield
+ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
+diff -bur ScalarWave/src/Spaces/MetricSpaces.jl /Users/soham/Projects/ScalarWave/src/Spaces/MetricSpaces.jl
+--- ScalarWave/src/Spaces/MetricSpaces.jl	2018-10-25 21:54:49.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/Spaces/MetricSpaces.jl	2018-10-22 14:58:46.000000000 -0400
+@@ -17,8 +17,8 @@
+ size(d::Christoffel{Tag, D}, ::Int) where {Tag, D} = D
+ size(d::Ricci{Tag, D}, ::Int) where {Tag, D} = D
+ 
+-Christoffel(g::Metric) = Christoffel{_udd, dim(g)}(fill(zero(g[1,1].space), (dim(g), dim(g), dim(g))))
+-Ricci(g::Metric) = Ricci{_dd, dim(g)}(fill(zero(g[1,1].space), (Int(dim(g)*((dim(g)+1)/2)))))
++Christoffel(g::Metric) = Christoffel{udd, dim(g)}(fill(zero(g[1,1].space), (dim(g), dim(g), dim(g))))
++Ricci(g::Metric) = Ricci{dd, dim(g)}(fill(zero(g[1,1].space), (Int(dim(g)*((dim(g)+1)/2)))))
+ 
+ function mapmetricindex(i::Int, j::Int, D::Int)
+     return Int(i + D*(j-1) + ((j/2)*(1-j)))
+diff -bur ScalarWave/src/Spaces/ProductSpaces.jl /Users/soham/Projects/ScalarWave/src/Spaces/ProductSpaces.jl
+--- ScalarWave/src/Spaces/ProductSpaces.jl	2018-10-25 18:18:50.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/Spaces/ProductSpaces.jl	2018-10-24 21:13:27.000000000 -0400
+@@ -9,7 +9,7 @@
+ # dimensions and shape
+ order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1))
+ dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)
+-range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianIndices((length(S2), length(S1)))
++range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianRange((length(S2), length(S1)))
+ size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (length(S2), length(S1))
+ 
+ # typeof
+@@ -22,7 +22,7 @@
+ zero(::Type{Null}, ::Type{ProductSpace{S1, S2}}) where {S1, S2} = 0*boundary(Null, ProductSpace{S1, S2})
+ 
+ # allocate memory for a similar field
+-similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, size(u.space)))
++similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(size(u.space)))
+ 
+ # unary operators
+ -(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}} where {Tag,N} = Field(ProductSpace{S1, S2}, -A.value)
+@@ -70,7 +70,7 @@
+ function *(A::ProductSpaceOperator{ProductSpace{S1,S2}},
+            u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
+     v = similar(u.value)
+-    for index in CartesianIndices(size(v))
++    for index in CartesianRange(size(v))
+         i, ii = index.I
+         v[index] = sum(A.value[i, ii, k, kk]*u.value[k, kk] for k in range(S2), kk in range(S1))
+     end
+@@ -79,7 +79,7 @@
+ 
+ function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} where {PS}
+     B = similar(A.value)
+-    for index in CartesianIndices(size(B))
++    for index in CartesianRange(size(B))
+         i, j, ii, jj = index.I
+         B[index]     = u.value[i, j]*A.value[index]
+     end
+@@ -115,7 +115,7 @@
+ # Kronecker product of two 1D operators
+ function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}
+     AB = zeros(spacetype(A.space), length(S2), length(S1), length(S2), length(S1))
+-    for index in CartesianIndices(size(AB))
++    for index in CartesianRange(size(AB))
+         i ,j ,ii ,jj = index.I
+         AB[index]    = A.value[j,jj]*B.value[i,ii]
+     end
+@@ -130,16 +130,14 @@
+ # Null and Spatial boundary operators
+ function boundary(::Type{Spacelike}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}
+     B = zeros(spacetype(PS), length(S2), length(S1))
+-    B[1, :] = B[end, :] .= convert(spacetype(PS), 1)
+-    B[:, 1] = B[:, end] .= convert(spacetype(PS), 1)
+-    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
++    B[1, :] = B[:, 1] = B[end, :] = B[:, end] = convert(spacetype(PS), 1)
++    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (length(S2), length(S1), length(S2), length(S1))))
+ end
+ 
+ function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
+     B = zeros(spacetype(PS), length(S2), length(S1))
+-    B[1, :] .= convert(spacetype(PS), 1)
+-    B[:, 1] .= convert(spacetype(PS), 1)
+-    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
++    B[1, :] = B[:, 1] = convert(spacetype(PS), 1)
++    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (length(S2), length(S1), length(S2), length(S1))))
+ 
+ end
+ 
+diff -bur ScalarWave/src/Spaces/SingleSpaces.jl /Users/soham/Projects/ScalarWave/src/Spaces/SingleSpaces.jl
+--- ScalarWave/src/Spaces/SingleSpaces.jl	2018-10-25 14:47:49.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/Spaces/SingleSpaces.jl	2018-10-25 12:48:39.000000000 -0400
+@@ -4,7 +4,7 @@
+ # Define operations for 1D spaces
+ #--------------------------------------------------------------------
+ 
+-import Base: +, -, *, /, ==, ≈, range, length
++import Base: +, -, *, /, ==, ≈, range, length, eye
+ 
+ # dimensions and shape
+ order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N
+@@ -33,7 +33,7 @@
+ 
+ function *(A::Operator{S}, B::Operator{S})::Operator{S} where {S}
+     C = similar(A.value)
+-    for index in CartesianIndices(size(C))
++    for index in CartesianRange(size(C))
+         C[index] = sum(A.value[index.I[1],k]*B.value[k,index.I[2]] for k in range(S))
+     end
+     return Operator(S, C)
+@@ -50,7 +50,7 @@
+ 
+ function *(u::Field{S}, A::Operator{S})::Operator{S} where {S}
+     B = similar(A.value)
+-    for index in CartesianIndices(size(B))
++    for index in CartesianRange(size(B))
+         B[index] = u.value[index.I[1]]*A.value[index.I[1], index.I[2]]
+     end
+     return Operator(S, B)
+@@ -72,21 +72,21 @@
+ # compute derivative
+ function derivative(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+     DS = zeros(spacetype(S), length(S), length(S))
+-    for index in CartesianIndices(size(DS))
++    for index in CartesianRange(size(DS))
+         DS[index] = derivative(spacetype(S), index.I[1], index.I[2], order(S))
+     end
+     return Operator(S, DS)
+ end
+ 
+-# compute identity matrixV
++# compute identity matrix
+ function eye(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+-    return Operator(S, Matrix{spacetype(S)}(I, length(S), length(S)))
++    return Operator(S, eye(spacetype(S), length(S)))
+ end
+ 
+ function boundary(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+     B = zeros(spacetype(S), length(S))
+     B[1] = B[end] = 1
+-    return Operator(S, diagm(0 => vec(B)))
++    return Operator(S, diagm(vec(B)))
+ end
+ 
+ # map boundaries
+diff -bur ScalarWave/src/Visualization.jl /Users/soham/Projects/ScalarWave/src/Visualization.jl
+--- ScalarWave/src/Visualization.jl	2018-10-25 18:18:12.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/src/Visualization.jl	2018-10-22 15:35:15.000000000 -0400
+@@ -4,7 +4,6 @@
+ # Codes to visualize a single field, or a dictionary of patches
+ # Also added ability to visualize eigenvalues of tensor fields
+ # TODO: Avoid repetition of code
+-# FIXME: Julia 1.0 complains about missing bracket issue
+ #--------------------------------------------------------------------
+ 
+ function chebweights(Nx)
+@@ -13,8 +12,8 @@
+ 
+ function setcolormap(vec::Array{Float64,1}, map::String, samples::Int)
+     nvec = (vec .- minimum(vec))./(maximum(vec) .- minimum(vec))
+-    clrs = colormap(map, samples .+ 1)
+-    return clrs[round.(Int, (nvec*samples) .+ 1)]
++    clrs = colormap(map, samples+1)
++    return clrs[round.(Int, (nvec*samples)+1)]
+ end
+ 
+ function drawpatch(u::Field, filename)
+@@ -40,9 +39,8 @@
+     samplepatch = dbase[[1,1]].value
+     (Nx, Ny) = size(samplepatch) .- 1
+     (wx, wy) = (chebweights(Nx), chebweights(Ny))
+-    (lx, ly) = (sort(2.0 .- cumsum(wx))*200, sort(2.0 .- cumsum(wy))*200)
++    (lx, ly) = (sort(2.0 - cumsum(wx))*200, sort(2.0 - cumsum(wy))*200)
+ 
+-    println("Not here 1")
+     #-----------------------------------------------
+     # set-up canvas
+     #-----------------------------------------------
+@@ -51,15 +49,13 @@
+     push!(lx, 400.0)
+     push!(ly, 400.0)
+     origin(400, 650)
+-    Luxor.rotate(-3pi/4)
++    rotate(-3pi/4)
+    
+     setline(0.4)
+     for i in 1:Nx+1, j in 1:Ny+1
+         rect(lx[i], ly[j], lx[i+1] - lx[i], ly[j+1] - ly[j], :stroke)
+     end
+ 
+-    println("Not here 2")
+-
+     #-----------------------------------------------
+     # set ticks
+     #-----------------------------------------------
+@@ -114,8 +110,8 @@
+     #-----------------------------------------------
+     
+     gsave()
+-    Luxor.rotate(3pi/4)
+-    x   = collect(range(-200, stop=200, length=length(AP)))
++    rotate(3pi/4)
++    x   = collect(linspace(-200, 200, length(AP)))
+     clr = colormap("Blues", length(AP))
+ 
+     for i in 1:length(AP)-1
+@@ -158,7 +154,7 @@
+         Luxor.translate(((my-1)/2M)*(maximum(lx)+400), ((mx-1)/2M)*(maximum(lx)+400))
+         scale(1/M)
+         patch     = dbase[[mx, my]].value
+-        localcmap = globalcmap[(LinearIndices((M, M))[mx,my]-1)*length(patch) + 1:(LinearIndices((M, M))[mx, my])*length(patch)] 
++        localcmap = globalcmap[(sub2ind((M, M), mx, my)-1)*length(patch) + 1:(sub2ind((M, M), mx, my))*length(patch)] 
+         cmap = reshape(localcmap, size(patch))
+ 
+         for i in 1:Nx+1, j in 1:Ny+1
+@@ -180,7 +176,7 @@
+     settext("v", O .+ Point(40, -40);
+                 halign = "top",
+                 valign = "right")
+-    Luxor.rotate(-pi/2)
++    rotate(-pi/2)
+     Luxor.arrow(O, O .+ Point(40, -40))
+     settext("u", O .+ Point(40, -40);
+                 halign = "bottom",
+@@ -224,7 +220,7 @@
+     push!(lx, 400.0)
+     push!(ly, 400.0)
+     origin(400, 650)
+-    Luxor.rotate(-3pi/4)
++    rotate(-3pi/4)
+    
+     setline(0.4)
+     for i in 1:Nx+1, j in 1:Ny+1
+@@ -285,7 +281,7 @@
+     #-----------------------------------------------
+     
+     gsave()
+-    Luxor.rotate(3pi/4)
++    rotate(3pi/4)
+     x   = collect(linspace(-200, 200, length(AP)))
+     clr = colormap("Blues", length(AP))
+ 
+@@ -353,7 +349,7 @@
+     settext("v", O .+ Point(40, -40);
+                 halign = "top",
+                 valign = "right")
+-    Luxor.rotate(-pi/2)
++    rotate(-pi/2)
+     Luxor.arrow(O, O .+ Point(40, -40))
+     settext("u", O .+ Point(40, -40);
+                 halign = "bottom",
+diff -bur ScalarWave/test/BasisTransformationTest.jl /Users/soham/Projects/ScalarWave/test/BasisTransformationTest.jl
+--- ScalarWave/test/BasisTransformationTest.jl	2018-10-25 17:03:37.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/test/BasisTransformationTest.jl	2018-10-25 13:32:30.000000000 -0400
+@@ -27,14 +27,37 @@
+ 𝕨 = exp(-((-5 + 𝑽)^2)) 
+ 
+ # basis transformation using DFT
+-𝕔_mmt = basistransform(𝕨)
+-𝕨_mmt = basistransform(𝕔_mmt)
++𝕔_rfft = basistransform(𝕨)
++𝕨_rfft = basistransform(𝕔_rfft)
+ 
+ # basis transformation using MMT
+-𝕨_dft  = basistransform(𝕔_mmt, :dft)
+-𝕔_dft  = basistransform(𝕨_mmt,  :dft) 
++𝕨_mmt  = basistransform(𝕔_rfft, :MMT)
++𝕔_mmt  = basistransform(𝕨_mmt,  :MMT) 
+ 
++@test 𝕨 ≈ 𝕨_rfft
+ @test 𝕨 ≈ 𝕨_mmt
+-@test 𝕨 ≈ 𝕨_dft
+-@test 𝕨_dft ≈ 𝕨_mmt
+-@test 𝕔_dft ≈ 𝕔_mmt
++@test 𝕨_rfft ≈ 𝕨_mmt
++@test 𝕔_rfft ≈ 𝕔_mmt
++
++#---------------------------------------------
++# Compare performance
++#---------------------------------------------
++
++using BenchmarkTools
++
++for NN in 2:100
++    SUV = ProductSpace{GaussLobatto{U,NN}, GaussLobatto{V,NN}}
++    𝕌 = Field(SUV, (U,V)->U)
++    𝕍 = Field(SUV, (U,V)->V)
++    𝕨 = exp(-(𝕌^2 + 𝕍^2)) 
++
++    if NN > 2
++        @btime 𝕔_rfft = basistransform(𝕨)
++        @btime 𝕔_mmt  = basistransform(𝕨_mmt,  :MMT)
++        println("-----------------------------------------------------")
++    else
++        𝕔_rfft = basistransform(𝕨)
++        𝕔_mmt  = basistransform(𝕨_mmt,  :MMT) 
++    end
++
++end 
+diff -bur ScalarWave/test/MinkowskiDistortedTest.jl /Users/soham/Projects/ScalarWave/test/MinkowskiDistortedTest.jl
+--- ScalarWave/test/MinkowskiDistortedTest.jl	2018-10-25 18:09:39.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/test/MinkowskiDistortedTest.jl	2018-10-22 22:31:58.000000000 -0400
+@@ -9,7 +9,7 @@
+ # Derivative tests fails for P <= 20
+ #--------------------------------------------------------------------
+ nullboundary = Null
+-P1, P2 = 10, 10
++P1, P2 = 40, 40
+ SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
+ 
+ #--------------------------------------------------------------------
+@@ -51,4 +51,4 @@
+ # Solve the system [also check the condition number and eigen values]
+ #--------------------------------------------------------------------
+ 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
+-𝕔 = basistransform(𝕨)
++drawpatch(𝕨, "../output/minkowski-distorted")
+diff -bur ScalarWave/test/SchwarzschildTest.jl /Users/soham/Projects/ScalarWave/test/SchwarzschildTest.jl
+--- ScalarWave/test/SchwarzschildTest.jl	2018-10-25 21:58:34.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/test/SchwarzschildTest.jl	2018-10-25 10:52:12.000000000 -0400
+@@ -6,6 +6,10 @@
+ 
+ using Einsum
+ 
++struct U end
++struct V end
++struct UV end
++
+ #--------------------------------------------------------------------
+ # Define boundary and the product space
+ #--------------------------------------------------------------------
+@@ -58,13 +62,13 @@
+ 𝒈𝑽θ = 𝒈𝑽ϕ = ø
+ 𝒈θϕ = ø
+ 
+-𝕘    = Metric{_dd, 4}([𝒈𝑼𝑼, 𝒈𝑼𝑽, 𝒈𝑼θ, 𝒈𝑼ϕ, 
++𝕘    = Metric{dd, 4}([𝒈𝑼𝑼, 𝒈𝑼𝑽, 𝒈𝑼θ, 𝒈𝑼ϕ, 
+                            𝒈𝑽𝑽, 𝒈𝑽θ, 𝒈𝑽ϕ,
+                                 𝒈θθ, 𝒈θϕ,
+                                      𝒈ϕϕ])
+ 
+ 𝕘inv = inv(𝕘) 
+-𝔻    = Derivative{_u, 4}([𝔻𝑼, 𝔻𝑽, 𝔻θ, 𝔻ϕ])
++𝔻    = Derivative{u, 4}([𝔻𝑼, 𝔻𝑽, 𝔻θ, 𝔻ϕ])
+ Γ    = Christoffel(𝕘)
+ @einsum Γ[m, i, j] = (1/2)*𝕘inv[m,k]*(𝔻[j]*𝕘[k,i]+  𝔻[i]*𝕘[k,j] - 𝔻[k]*𝕘[i,j])
+ 
+@@ -78,3 +82,19 @@
+ # Solve the system [also check the condition number and eigen values]
+ #--------------------------------------------------------------------
+ 𝕨 = solve(𝕃1 + 𝔹, ρ + 𝕓) 
++
++𝕔_rfft = basistransform(𝕨)
++𝕨_rfft = basistransform(𝕔_rfft)
++
++𝕨_mmt  = basistransform(𝕔_rfft, :MMT)
++
++# FIXME: This is changing 𝕨_mmt
++𝕔_mmt  = basistransform(𝕨_mmt, :MMT)
++
++@test 𝕨 ≈ 𝕨_rfft
++@test 𝕨 ≈ 𝕨_mmt
++
++#=
++@show 𝕔_rfft.value
++@show 𝕔_mmt.value
++=#
+diff -bur ScalarWave/test/runtests.jl /Users/soham/Projects/ScalarWave/test/runtests.jl
+--- ScalarWave/test/runtests.jl	2018-10-25 18:10:05.000000000 -0400
++++ /Users/soham/Projects/ScalarWave/test/runtests.jl	2018-10-25 12:08:23.000000000 -0400
+@@ -3,13 +3,14 @@
+ # Soham 01-2018
+ #--------------------------------------------------------------------
+ 
+-using ScalarWave, Test
++using ScalarWave
++using Base.Test, PyPlot
+ 
+-libraries = ["BasisTransformation", 
+-             "MinkowskiDistorted", 
+-             "Schwarzschild"]
++libraries = ["MinkowskiDistorted"]
++libraries = ["Schwarzschild"]
++libraries = ["BasisTransformation"]
+ 
+ for file in libraries
+-    @info "Testing $file"
++    info("Testing $file")
+     include("$(file)Test.jl")
+ end

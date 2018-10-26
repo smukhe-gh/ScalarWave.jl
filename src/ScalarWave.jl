@@ -4,9 +4,10 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, FFTW, Einsum, Roots
+using Luxor, Colors, FFTW, Einsum, Roots, LinearAlgebra, Plots
 
-export Null, Spacelike, U, V, UV, uu, dd, u, d, udd
+export Null, Spacelike, U, V, UV, 
+       _uu, _dd, _u, _d, _udd
 export Patch
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
@@ -17,8 +18,7 @@ export Field, Boundary, Operator, ProductSpaceOperator,
 export order, dim, boundary, solve, ⦼, shape, delta 
 export collocation, derivative, 
        derivativetransform,
-       basistransform, mapmetricindex,
-       basistransformtest
+       basistransform, mapmetricindex, eye
 export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr

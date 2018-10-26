@@ -6,10 +6,6 @@
 
 using Einsum
 
-struct U end
-struct V end
-struct UV end
-
 #--------------------------------------------------------------------
 # Define boundary and the product space
 #--------------------------------------------------------------------
@@ -22,7 +18,7 @@ Vmin, Vmax =  3M,  7M
 # Define derivative and boundary operators
 #--------------------------------------------------------------------
 SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
-𝔹 = boundary(Null, SUV)
+𝔹   = boundary(Null, SUV)
 
 #--------------------------------------------------------------------
 # Define coordinates and their associated derivatives
@@ -62,13 +58,13 @@ r = Field(SUV, (𝑼,𝑽)->find_r_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 𝒈𝑽θ = 𝒈𝑽ϕ = ø
 𝒈θϕ = ø
 
-𝕘    = Metric{dd, 4}([𝒈𝑼𝑼, 𝒈𝑼𝑽, 𝒈𝑼θ, 𝒈𝑼ϕ, 
+𝕘    = Metric{_dd, 4}([𝒈𝑼𝑼, 𝒈𝑼𝑽, 𝒈𝑼θ, 𝒈𝑼ϕ, 
                            𝒈𝑽𝑽, 𝒈𝑽θ, 𝒈𝑽ϕ,
                                 𝒈θθ, 𝒈θϕ,
                                      𝒈ϕϕ])
 
 𝕘inv = inv(𝕘) 
-𝔻    = Derivative{u, 4}([𝔻𝑼, 𝔻𝑽, 𝔻θ, 𝔻ϕ])
+𝔻    = Derivative{_u, 4}([𝔻𝑼, 𝔻𝑽, 𝔻θ, 𝔻ϕ])
 Γ    = Christoffel(𝕘)
 @einsum Γ[m, i, j] = (1/2)*𝕘inv[m,k]*(𝔻[j]*𝕘[k,i]+  𝔻[i]*𝕘[k,j] - 𝔻[k]*𝕘[i,j])
 
@@ -82,19 +78,3 @@ r = Field(SUV, (𝑼,𝑽)->find_r_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃1 + 𝔹, ρ + 𝕓) 
-
-𝕔_rfft = basistransform(𝕨)
-𝕨_rfft = basistransform(𝕔_rfft)
-
-𝕨_mmt  = basistransform(𝕔_rfft, :MMT)
-
-# FIXME: This is changing 𝕨_mmt
-𝕔_mmt  = basistransform(𝕨_mmt, :MMT)
-
-@test 𝕨 ≈ 𝕨_rfft
-@test 𝕨 ≈ 𝕨_mmt
-
-#=
-@show 𝕔_rfft.value
-@show 𝕔_mmt.value
-=#

@@ -9,7 +9,7 @@
 # Derivative tests fails for P <= 20
 #--------------------------------------------------------------------
 nullboundary = Null
-P1, P2 = 40, 40
+P1, P2 = 10, 10
 SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 
 #--------------------------------------------------------------------
@@ -51,4 +51,4 @@ gvv = Field(SUV, (u,v)-> 0)
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
-drawpatch(𝕨, "../output/minkowski-distorted")
+𝕔 = basistransform(𝕨)

@@ -9,7 +9,7 @@ import Base: +, -, *, /, size, range, vec, zero, similar
 # dimensions and shape
 order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1))
 dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)
-range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianRange((length(S2), length(S1)))
+range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianIndices((length(S2), length(S1)))
 size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (length(S2), length(S1))
 
 # typeof
@@ -22,7 +22,7 @@ zero(::Type{ProductSpace{S1, S2}}) where {S1, S2} = Field(ProductSpace{S1, S2}, 
 zero(::Type{Null}, ::Type{ProductSpace{S1, S2}}) where {S1, S2} = 0*boundary(Null, ProductSpace{S1, S2})
 
 # allocate memory for a similar field
-similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(size(u.space)))
+similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, size(u.space)))
 
 # unary operators
 -(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}} where {Tag,N} = Field(ProductSpace{S1, S2}, -A.value)
@@ -70,7 +70,7 @@ end
 function *(A::ProductSpaceOperator{ProductSpace{S1,S2}},
            u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
     v = similar(u.value)
-    for index in CartesianRange(size(v))
+    for index in CartesianIndices(size(v))
         i, ii = index.I
         v[index] = sum(A.value[i, ii, k, kk]*u.value[k, kk] for k in range(S2), kk in range(S1))
     end
@@ -79,7 +79,7 @@ end
 
 function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} where {PS}
     B = similar(A.value)
-    for index in CartesianRange(size(B))
+    for index in CartesianIndices(size(B))
         i, j, ii, jj = index.I
         B[index]     = u.value[i, j]*A.value[index]
     end
@@ -115,7 +115,7 @@ end
 # Kronecker product of two 1D operators
 function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}
     AB = zeros(spacetype(A.space), length(S2), length(S1), length(S2), length(S1))
-    for index in CartesianRange(size(AB))
+    for index in CartesianIndices(size(AB))
         i ,j ,ii ,jj = index.I
         AB[index]    = A.value[j,jj]*B.value[i,ii]
     end
@@ -130,14 +130,16 @@ end
 # Null and Spatial boundary operators
 function boundary(::Type{Spacelike}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}
     B = zeros(spacetype(PS), length(S2), length(S1))
-    B[1, :] = B[:, 1] = B[end, :] = B[:, end] = convert(spacetype(PS), 1)
-    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (length(S2), length(S1), length(S2), length(S1))))
+    B[1, :] = B[end, :] .= convert(spacetype(PS), 1)
+    B[:, 1] = B[:, end] .= convert(spacetype(PS), 1)
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
 end
 
 function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
     B = zeros(spacetype(PS), length(S2), length(S1))
-    B[1, :] = B[:, 1] = convert(spacetype(PS), 1)
-    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(vec(B)), (length(S2), length(S1), length(S2), length(S1))))
+    B[1, :] .= convert(spacetype(PS), 1)
+    B[:, 1] .= convert(spacetype(PS), 1)
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
 
 end
 
