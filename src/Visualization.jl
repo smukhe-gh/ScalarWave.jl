@@ -42,7 +42,6 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     (wx, wy) = (chebweights(Nx), chebweights(Ny))
     (lx, ly) = (sort(2.0 .- cumsum(wx))*200, sort(2.0 .- cumsum(wy))*200)
 
-    println("Not here 1")
     #-----------------------------------------------
     # set-up canvas
     #-----------------------------------------------
@@ -57,8 +56,6 @@ function drawmultipatch(dbase::Dict{Array{Int,1}, Patch}, filename)
     for i in 1:Nx+1, j in 1:Ny+1
         rect(lx[i], ly[j], lx[i+1] - lx[i], ly[j+1] - ly[j], :stroke)
     end
-
-    println("Not here 2")
 
     #-----------------------------------------------
     # set ticks

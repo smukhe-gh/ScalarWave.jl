@@ -7,7 +7,8 @@ using ScalarWave, Test
 
 libraries = ["BasisTransformation", 
              "MinkowskiDistorted", 
-             "Schwarzschild"]
+             "Schwarzschild",
+             "Wronskian"]
 
 for file in libraries
     @info "Testing $file"

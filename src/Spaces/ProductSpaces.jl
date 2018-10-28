@@ -143,6 +143,32 @@ function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOpe
 
 end
 
+function boundary(::Type{Null}, LR::Symbol, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
+    B = zeros(spacetype(PS), length(S2), length(S1))
+    if LR == :R
+        B[1, :] .= convert(spacetype(PS), 1)
+    elseif LR == :L
+        B[:, 1] .= convert(spacetype(PS), 1)
+    else
+        @error "Unrecognized symbol for boundary"
+    end
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
+end
+
+function boundary(::Type{Null}, typeofbnd::Symbol, LR::Symbol, 
+                  S::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
+    @assert typeofbnd==:outgoing
+    B = zeros(spacetype(PS), length(S2), length(S1))
+    if LR == :R
+        B[end, :] .= convert(spacetype(PS), 1)
+    elseif LR == :L
+        B[:, end] .= convert(spacetype(PS), 1)
+    else
+        @error "Unrecognized symbol for boundary"
+    end
+    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
+end
+
 # map functions to boundaries
 function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}
     B = zeros(spacetype(PS), length(S2), length(S1))
