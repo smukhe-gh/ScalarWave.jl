@@ -45,22 +45,23 @@ function distribute(LBoundary::Function, RBoubdary::Function, P1::T, P2::T, M::T
     for i in 2:2M, k in i-min(i-1,M):min(i-1,M) 
         loc = [k, i-k]
         SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
-        u = Field(SUV, (u,v)->u)
-        v = Field(SUV, (u,v)->v)
-        Ω = Field(SUV, (u,v)->(pi/8)*cospi(u/2)*cospi(v/2))
+        ul  = Field(SUV, (u,v)->u)
+        vl  = Field(SUV, (u,v)->v)
+        Ω   = Field(SUV, (ul,vl)->(pi/8)*cospi(ul/2)*cospi(vl/2))
         
-        𝒖 =  u*cos(Ω) + v*sin(Ω)
-        𝒗 = -u*sin(Ω) + v*cos(Ω)
+        𝒖 =  ul*cos(Ω) + vl*sin(Ω)
+        𝒗 = -ul*sin(Ω) + vl*cos(Ω)
         𝔻𝒗, 𝔻𝒖 = derivativetransform(SUV, 𝒖, 𝒗)
         𝔹      = boundary(Null, SUV)
         
         (𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗) = inversemetrictransform(guu, guv, gvv, 𝒖, 𝒗) 
         𝕃   = 𝕘𝒖𝒗*𝔻𝒖*𝔻𝒗 + 𝕘𝒖𝒗*𝔻𝒗*𝔻𝒖
 
-        # find the boundaries from other patches if necessary
-        boundaryL = loc[2]==1 ? getPatchIC(LB, ul, vl, :L) : getPatchBnd(database, loc, :L)
-        boundaryR = loc[1]==1 ? getPatchIC(RB, ul, vl, :R) : getPatchBnd(database, loc, :R)
+        # find the boundaries from neighbouring patches 
+        boundaryL = loc[2]==1 ? getPatchIC(LB, 𝒖, 𝒗, :L) : getPatchBnd(database, loc, :L)
+        boundaryR = loc[1]==1 ? getPatchIC(RB, 𝒖, 𝒗, :R) : getPatchBnd(database, loc, :R)
         𝕓 = boundaryL + boundaryR
+
         𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
         database[loc] = Patch(SUV, 𝕨)
     end
