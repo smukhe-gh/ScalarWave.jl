@@ -84,7 +84,7 @@ end
 function Field(S::Type{T}, umap::Function)::Field{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
     value = zeros(spacetype(S), length(S))
     for index in range(S)
-        value[index] = umap(collocation(spacetype(S), index, order(S)))
+        value[index] = umap(collocation(S, index))
     end
     return Field(S, value)
 end
@@ -93,7 +93,7 @@ end
 function derivative(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
     DS = zeros(spacetype(S), length(S), length(S))
     for index in CartesianIndices(size(DS))
-        DS[index] = derivative(spacetype(S), index.I[1], index.I[2], order(S))
+        DS[index] = derivative(S, index.I[1], index.I[2])
     end
     return Operator(S, DS)
 end
@@ -112,8 +112,8 @@ end
 # map boundaries
 function Boundary(S::Type{T}, f::Function...)::Boundary{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
     b      = zeros(spacetype(S), length(S))
-    b[1]   = f[1](collocation(spacetype(S), 1, order(S)))
-    b[end] = f[2](collocation(spacetype(S), length(S), order(S)))
+    b[1]   = f[1](collocation(S, 1))
+    b[end] = f[2](collocation(S, length(S)))
     spacetype(bnd1val) <: spacetype(S) ? b[1]   = bnd1val : error("Mapping doesn't preserve eltype. Aborting.")
     spacetype(bnd2val) <: spacetype(S) ? b[end] = bnd2val : error("Mapping doesn't preserve eltype. Aborting.")
     return Boundary(S, b)

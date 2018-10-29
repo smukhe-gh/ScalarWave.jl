@@ -95,8 +95,8 @@ end
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}
     value = zeros(spacetype(PS), size(PS))
     for index in range(PS)
-        value[index] = umap(collocation(spacetype(PS), index.I[1], order(S2)),
-                            collocation(spacetype(PS), index.I[2], order(S1)))
+        value[index] = umap(collocation(S2, index.I[1]),
+                            collocation(S1, index.I[2]))
     end
     return Field(PS, value)
 end
@@ -173,10 +173,10 @@ end
 function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}
     B = zeros(spacetype(PS), length(S2), length(S1))
     @assert length(bmap) == 4
-    bnd1 = map(bmap[1], [collocation(spacetype(PS), i,  order(S2)) for i  in range(S2)])
-    bnd2 = map(bmap[2], [collocation(spacetype(PS), ii, order(S1)) for ii in range(S1)])
-    bnd3 = map(bmap[3], [collocation(spacetype(PS), j,  order(S2)) for j  in range(S2)])
-    bnd4 = map(bmap[4], [collocation(spacetype(PS), jj, order(S1)) for jj in range(S1)])
+    bnd1 = map(bmap[1], [collocation(S2, i)  for i  in range(S2)])
+    bnd2 = map(bmap[2], [collocation(S1, ii) for ii in range(S1)])
+    bnd3 = map(bmap[3], [collocation(S2, j)  for j  in range(S2)])
+    bnd4 = map(bmap[4], [collocation(S1, jj) for jj in range(S1)])
     eltype(bnd1) <: spacetype(PS) ? B[:,1] = bnd1 : error("Mapping doesn't preserve eltype. Aborting")
     eltype(bnd2) <: spacetype(PS) ? B[1,:] = bnd2 : error("Mapping doesn't preserve eltype. Aborting")
     eltype(bnd3) <: spacetype(PS) ? B[:, end] = bnd3 : error("Mapping doesn't preserve eltype. Aborting")
