@@ -17,9 +17,9 @@ struct _udd end
 struct Null end
 struct Spacelike end 
 
-struct GaussLobatto{Tag ,N} <: Space{Tag} end
-struct Chebyshev{Tag ,N} <: Space{Tag} end
-struct Taylor{Tag ,N} <:Space{Tag} end
+struct GaussLobatto{Tag ,N, min, max} <: Space{Tag} end
+struct Chebyshev{Tag ,N, min, max} <: Space{Tag} end
+struct Taylor{Tag ,N, min, max} <:Space{Tag} end
 
 # add new basis representations here.
 Cardinal{Tag, N} = Union{GaussLobatto{Tag, N}, Taylor{Tag, N}} 

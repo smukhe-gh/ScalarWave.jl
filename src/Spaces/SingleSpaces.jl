@@ -4,7 +4,27 @@
 # Define operations for 1D spaces
 #--------------------------------------------------------------------
 
-import Base: +, -, *, /, ==, ≈, range, length
+import Base: +, -, *, /, ==, ≈, range, length, minimum, maximum
+
+# Helper functions for creating spaces
+GaussLobatto(Tag, N, max, min) = GaussLobatto{Tag ,N, max, min} 
+Chebyshev(Tag, N, max, min)    = Chebyshev{Tag ,N, max, min}
+Taylor(Tag, N, max, min)       = Taylor{Tag ,N, max, min}
+
+# Default space is 1 to -1
+GaussLobatto(Tag, N)           = GaussLobatto{Tag ,N, 1, -1} 
+Chebyshev(Tag, N)              = Chebyshev{Tag ,N, 1, -1}
+Taylor(Tag, N)                 = Taylor{Tag ,N, 1, -1}
+
+# Pull out the minimum and the maximum coordinate bounds
+minimum(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = min
+maximum(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = max
+
+minimum(S::Type{T}) where {T<:Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}  = min
+maximum(S::Type{T}) where {T<:Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}  = max
+
+minimum(S::Type{T}) where {T<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}  = min
+maximum(S::Type{T}) where {T<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}  = max
 
 # dimensions and shape
 order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N

@@ -9,8 +9,8 @@
 # Derivative tests fails for P <= 20
 #--------------------------------------------------------------------
 nullboundary = Null
-P1, P2 = 10, 10
-SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
+P1, P2 = 30, 30
+SUV = ProductSpace{GaussLobatto(U,P1), GaussLobatto(V,P2)}
 
 #--------------------------------------------------------------------
 # Define derivative and boundary operators
@@ -52,3 +52,5 @@ gvv = Field(SUV, (u,v)-> 0)
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
 𝕔 = basistransform(𝕨)
+drawpatch(𝕨, "../output/space-change")
+

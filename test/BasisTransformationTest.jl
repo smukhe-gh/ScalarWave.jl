@@ -7,9 +7,9 @@
 #---------------------------------------------
 # test 1D basis transformation
 #---------------------------------------------
-ϕ = Field(GaussLobatto{U, 9}, x->x^5 + 2)
-ψ = basistransform(ϕ, Chebyshev{U, 9})
-λ = basistransform(ψ, GaussLobatto{U, 9})
+ϕ = Field(GaussLobatto(U, 9), x->x^5 + 2)
+ψ = basistransform(ϕ, Chebyshev(U, 9))
+λ = basistransform(ψ, GaussLobatto(U, 9))
 
 #---------------------------------------------
 # test 2D basis transformation
@@ -17,7 +17,7 @@
 
 Umin, Umax = -3, -7
 Vmin, Vmax =  3,  7
-SUV = ProductSpace{GaussLobatto{U,2}, GaussLobatto{V,4}}
+SUV = ProductSpace{GaussLobatto(U,2), GaussLobatto(V,4)}
 
 𝕌 = Field(SUV, (U,V)->U)
 𝕍 = Field(SUV, (U,V)->V)

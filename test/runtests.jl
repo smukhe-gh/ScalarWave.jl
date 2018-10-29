@@ -5,10 +5,9 @@
 
 using ScalarWave, Test
 
-libraries = ["BasisTransformation", 
-             "MinkowskiDistorted", 
-             "Schwarzschild",
-             "Wronskian"]
+libraries = ["BasisTransformation",
+             "MinkowskiDistorted",
+             "Schwarzschild"] 
 
 for file in libraries
     @info "Testing $file"

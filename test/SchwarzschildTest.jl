@@ -17,7 +17,7 @@ Vmin, Vmax =  3M,  7M
 #--------------------------------------------------------------------
 # Define derivative and boundary operators
 #--------------------------------------------------------------------
-SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
+SUV = ProductSpace{GaussLobatto(U,P1), GaussLobatto(V,P2)}
 𝔹   = boundary(Null, SUV)
 
 #--------------------------------------------------------------------
@@ -78,3 +78,4 @@ r = Field(SUV, (𝑼,𝑽)->find_r_of_UV(𝑼, 𝑽, M), 𝑼, 𝑽)
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃1 + 𝔹, ρ + 𝕓) 
+drawpatch(𝕨, "schwarzschild-new")
