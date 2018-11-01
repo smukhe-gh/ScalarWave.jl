@@ -1,71 +1,77 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 01-2018
-# TODO: Define the space over which the fields are computed
-# TODO: Add assert statements to check if the coordinate boundaries 
-#       are satisfied
+# TODO: Refine Grid to make it more flexible
 #--------------------------------------------------------------------
 
-struct Patch
+struct Grid
+    M::Int
+    P::Int
+    U::Tuple
+    V::Tuple
+end
+
+struct Patch{S,D,T}
     space::Type{S}
-    value::Field
+    value::Field{S,D,T}
 end
 
-struct Database{D1, D2}
-    patch::Array{Union{Nothing, Patch}}(nothing, D1, D2)
-end
+Database(D::Int) = Array{Union{Nothing, Patch}}(nothing, D, D)
+Grid(M, P) = Grid(M, P, (-1, 1), (-1, 1))
 
-function Database(D::Int) = Database(D, D) 
-
-function neighbour(loc, LR::Symbol)::loc
-    if LR==:L
-        return loc - [0, 1]
+function neighbour(loc, LR::Symbol)
+    if LR == :L
+        return (loc - [0, 1])
     elseif LR == :R
-        return loc - [1, 0]
+        return (loc - [1, 0])
     else
         @error "Invalid neighbour specified"
     end
 end
 
-function getPatchIC(map::Function, u::Field{S}, v::Field{S}, LR::Symbol)::Boundary where {S}
-    return Boundary(boundary(Null, SUV, LR)*Field(u.space, map, u, v))
+function getPatchIC(map::Function, u::Field{S}, v::Field{S}, LR::Symbol) where {S}
+    return boundary(S, Null, LR)*Field(u.space, map, u, v)
 end
 
-function getPatchBnd(database::Database, loc::Array{Int,1}, LR::Symbol)::Boundary
+function getPatchIC(S::Type{T}, map::Function, LR::Symbol) where {T<:ProductSpace}
+    # TODO: Insert assert statements
+    return boundary(S, Null, LR)*Field(S, map)
+end
+
+function getPatchBnd(S::Type{T}, database::Array, loc::Array{Int,1}, LR::Symbol) where {T<:ProductSpace}
     locboundary = neighbour(loc, LR)
-    return Boundary(boundary(Null, :outgoing, LR)*database.patch[locboundary])
+    @show  boundary(S, Null, :outgoing, LR).space
+    @show database[locboundary[1], locboundary[2]].value.space
+    return boundary(S, Null, :outgoing, LR)*(database[locboundary[1], locboundary[2]].value)
 end
 
-function distribute(LBoundary::Function, RBoubdary::Function, P1::T, P2::T, M::T)::Database where {T<:Int}
-    database = Database(M) 
-    guu = Field(SUV, (u,v)-> 0)
-    guv = Field(SUV, (u,v)->-2)
-    gvv = Field(SUV, (u,v)-> 0)
-        
-    for i in 2:2M, k in i-min(i-1,M):min(i-1,M) 
-        loc = [k, i-k]
-        SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
-        ul  = Field(SUV, (u,v)->u)
-        vl  = Field(SUV, (u,v)->v)
-        Ω   = Field(SUV, (ul,vl)->(pi/8)*cospi(ul/2)*cospi(vl/2))
-        
-        𝒖 =  ul*cos(Ω) + vl*sin(Ω)
-        𝒗 = -ul*sin(Ω) + vl*cos(Ω)
-        𝔻𝒗, 𝔻𝒖 = derivativetransform(SUV, 𝒖, 𝒗)
-        𝔹      = boundary(Null, SUV)
-        
-        (𝕘𝒖𝒖, 𝕘𝒖𝒗, 𝕘𝒗𝒗) = inversemetrictransform(guu, guv, gvv, 𝒖, 𝒗) 
-        𝕃   = 𝕘𝒖𝒗*𝔻𝒖*𝔻𝒗 + 𝕘𝒖𝒗*𝔻𝒗*𝔻𝒖
+function PatchSpace(loc::Array{Int, 1}, grid::Grid)
+    umin = range(grid.U[1], stop=grid.U[2], length=grid.M+1)[loc[1]]
+    umax = range(grid.U[1], stop=grid.U[2], length=grid.M+1)[loc[1]+1]
+    vmin = range(grid.V[1], stop=grid.V[2], length=grid.M+1)[loc[2]]
+    vmax = range(grid.V[1], stop=grid.V[2], length=grid.M+1)[loc[2]+1]
+    @assert umin === -1.0
+    return ProductSpace{GaussLobatto{V, grid.P, vmax, vmin}, 
+                        GaussLobatto{U, grid.P, umax, umin}}
+end
 
-        # find the boundaries from neighbouring patches 
-        boundaryL = loc[2]==1 ? getPatchIC(LB, 𝒖, 𝒗, :L) : getPatchBnd(database, loc, :L)
-        boundaryR = loc[1]==1 ? getPatchIC(RB, 𝒖, 𝒗, :R) : getPatchBnd(database, loc, :R)
+
+function distribute(grid::Grid, LB::Function, 
+                                RB::Function)
+    database = Database(grid.M) 
+
+    for i in 2:2*grid.M, k in i-min(i-1,grid.M):min(i-1,grid.M) 
+        loc = [k, i-k]
+        @show loc
+        SUV = PatchSpace(loc, grid)
+        @show SUV
+        boundaryL = loc[2]==1 ? getPatchIC(SUV, LB, :L) : getPatchBnd(SUV, database, loc, :L)
+        boundaryR = loc[1]==1 ? getPatchIC(SUV, RB, :R) : getPatchBnd(SUV, database, loc, :R)
         𝕓 = boundaryL + boundaryR
 
-        𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
-        database[loc] = Patch(SUV, 𝕨)
+        𝕨 = Field(SUV, (u,v)->k)
+        database[loc[1], loc[2]] = Patch(SUV, 𝕨)
     end
-
     return database
 end
 

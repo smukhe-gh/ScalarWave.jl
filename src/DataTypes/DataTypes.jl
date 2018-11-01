@@ -52,9 +52,3 @@ struct ProductSpaceOperator{S, D, T}
     space::Type{S}
     value::Array{T, D}
 end
-
-# TODO: Refine patch to work with coordinate extents
-struct Patch
-    loc::Array{Int,1}
-    value::Array{Float64,2}
-end

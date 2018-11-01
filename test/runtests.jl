@@ -5,6 +5,7 @@
 
 using ScalarWave, Test
 
+libraries = ["Dispatch"]
 libraries = ["BasisTransformation",
              "MinkowskiDistorted",
              "Schwarzschild"] 

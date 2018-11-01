@@ -6,6 +6,7 @@
 module ScalarWave
 using Luxor, Colors, FFTW, Einsum, Roots, LinearAlgebra, Plots
 
+export Grid, Patch, distribute
 export Null, Spacelike, U, V, UV, 
        _uu, _dd, _u, _d, _udd
 export Patch
@@ -26,6 +27,7 @@ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 
 include("DataTypes/AbstractTypes.jl")
 include("DataTypes/DataTypes.jl")
+include("beta/Dispatch.jl")
 include("DataTypes/MetricDataTypes.jl")
 include("Spaces/SingleSpaces.jl")
 include("Spaces/ProductSpaces.jl")
@@ -37,10 +39,10 @@ include("Basis/BasisTransformation.jl")
 
 include("MetricFunctions.jl")
 include("MathFunctions.jl")
-
 include("CoordinateTransform.jl")
 include("DoubleNullCoordinates.jl")
-
 include("Visualization.jl")
+
+
 
 end 
