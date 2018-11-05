@@ -118,10 +118,10 @@ end
 # map boundaries
 function Boundary(S::Type{T}, f::Function...)::Boundary{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
     b      = zeros(spacetype(S), length(S))
-    b[1]   = f[1](collocation(S, 1))
-    b[end] = f[2](collocation(S, length(S)))
-    spacetype(bnd1val) <: spacetype(S) ? b[1]   = bnd1val : error("Mapping doesn't preserve eltype. Aborting.")
-    spacetype(bnd2val) <: spacetype(S) ? b[end] = bnd2val : error("Mapping doesn't preserve eltype. Aborting.")
+    bnd1val = f[1](collocation(S, 1))
+    bnd2val = f[2](collocation(S, length(S)))
+    typeof(bnd1val) <: spacetype(S) ? b[1]   = bnd1val : error("Mapping doesn't preserve eltype. Aborting.")
+    typeof(bnd2val) <: spacetype(S) ? b[end] = bnd2val : error("Mapping doesn't preserve eltype. Aborting.")
     return Boundary(S, b)
 end
 

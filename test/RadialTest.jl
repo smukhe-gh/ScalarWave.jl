@@ -16,7 +16,7 @@ l  = 0
 #--------------------------------------------------------------------
 # Choose and intermediate domain close to the black hole 
 #--------------------------------------------------------------------
-rmax, rmin = 200M, 3M 
+rmax, rmin = 20M, 3M 
 SR = GaussLobatto(U, 1000, rmax, rmin) 
 𝔻r = derivative(SR) 
 I  = eye(SR)
@@ -45,6 +45,7 @@ end
 residual_re = 𝕃*ψ_re
 residual_im = 𝕃*ψ_im
 
+"""
 using Plots
 pyplot()
 plot(r.value[10:990],  residual_re.value[10:990], leg=false)
@@ -58,3 +59,23 @@ savefig("../output/residual-plot-zoomed-$rmin-$rmax.pdf")
 plot(r.value[10:990],  ψ_re.value[10:990], leg=false)
 plot!(r.value[10:990], ψ_im.value[10:990], leg=false)
 savefig("../output/psi-plot-$rmin-$rmax.pdf")
+"""
+
+# Solve the equation using the constructed operator and check if it agrees
+# with the Mathematica solution
+
+𝕓 = Boundary(SR, th->ψ_re.value[1], tinf->ψ_re.value[end])
+𝔹 = boundary(SR)
+ρ = Field(SR, v->0)
+
+𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓)
+
+using Plots
+pyplot()
+plot(r.value[10:990],  ψ_re.value[10:990], leg=false)
+plot!(r.value[10:990], 𝕨.value[10:990], line=(:dot, 1), leg=false)
+savefig("../output/psi-solve-comparison-plot-$rmin-$rmax.pdf")
+
+plot(r.value[10:990], 𝕨.value[10:990] -ψ_re.value[10:990] , leg=false)
+savefig("../output/psi-solve-difference-plot-$rmin-$rmax.pdf")
+
