@@ -7,7 +7,7 @@ module ScalarWave
 using Luxor, Colors, FFTW, Einsum, Roots, LinearAlgebra, Plots
 
 export Grid, Patch, distribute
-export Null, Spacelike, U, V, UV, 
+export Null, Spacelike, U, V,
        _uu, _dd, _u, _d, _udd
 export Patch
 export Manifold, Space, ProductSpace, 

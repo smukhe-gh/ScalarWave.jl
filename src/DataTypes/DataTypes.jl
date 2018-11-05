@@ -6,7 +6,8 @@
 
 struct U  end
 struct V  end
-struct UV end
+struct CU end
+struct CV end
 
 struct _uu end
 struct _dd end

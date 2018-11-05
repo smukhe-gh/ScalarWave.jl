@@ -4,18 +4,8 @@
 # Wave equation on Schwarzschild
 # Tests to be done
 #   -- Test if the metric is compatible.
-#   -- Compute the Weyl tensor to check for the fall-off conditions?
-#   -- Use a different computation of the operator and check if
-#      the operator constructions agree. 
-#   -- Use the solution from Mathematica and check if our operator
-#      satisfies the solution; and vice versa.
-#   -- Check with the ApproxFun code for arbitrary boundary 
-#      conditions
-#   -- Divide out the time-dependence (i.e. convert into a 
-#      stationary solution) and check if the solution is independent 
-#      of time. This is not a-priori obvious. 
-#   -- Is is possible to plug this solution into the differential 
-#      operator and check? We'd need knowledge of l and m.   
+#   -- Test with different operator constructions and make sure they 
+#      agree.
 #--------------------------------------------------------------------
 
 using Einsum
@@ -91,14 +81,5 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 
 𝕃1 = ( sum(𝕘inv[j,k]*𝔻[j]*𝔻[k] for j in 1:dim(𝕘), k in 1:dim(𝕘))  
      - sum(𝕘inv[j,k]*Γ[l,j,k]*𝔻[l] for j in 1:dim(𝕘), k in 1:dim(𝕘), l in 1:dim(𝕘)) ) 
-
-#--------------------------------------------------------------------
-# Solve the system [also check the condition number and eigen values]
-#--------------------------------------------------------------------
-𝕨 = solve(𝕃1 + 𝔹, ρ + 𝕓) 
-
-#--------------------------------------------------------------------
-# [T1] Check for time-stationary solution 
-#--------------------------------------------------------------------
 
 

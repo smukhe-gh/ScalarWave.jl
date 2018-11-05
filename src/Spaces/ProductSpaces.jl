@@ -40,18 +40,18 @@ similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, si
 
 # scalar / field
 +(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a .+ B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a .+ B.value)
 -(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a .- B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a .- B.value)
 *(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a .* B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a .* B.value)
 /(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a ./ B.value)
-/(B::Field{ProductSpace{S1, S2}}, a::T) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, B.value ./ a)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a ./ B.value)
+/(B::Field{ProductSpace{S1, S2}}, a::T) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, B.value ./ a)
 
 # scalar / operator
-*(a::T, A::ProductSpaceOperator{PS}) where {T<:Real, PS} = ProductSpaceOperator(PS, a.*A.value)
-/(A::ProductSpaceOperator{PS}, b::T) where {T<:Real, PS} = ProductSpaceOperator(PS, A.value ./b)
+*(a::T, A::ProductSpaceOperator{PS}) where {T<:Number, PS} = ProductSpaceOperator(PS, a.*A.value)
+/(A::ProductSpaceOperator{PS}, b::T) where {T<:Number, PS} = ProductSpaceOperator(PS, A.value ./b)
 
 # operator / operator
 +(A::ProductSpaceOperator{PS}, B::ProductSpaceOperator{PS}) where {PS} = ProductSpaceOperator(PS, A.value + B.value)
@@ -93,7 +93,7 @@ end
 
 # compute fields
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}
-    value = zeros(spacetype(PS), size(PS))
+    value = zeros(Complex{spacetype(PS)}, size(PS))
     for index in range(PS)
         value[index] = umap(collocation(S2, index.I[1]),
                             collocation(S1, index.I[2]))
@@ -105,7 +105,7 @@ end
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function,
                u::Field{ProductSpace{S1, S2}},
                v::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
-    value = zeros(spacetype(PS), size(PS))
+    value = zeros(Complex{spacetype(PS)}, size(PS))
     for index in range(PS)
         value[index] = umap(u.value[index], v.value[index])
     end
@@ -155,20 +155,6 @@ function boundary(PS::Type{ProductSpace{S1, S2}}, ::Type{Null}, LR::Symbol) ::Pr
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
 end
 
-function boundary(PS::Type{ProductSpace{S1, S2}}, ::Type{Null}, 
-                  kind::Symbol, LR::Symbol)::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
-    @assert kind==:outgoing
-    B = zeros(spacetype(PS), length(S2), length(S1))
-    if LR == :R
-        B[end, :] .= convert(spacetype(PS), 1)
-    elseif LR == :L
-        B[:, end] .= convert(spacetype(PS), 1)
-    else
-        @error "Unrecognized symbol for boundary"
-    end
-    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
-end
-
 # map functions to boundaries
 function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}
     B = zeros(spacetype(PS), length(S2), length(S1))
@@ -185,7 +171,7 @@ function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{P
 end
 
 # field / boundary
-function +(u::Real, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
+function +(u::Number, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
     return Field(ProductSpace{S1,S2}, u + b.value)
 end
 

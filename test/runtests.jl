@@ -10,6 +10,10 @@ libraries = ["BasisTransformation",
              "MinkowskiDistorted",
              "Schwarzschild"] 
 
+libraries = ["Schwarzschild"]
+libraries = ["Operator"]
+libraries = ["Radial"]
+
 for file in libraries
     @info "Testing $file"
     include("$(file)Test.jl")

@@ -17,6 +17,8 @@ exp(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = F
 log(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, log.(A.value))
 ^(B::Field{ProductSpace{S1, S2}}, a::Int) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, B.value.^a)
 
+^(B::Field{S}, a::Int) where {S <: Cardinal{Tag}} where {Tag} = Field(S, B.value.^a)
+
 maximum(u::Field{ProductSpace{S1, S2}}) where {S1, S2} = maximum(u.value)
 minimum(u::Field{ProductSpace{S1, S2}}) where {S1, S2}  = minimum(u.value)
 

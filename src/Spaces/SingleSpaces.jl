@@ -45,6 +45,12 @@ spacetype(S::Type{T}) where {T<:Taylor{Tag, N}} where {Tag, N} = Rational{BigInt
 ==(A::Field{S}, B::Field{S}) where {S} = (A.value == B.value)
 ≈(A::Field{S}, B::Field{S}) where {S} = (A.value ≈ B.value)
 
+# scalar / field
++(a::T, B::Field{S}) where {T<:Real, S} = Field(S, a .+ B.value)
+-(a::T, B::Field{S}) where {T<:Real, S} = Field(S, a .- B.value)
+*(a::T, B::Field{S}) where {T<:Real, S<:Cardinal{Tag,N}} where {Tag, N} = Field(S, a .* B.value)
+/(a::T, B::Field{S}) where {T<:Real, S<:Cardinal{Tag,N}} where {Tag, N} = Field(S, a ./ B.value)
+
 # operator / operator
 +(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value + B.value)
 -(A::Operator{S}, B::Operator{S}) where {S} = Operator(S, A.value - B.value)

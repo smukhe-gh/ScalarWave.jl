@@ -5,7 +5,12 @@
 # double-null coordinates. See 'A Relativist's Toolkit, Eric Poisson'
 #--------------------------------------------------------------------
 
-function find_t_of_UV(U::T, V::T, M::T)::T where {T<:Real}
+function find_t_of_UV(U::T, V::T, M::Float64)::T where {T<:Complex{Float64}}
+    @assert U.im == 0
+    @assert V.im == 0
+    U = U.re
+    V = V.re
+
     @assert V > 0   # ensure you're in region I or II
     if U*V == 0     # r = 2M 
         t = 2M*randn()
@@ -19,7 +24,12 @@ function find_t_of_UV(U::T, V::T, M::T)::T where {T<:Real}
     return t
 end
 
-function find_r_of_UV(U::T, V::T, M::T)::T where {T<:Real}
+function find_r_of_UV(U::T, V::T, M::Float64)::T where {T<:Complex{Float64}}
+    @assert U.im == 0
+    @assert V.im == 0
+    U = U.re
+    V = V.re
+
     @assert V > 0   # ensure you're in region I or II
     if U*V == 0     # r = 2M 
         r = 2M
@@ -32,7 +42,11 @@ function find_r_of_UV(U::T, V::T, M::T)::T where {T<:Real}
     return r
 end
 
-function find_U_of_tr(t::T, r::T, M::T)::T where {T<:Real}
+function find_U_of_tr(t::T, r::T, M::Float64)::T where {T<:Complex{Float64}}
+    @assert t.im == 0
+    @assert r.im == 0
+    t = t.re
+    r = r.re
     @assert r > 0
     if r == 2M
         U = 0
@@ -44,7 +58,12 @@ function find_U_of_tr(t::T, r::T, M::T)::T where {T<:Real}
     return U 
 end
 
-function find_V_of_tr(t::T, r::T, M::T)::T where {T<:Real}
+function find_V_of_tr(t::T, r::T, M::Float64)::T where {T<:Complex{Float64}}
+    @assert t.im == 0
+    @assert r.im == 0
+    t = t.re
+    r = r.re
+
     @assert r > 0
     if r == 2M
         V = 2M*rand()
