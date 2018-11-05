@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 04-2018
-# Test covariant derivative 
+# Test Ricci and Weyl tensor computations on Schwarzschild
 #--------------------------------------------------------------------
 
 using Einsum
@@ -9,26 +9,24 @@ using Einsum
 #--------------------------------------------------------------------
 # Define boundary and the product space
 #--------------------------------------------------------------------
-P1, P2 = 20, 20
+P1, P2 = 30, 30
 M = 1.0
-SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
+SUV = ProductSpace{GaussLobatto(U,P1, 5M, 3M), 
+                   GaussLobatto(V,P2, 5M, 3M)}
 
 #--------------------------------------------------------------------
 # Define coordinates and their associated derivatives
 #--------------------------------------------------------------------
 
-t = Field(SUV, (u,v)->u)
-r = Field(SUV, (u,v)->v)
+𝒕 = Field(SUV, (u,v)->u)
+𝒓 = Field(SUV, (u,v)->v)
 θ = Field(SUV, (u,v)->pi/2)
 ϕ = Field(SUV, (u,v)->0)
 
 ø = zero(SUV) 
-Ø = zero(Spatial, SUV) 
+Ø = zero(Null, SUV) 
 
-𝒕 = (5M + 3M)/2 + ((5M - 3M)/2)*t  
-𝒓 = (5M + 3M)/2 + ((5M - 3M)/2)*r  
-
-𝔻𝒓, 𝔻𝒕 = derivativetransform(SUV, 𝒕, 𝒓) 
+𝔻𝒓, 𝔻𝒕 = derivative(SUV) 
 𝔻θ, 𝔻ϕ = Ø, Ø
 
 #--------------------------------------------------------------------
@@ -42,13 +40,13 @@ r = Field(SUV, (u,v)->v)
 𝒈rθ = 𝒈rϕ = 𝒈tr = ø 
 𝒈tθ = 𝒈tϕ = 𝒈θϕ = ø
 
-𝕘    = Metric{dd, 4}([𝒈tt, 𝒈tr, 𝒈tθ, 𝒈tϕ, 
+𝕘    = Metric{_dd, 4}([𝒈tt, 𝒈tr, 𝒈tθ, 𝒈tϕ, 
                            𝒈rr, 𝒈rθ, 𝒈tϕ,
                                 𝒈θθ, 𝒈θϕ,
                                      𝒈ϕϕ])
 
-𝕘inv = metricinverse(𝕘) 
-𝔻    = Derivative{u, 4}([𝔻𝒕, 𝔻𝒓, 𝔻θ, 𝔻ϕ])
+𝕘inv = inv(𝕘) 
+𝔻    = Derivative{_u, 4}([𝔻𝒕, 𝔻𝒓, 𝔻θ, 𝔻ϕ])
 
 Γ    = Christoffel(𝕘)
 ℝ    = Ricci(𝕘)
@@ -85,48 +83,22 @@ end
 end
 
 #------------------------------------------------------
-# Test Ricci 
+# Compute covariant derivatives and check metric
+# compatibility
+# FIXME: Why are these tests failing? 
 #------------------------------------------------------
 
-function computeRicci(𝔻, 𝕘, i, j)
-    return (sum( 𝔻[l]*Γ[l,i,j] for l in 1:dim(𝕘) ) - 
-            sum( 𝔻[j]*Γ[l,i,l] for l in 1:dim(𝕘) ) + 
-            sum( Γ[m,i,j]*Γ[l,l,m] for m in 1:dim(𝕘), l in 1:dim(𝕘)) -  
-            sum( Γ[m,i,l]*Γ[l,j,m] for m in 1:dim(𝕘), l in 1:dim(𝕘)) )
+CD = Array{Union{Nothing, Field}}(nothing, 4,4,4) 
+
+for a in 1:dim(𝕘), b in 1:dim(𝕘), c in 1:dim(𝕘)
+    CD[a,b,c] = ( 𝔻[c]*𝕘[a,b]
+                 + sum( Γ[m,c,a]*𝕘[m,b] for m in 1:dim(𝕘))
+                 + sum( Γ[n,c,b]*𝕘[a,n] for n in 1:dim(𝕘)) )
 end
 
-for i in 1:4, j in 1:4
-    ℝ[i,j] = computeRicci(𝔻, 𝕘, i, j)
+@testset "CD[c]*g[a,b]" begin
+for a in 1:dim(𝕘), b in 1:dim(𝕘), c in 1:dim(𝕘)
+    @test maximum(abs(CD[a,b,c])) < 1e-8
 end
-
-@testset "ℝ[a,b]" begin
-    for i in 1:4, j in 1:4
-        @test maximum(abs(ℝ[i,j])) < 1e-8
-    end
 end
-
-# NOTE: We should have two broken tests. 
-#       For R[3,3] and R[4,4] since we do not take the derivatives correctly
-
-#------------------------------------------------------
-# Construct covariant derivatives and compatibility 
-#------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
