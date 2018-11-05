@@ -15,9 +15,11 @@ sinpi(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} =
 cospi(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, cospi.(A.value))
 exp(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, exp.(A.value))
 log(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, log.(A.value))
-^(B::Field{ProductSpace{S1, S2}}, a::Int) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, B.value.^a)
+^(B::Field{ProductSpace{S1, S2}}, a::Int) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, (B.value).^a)
+^(B::Field{S}, a::Int) where {S <: Cardinal{Tag}} where {Tag} = Field(S, (B.value).^a)
+inv(B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, 1 ./(B.value))
 
-^(B::Field{S}, a::Int) where {S <: Cardinal{Tag}} where {Tag} = Field(S, B.value.^a)
+
 
 maximum(u::Field{ProductSpace{S1, S2}}) where {S1, S2} = maximum(u.value)
 minimum(u::Field{ProductSpace{S1, S2}}) where {S1, S2}  = minimum(u.value)

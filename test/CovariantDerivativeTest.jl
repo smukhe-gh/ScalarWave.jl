@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 04-2018
-# Test Ricci and Weyl tensor computations on Schwarzschild
+# Test covariant derivative 
 #--------------------------------------------------------------------
 
 using Einsum
@@ -9,24 +9,26 @@ using Einsum
 #--------------------------------------------------------------------
 # Define boundary and the product space
 #--------------------------------------------------------------------
-P1, P2 = 30, 30
+P1, P2 = 20, 20
 M = 1.0
-SUV = ProductSpace{GaussLobatto(U,P1, 5M, 3M), 
-                   GaussLobatto(V,P2, 5M, 3M)}
+SUV = ProductSpace{GaussLobatto{U,P1}, GaussLobatto{V,P2}}
 
 #--------------------------------------------------------------------
 # Define coordinates and their associated derivatives
 #--------------------------------------------------------------------
 
-𝒕 = Field(SUV, (u,v)->u)
-𝒓 = Field(SUV, (u,v)->v)
+t = Field(SUV, (u,v)->u)
+r = Field(SUV, (u,v)->v)
 θ = Field(SUV, (u,v)->pi/2)
 ϕ = Field(SUV, (u,v)->0)
 
 ø = zero(SUV) 
-Ø = zero(Null, SUV) 
+Ø = zero(Spatial, SUV) 
 
-𝔻𝒓, 𝔻𝒕 = derivative(SUV) 
+𝒕 = (5M + 3M)/2 + ((5M - 3M)/2)*t  
+𝒓 = (5M + 3M)/2 + ((5M - 3M)/2)*r  
+
+𝔻𝒓, 𝔻𝒕 = derivativetransform(SUV, 𝒕, 𝒓) 
 𝔻θ, 𝔻ϕ = Ø, Ø
 
 #--------------------------------------------------------------------
@@ -40,13 +42,13 @@ SUV = ProductSpace{GaussLobatto(U,P1, 5M, 3M),
 𝒈rθ = 𝒈rϕ = 𝒈tr = ø 
 𝒈tθ = 𝒈tϕ = 𝒈θϕ = ø
 
-𝕘    = Metric{_dd, 4}([𝒈tt, 𝒈tr, 𝒈tθ, 𝒈tϕ, 
+𝕘    = Metric{dd, 4}([𝒈tt, 𝒈tr, 𝒈tθ, 𝒈tϕ, 
                            𝒈rr, 𝒈rθ, 𝒈tϕ,
                                 𝒈θθ, 𝒈θϕ,
                                      𝒈ϕϕ])
 
-𝕘inv = inv(𝕘) 
-𝔻    = Derivative{_u, 4}([𝔻𝒕, 𝔻𝒓, 𝔻θ, 𝔻ϕ])
+𝕘inv = metricinverse(𝕘) 
+𝔻    = Derivative{u, 4}([𝔻𝒕, 𝔻𝒓, 𝔻θ, 𝔻ϕ])
 
 Γ    = Christoffel(𝕘)
 ℝ    = Ricci(𝕘)
@@ -99,14 +101,32 @@ end
 
 @testset "ℝ[a,b]" begin
     for i in 1:4, j in 1:4
-        if (i == j == 3) || (i == j == 4)
-            @test_broken maximum(abs(ℝ[i,j])) < 1e-8
-        else
-            @test maximum(abs(ℝ[i,j])) < 1e-8
-        end
+        @test maximum(abs(ℝ[i,j])) < 1e-8
     end
 end
 
 # NOTE: We should have two broken tests. 
 #       For R[3,3] and R[4,4] since we do not take the derivatives correctly
+
+#------------------------------------------------------
+# Construct covariant derivatives and compatibility 
+#------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

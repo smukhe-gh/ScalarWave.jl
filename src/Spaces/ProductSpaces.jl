@@ -40,18 +40,26 @@ similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, si
 
 # scalar / field
 +(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a .+ B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a .+ B.value)
 -(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a .- B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a .- B.value)
 *(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a .* B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a .* B.value)
 /(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, a ./ B.value)
-/(B::Field{ProductSpace{S1, S2}}, a::T) where {S1, S2 <: Cardinal{Tag, N}, T<:Number} where {Tag,N} = Field(ProductSpace{S1, S2}, B.value ./ a)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a ./ B.value)
+/(B::Field{ProductSpace{S1, S2}}, a::T) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, B.value ./ a)
+
+# TODO: Integrate this in scalar / field > Complex{Bool} / Field
++(a::T,
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Complex} where {Tag,N} = Field(ProductSpace{S1, S2}, a .+ B.value)
+-(a::T,
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Complex} where {Tag,N} = Field(ProductSpace{S1, S2}, a .- B.value)
+*(a::T,
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Complex} where {Tag,N} = Field(ProductSpace{S1, S2}, a .* B.value)
 
 # scalar / operator
-*(a::T, A::ProductSpaceOperator{PS}) where {T<:Number, PS} = ProductSpaceOperator(PS, a.*A.value)
-/(A::ProductSpaceOperator{PS}, b::T) where {T<:Number, PS} = ProductSpaceOperator(PS, A.value ./b)
+*(a::T, A::ProductSpaceOperator{PS}) where {T<:Real, PS} = ProductSpaceOperator(PS, a.*A.value)
+/(A::ProductSpaceOperator{PS}, b::T) where {T<:Real, PS} = ProductSpaceOperator(PS, A.value ./b)
 
 # operator / operator
 +(A::ProductSpaceOperator{PS}, B::ProductSpaceOperator{PS}) where {PS} = ProductSpaceOperator(PS, A.value + B.value)
@@ -171,7 +179,7 @@ function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{P
 end
 
 # field / boundary
-function +(u::Number, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
+function +(u::Real, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}
     return Field(ProductSpace{S1,S2}, u + b.value)
 end
 

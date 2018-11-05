@@ -5,14 +5,13 @@
 
 using ScalarWave, Test
 
-libraries = ["Dispatch"]
 libraries = ["BasisTransformation",
              "MinkowskiDistorted",
-             "Schwarzschild"] 
+             "Radial",
+             "Ricci",
+             "Schwarzschild"]
 
 libraries = ["Schwarzschild"]
-libraries = ["Operator"]
-libraries = ["Radial"]
 
 for file in libraries
     @info "Testing $file"

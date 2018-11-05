@@ -8,9 +8,7 @@
 #   -- Use a different computation of the operator and check if
 #      the operator constructions agree. 
 #   -- Use the solution from Mathematica and check if our operator
-#      satisfies the solution; and vice versa.
-#   -- Check with the ApproxFun code for arbitrary boundary 
-#      conditions
+#      satisfies the solution [Done]
 #   -- Divide out the time-dependence (i.e. convert into a 
 #      stationary solution) and check if the solution is independent 
 #      of time. This is not a-priori obvious. 
@@ -59,6 +57,7 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 # Note that you'd need to start with a set of boundary conditions
 # that satisfy the operator.
 #--------------------------------------------------------------------
+
 ρ = 0 
 𝕤 = exp(im*𝒓)*exp(-im*ω*t) 
 𝕓 = boundary(SUV, Null, :R)*𝕤
@@ -98,7 +97,7 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 𝕨 = solve(𝕃1 + 𝔹, ρ + 𝕓) 
 
 #--------------------------------------------------------------------
-# [T1] Check for time-stationary solution 
+# [T1] Check for time-stationarity 
 #--------------------------------------------------------------------
 
 

@@ -19,3 +19,7 @@ end
 mutable struct Ricci{Tag, D}
     components::Array{Field, 1}
 end
+
+mutable struct CovariantDerivative{Tag, D}
+    components::Array{Field, 1}
+end
