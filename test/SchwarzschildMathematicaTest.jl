@@ -11,7 +11,7 @@ using Einsum
 #--------------------------------------------------------------------
 M = 1.0
 ω = 1.0
-PV, PU = 4, 4
+PV, PU = 10, 10
 Umax, Umin = -4M, -8M
 Vmin, Vmax =  4M,  8M
 SUV = ProductSpace{GaussLobatto(V,PV, Vmax, Vmin), 
@@ -39,15 +39,34 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 𝔻𝕌, 𝔻𝕍 = derivative(SUV) 
 𝔻r, 𝔻t = derivativetransform(SUV, t, r) 
 𝔻θ, 𝔻ϕ = Ø, Ø
+ρ = 0 
 
 #--------------------------------------------------------------------
 # Set boundary conditions 
-# Note that you'd need to start with a set of boundary conditions
-# that satisfy the operator.
 #--------------------------------------------------------------------
-ρ = 0 
-𝕤 = exp(-(-6M + 𝕍)^2)
-𝕓 = boundary(SUV, Null, :R)*𝕤
+using HDF5
+
+# Choose to export the schwarzschild r
+if isfile("../output/hdf5/collocation-points-r.h5")
+    println("File already exits. Skipping")
+else
+    println("Creating dataset.")
+    h5open("../output/hdf5/collocation-points-r.h5", "w") do file
+        write(file, "collocation-points-grid",  r.value)
+    end
+end
+
+# Read ϕ(r) from Mathematica and multiply by exp(-iω t)
+if isfile("../output/hdf5/values-for-julia.h5")
+    ϕ_real = Field(SUV, h5read("../output/hdf5/values-for-julia.h5", "psi-real-grid"))*cos(-ω * t)
+    ϕ_imag = Field(SUV, h5read("../output/hdf5/values-for-julia.h5", "psi-imag-grid"))*sin(-ω * t)
+else
+    println("Could not find file. Create them using Mathematica")
+    exit()
+end
+
+𝕓_real = boundary(Null, SUV)*ϕ_real
+𝕓_imag = boundary(Null, SUV)*ϕ_imag
 
 #--------------------------------------------------------------------
 # Now construct the operator according to 
@@ -58,21 +77,63 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 #--------------------------------------------------------------------
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
-𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
-𝕔 = basistransform(𝕨)
+𝕨_real = solve(𝕃 + 𝔹, ρ + 𝕓_real) 
+𝕨_imag = solve(𝕃 + 𝔹, ρ + 𝕓_imag) 
+
+# compute the coefficents
+𝕔_real = basistransform(𝕨_real)
+𝕔_imag = basistransform(𝕨_imag)
 
 #--------------------------------------------------------------------
-# Draw solutions 
+# Visualize solutions 
 #--------------------------------------------------------------------
-drawpatch(𝕓, "../output/scattering/boundary")
 drawpatch(𝕌, "../output/scattering/U")
 drawpatch(𝕍, "../output/scattering/V")
 drawpatch(t, "../output/scattering/t")
 drawpatch(r, "../output/scattering/r")
-drawpatch(𝕨, "../output/scattering/wave")
 
+drawpatch(ϕ_real, "../output/scattering/phi-r-real")
+drawpatch(ϕ_imag, "../output/scattering/phi-r-imag")
+drawpatch(𝕨_real, "../output/scattering/wave_real")
+drawpatch(𝕨_imag, "../output/scattering/wave_imag")
+
+"""
 using Plots
 pyplot()
-heatmap(𝕔.value)
-savefig("../output/scattering/coefficents")
+A = log(abs(𝕔_real)).value
+heatmap(A)
+savefig("../output/scattering/coefficents_real.pdf")
 close()
+
+B = log(abs(𝕔_imag)).value
+heatmap(B)
+savefig("../output/scattering/coefficents_imaginary.pdf")
+close()
+"""
+
+#--------------------------------------------------------------------
+# Compare solutions 
+#--------------------------------------------------------------------
+
+@show maximum(abs(ϕ_real - 𝕨_real))
+@show maximum(abs(ϕ_imag - 𝕨_imag))
+
+drawpatch(ϕ_real - 𝕨_real, "../output/scattering/error-wave_real")
+drawpatch(ϕ_imag - 𝕨_imag, "../output/scattering/error-wave_imag")
+
+#--------------------------------------------------------------------
+# Check for time-stationarity 
+#--------------------------------------------------------------------
+𝕨_real_real = 𝕨_real*cos(ω * t)
+𝕨_real_imag = 𝕨_real*sin(ω * t)
+
+𝕨_imag_real = 𝕨_imag*cos(ω * t)
+𝕨_imag_imag = 𝕨_imag*sin(ω * t)
+
+𝕨_stationary_real = 𝕨_real_real - 𝕨_imag_imag
+𝕨_stationary_imag = 𝕨_real_imag + 𝕨_imag_real 
+
+# Take time derivatives and check
+@show maximum(abs(𝔻t*𝕨_stationary_real))
+@show maximum(abs(𝔻t*𝕨_stationary_imag))
+

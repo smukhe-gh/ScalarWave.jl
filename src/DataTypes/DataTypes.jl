@@ -31,12 +31,6 @@ struct Field{S, D, T}
     value::Array{T, D}
 end
 
-struct ComplexField{S, D, T}
-    space::Type{S}
-    re::Field{S,D,T}
-    im::Field{S,D,T}
-end
-
 struct Boundary{S, D, T}
     space::Type{S}
     value::Array{T, D}

@@ -101,7 +101,7 @@ end
 
 # compute fields
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}
-    value = zeros(Complex{spacetype(PS)}, size(PS))
+    value = zeros(spacetype(PS), size(PS))
     for index in range(PS)
         value[index] = umap(collocation(S2, index.I[1]),
                             collocation(S1, index.I[2]))
@@ -113,7 +113,7 @@ end
 function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function,
                u::Field{ProductSpace{S1, S2}},
                v::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
-    value = zeros(Complex{spacetype(PS)}, size(PS))
+    value = zeros(spacetype(PS), size(PS))
     for index in range(PS)
         value[index] = umap(u.value[index], v.value[index])
     end
@@ -149,18 +149,6 @@ function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOpe
     B[:, 1] .= convert(spacetype(PS), 1)
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
 
-end
-
-function boundary(PS::Type{ProductSpace{S1, S2}}, ::Type{Null}, LR::Symbol) ::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}
-    B = zeros(spacetype(PS), length(S2), length(S1))
-    if LR == :R
-        B[1, :] .= convert(spacetype(PS), 1)
-    elseif LR == :L
-        B[:, 1] .= convert(spacetype(PS), 1)
-    else
-        @error "Unrecognized symbol for boundary"
-    end
-    return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
 end
 
 # map functions to boundaries

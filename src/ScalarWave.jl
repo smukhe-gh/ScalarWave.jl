@@ -6,16 +6,16 @@
 module ScalarWave
 using Luxor, Colors, FFTW, Einsum, Roots, LinearAlgebra, Plots
 
-export Grid, Patch, distribute
+export Grid, distribute
 export Null, Spacelike, U, V,
        _uu, _dd, _u, _d, _udd
-export Patch
+
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
        Chebyshev, GaussLobatto, Taylor, spacetype 
 export Field, Boundary, Operator, ProductSpaceOperator,
        Metric, Derivative, Christoffel, Ricci,
-       inversemetrictransform 
+       inversemetrictransform, metricdet
 export order, dim, boundary, solve, ⦼, shape, delta 
 export collocation, derivative, 
        derivativetransform,
@@ -26,7 +26,6 @@ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 
 include("DataTypes/AbstractTypes.jl")
 include("DataTypes/DataTypes.jl")
-include("beta/Dispatch.jl")
 include("DataTypes/MetricDataTypes.jl")
 include("Spaces/SingleSpaces.jl")
 include("Spaces/ProductSpaces.jl")

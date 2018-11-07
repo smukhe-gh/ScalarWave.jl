@@ -39,7 +39,7 @@ function inv(g::Metric{_dd, 4})::Metric{_uu, 4}
     return ginv
 end
 
-function det(g::Metric{_dd, 4})::Field
+function metricdet(g::Metric{_dd, 4})::Field
     detg = similar(g[1,1])
 
     for index in CartesianIndices(size(g[1,1].space))
