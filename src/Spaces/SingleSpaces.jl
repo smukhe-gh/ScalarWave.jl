@@ -4,8 +4,7 @@
 # Define operations for 1D spaces
 #--------------------------------------------------------------------
 
-import Base: +, -, *, /, ==, ≈, range, length, 
-            minimum, maximum, real, imag
+import Base: +, -, *, /, ==, ≈, range, length, minimum, maximum, real, imag
 
 # Helper functions for creating spaces
 GaussLobatto(Tag, N, max, min) = GaussLobatto{Tag ,N, max, min} 
@@ -18,19 +17,8 @@ Chebyshev(Tag, N)              = Chebyshev{Tag ,N, 1, -1}
 Taylor(Tag, N)                 = Taylor{Tag ,N, 1, -1}
 
 # Real and Imaginary part of a field
-function real(u::Field{T}) where {T<:Cardinal{Tag}} where {Tag}
-    if imag(sum(abs.(u.value))) > 0.0
-        @info "Imaginary part exits. Returning only the real part."
-    end
-    return Field(u.space, real(u.value))
-end
-
-function imag(u::Field) where {T<:Cardinal{Tag}} where {Tag}
-    if real(sum(abs.(u.value))) > 0.0
-        @info "Real part exits. Returning only the imaginary part."
-    end
-    return Field(u.space, imag(u.value))
-end
+real(A::Field{S}) where {S} = Field(S, real(A.value))
+imag(A::Field{S}) where {S} = Field(S, imag(A.value))
 
 # Pull out the minimum and the maximum coordinate bounds
 minimum(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = min

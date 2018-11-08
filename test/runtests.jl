@@ -11,8 +11,8 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["CovariantDerivative"]
 libraries = ["SchwarzschildMathematica"]
+libraries = ["Radial"]
 
 for file in libraries
     @info "Testing $file"

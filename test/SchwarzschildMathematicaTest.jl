@@ -57,16 +57,16 @@ else
 end
 
 # Read ϕ(r) from Mathematica and multiply by exp(-iω t)
-if isfile("../output/hdf5/values-for-julia.h5")
-    ϕ_real = Field(SUV, h5read("../output/hdf5/values-for-julia.h5", "psi-real-grid"))*cos(-ω * t)
-    ϕ_imag = Field(SUV, h5read("../output/hdf5/values-for-julia.h5", "psi-imag-grid"))*sin(-ω * t)
+if isfile("../output/hdf5/values-for-julia-grid.h5")
+    ϕr_real = Field(SUV, h5read("../output/hdf5/values-for-julia-grid.h5", "psi-real-grid"))
+    ϕr_imag = Field(SUV, h5read("../output/hdf5/values-for-julia-grid.h5", "psi-imag-grid"))
 else
     println("Could not find file. Create them using Mathematica")
     exit()
 end
 
-𝕓_real = boundary(Null, SUV)*ϕ_real
-𝕓_imag = boundary(Null, SUV)*ϕ_imag
+ϕ = (ϕr_real + im*ϕr_imag)*exp(-im * ω * t)
+𝕓 = boundary(Null, SUV)*ϕ
 
 #--------------------------------------------------------------------
 # Now construct the operator according to 
@@ -77,12 +77,10 @@ end
 #--------------------------------------------------------------------
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
-𝕨_real = solve(𝕃 + 𝔹, ρ + 𝕓_real) 
-𝕨_imag = solve(𝕃 + 𝔹, ρ + 𝕓_imag) 
+𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
 
-# compute the coefficents
-𝕔_real = basistransform(𝕨_real)
-𝕔_imag = basistransform(𝕨_imag)
+# FIXME: compute the coefficents: work with complex fields
+# 𝕔 = basistransform(𝕨_real)
 
 #--------------------------------------------------------------------
 # Visualize solutions 
@@ -92,10 +90,12 @@ drawpatch(𝕍, "../output/scattering/V")
 drawpatch(t, "../output/scattering/t")
 drawpatch(r, "../output/scattering/r")
 
-drawpatch(ϕ_real, "../output/scattering/phi-r-real")
-drawpatch(ϕ_imag, "../output/scattering/phi-r-imag")
-drawpatch(𝕨_real, "../output/scattering/wave_real")
-drawpatch(𝕨_imag, "../output/scattering/wave_imag")
+drawpatch(real(ϕ), "../output/scattering/phi-r-real")
+drawpatch(imag(ϕ), "../output/scattering/phi-r-imag")
+drawpatch(real(𝕨), "../output/scattering/wave_real")
+drawpatch(imag(𝕨), "../output/scattering/wave_imag")
+
+exit()
 
 """
 using Plots
