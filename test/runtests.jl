@@ -11,8 +11,9 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["DoubleNullCoordinates"]
+libraries = ["DerivativesCoordinate"]
 libraries = ["SchwarzschildMathematica"]
+libraries = ["SingleSpaceDerivatives"]
 
 for file in libraries
     @info "Testing $file"

@@ -6,12 +6,12 @@
 # first and the last coefficents are divided by 2. 
 #--------------------------------------------------------------------
 
-function basistransform(u::Field{GaussLobatto{Tag, N, max, min}}, ::Type{Chebyshev{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}  
+function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}  
     c = (1/N)*(FFTW.r2r(u.value, FFTW.REDFT00))
     return Field(Chebyshev{Tag, N, max, min}, c)
 end
 
-function basistransform(u::Field{Chebyshev{Tag, N, max, min}}, ::Type{GaussLobatto{Tag, N, max, min}})::Field{GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  
+function basistransform(u::Field{Chebyshev{Tag, N, max, min}})::Field{GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  
     n = (FFTW.r2r(N*u.value, FFTW.REDFT00))/(2*N)
     return Field(GaussLobatto{Tag, N, max, min}, n)
 end
