@@ -51,11 +51,11 @@ similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, si
 
 # TODO: Integrate this in scalar / field > Complex{Bool} / Field
 +(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Complex} where {Tag,N} = Field(ProductSpace{S1, S2}, a .+ B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}, T<:Complex} where {Tag} = Field(ProductSpace{S1, S2}, a .+ B.value)
 -(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Complex} where {Tag,N} = Field(ProductSpace{S1, S2}, a .- B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}, T<:Complex} where {Tag} = Field(ProductSpace{S1, S2}, a .- B.value)
 *(a::T,
-  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Complex} where {Tag,N} = Field(ProductSpace{S1, S2}, a .* B.value)
+  B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}, T<:Complex} where {Tag} = Field(ProductSpace{S1, S2}, a .* B.value)
 
 # scalar / operator
 *(a::T, A::ProductSpaceOperator{PS}) where {T<:Real, PS} = ProductSpaceOperator(PS, a.*A.value)

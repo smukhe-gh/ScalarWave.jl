@@ -11,8 +11,8 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
+libraries = ["DoubleNullCoordinates"]
 libraries = ["SchwarzschildMathematica"]
-libraries = ["Radial"]
 
 for file in libraries
     @info "Testing $file"
