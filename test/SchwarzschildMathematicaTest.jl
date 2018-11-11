@@ -12,12 +12,10 @@ using Einsum
 M = 1.0
 ω = 1.0
 PV, PU = 29, 29
-Umax, Umin = -4M, -8M
-Vmin, Vmax =  4M,  8M
-#SUV = ProductSpace{GaussLobatto(V,PV, Vmax, Vmin), GaussLobatto(U,PU, Umax, Umin)}
-
-SUV = ProductSpace{GaussLobatto(V,PV), 
-                   GaussLobatto(U,PU)}
+Umax, Umin = -3M, -4M
+Vmin, Vmax =  3M,  4M
+SUV = ProductSpace{GaussLobatto(V,PV, Vmax, Vmin),
+                   GaussLobatto(U,PU, Umax, Umin)}
 
 #--------------------------------------------------------------------
 # Define coordinates and their associated derivatives
@@ -25,10 +23,7 @@ SUV = ProductSpace{GaussLobatto(V,PV),
 𝕌 = Field(SUV, (U,V)->U)
 𝕍 = Field(SUV, (U,V)->V)
 
-drawpatch(𝕌, "../output/scattering/coordinates/U")
-drawpatch(𝕍, "../output/scattering/coordinates/V")
 
-#=
 θ = Field(SUV, (U,V)->π/2)
 ϕ = Field(SUV, (U,V)->0)
 
@@ -38,7 +33,6 @@ drawpatch(𝕍, "../output/scattering/coordinates/V")
 t = Field(SUV, (U,V)->find_t_of_UV(U, V, M), 𝕌, 𝕍)
 r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 𝒓 = r + 2M*log(-1 + r/2M)
-=#
 
 #--------------------------------------------------------------------
 # Define derivative and boundary operators
@@ -46,7 +40,6 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 𝔹 = boundary(Null, SUV)
 𝔻𝕍, 𝔻𝕌 = derivative(SUV) 
 
-#=
 𝔻r, 𝔻t = derivativetransform(SUV, t, r) 
 𝔻θ, 𝔻ϕ = Ø, Ø
 ρ = 0 
@@ -77,39 +70,12 @@ end
 
 ϕ = (ϕr_real + im*ϕr_imag)*exp(-im * ω * t)
 𝕓 = boundary(Null, SUV)*ϕ
-=#
-
-#--------------------------------------------------------------------
-# test the operator computation in isolation
-# The issue seems to be with the coordinate transformation
-#--------------------------------------------------------------------
-r = sin(𝕌)*cos(𝕍)
-𝕊 = (r^3)*(𝕌^4)*(𝕍^5)
 
 #--------------------------------------------------------------------
 # Now construct the operator according to 
 # Carsten Gundlach and Jorge Pullin 1997 Class. Quantum Grav. 14 991
 #--------------------------------------------------------------------
-𝕃0  = 𝔻𝕌*𝔻𝕍 + ((𝔻𝕌*r)/r)*𝔻𝕍 +((𝔻𝕍*r)/r)*𝔻𝕌
-
-𝕊0 = ( (𝕌^3)*(𝕍^4)*(cos(𝕍)^2)*(sin(𝕌)^2) * 
-      (20*cos(𝕍)*(𝕌*cos(𝕌) + sin(𝕌)) - 𝕍*sin(𝕍)*(15*𝕌*cos(𝕌) + 16*sin(𝕌))) )
-
-𝕃1 = 𝔻𝕌*𝔻𝕍
-𝕃2 = 𝔻𝕌
-𝕃3 = 𝔻𝕍
-
-𝕊2 = (𝕌^3)*(𝕍^5)*(cos(𝕍)^3)*(sin(𝕌)^2)*(3*𝕌*cos(𝕌) + 4*sin(𝕌))
-𝕊3 = (𝕌^4)*(𝕍^4)*(sin(𝕌)^3)*(cos(𝕍)^2)*(5*cos(𝕍) - 3*𝕍*sin(𝕍))
-𝕊1 = (𝕌^3)*(𝕍^4)*(cos(𝕍)^2)*(sin(𝕌)^2)*(3*𝕌*cos(𝕌) + 4*sin(𝕌))*(5*cos(𝕍) - 3*𝕍*sin(𝕍))
-
-@show maximum(abs(𝕃2*𝕊 - 𝕊2))
-@show maximum(abs(𝕃3*𝕊 - 𝕊3))
-
-@show maximum(abs(𝕃1*𝕊 - 𝕊1))
-@show maximum(abs(𝕃0*𝕊 - 𝕊0))
-
-exit()
+𝕃  = 𝔻𝕌*𝔻𝕍 + ((𝔻𝕌*r)/r)*𝔻𝕍 +((𝔻𝕍*r)/r)*𝔻𝕌
 
 #--------------------------------------------------------------------
 # Solve the system [also check the condition number and eigen values]
@@ -133,17 +99,13 @@ drawpatch(imag(𝕨), "../output/scattering/waves/wave-imag")
 
 using Plots
 pyplot()
-A = log(abs(real(𝕔))).value
-B = log(abs(imag(𝕔))).value
-
+A = log10(abs(real(𝕔))).value
+B = log10(abs(imag(𝕔))).value
 heatmap(A)
 savefig("../output/scattering/coeffs/coeffs_real.pdf")
-close()
-
 heatmap(B)
 savefig("../output/scattering/coeffs/coeffs_imag.pdf")
 close()
-
 
 #--------------------------------------------------------------------
 # Compare solutions 
@@ -196,46 +158,3 @@ plot( v_bndOR, real(ϕ_bndOR), lab="phi-outgoing-right")
 plot!(v_bndOR, real(𝕨_bndOR), lab="sol-outgoing-right", line=:dot)
 savefig("../output/scattering/boundaries/boundaries-v-real-outgoing-right.pdf")
 close()
-
-#=
-"""
-plot( u_bndOL, imag(𝕨_bndOL), lab="sol-outgoing-left")
-plot!(u_bndOL, imag(ϕ_bndOL), lab="phi-outgoing-left")
-savefig("../output/scattering/boundaries/boundaries-u-imag-outgoing-left.pdf")
-close()
-"""
-
-"""
-plot( v_bndIR, real(𝕨_bndIR), lab="sol-incoming-right")
-plot!(v_bndIR, real(ϕ_bndIR), lab="phi-incoming-right")
-savefig("../output/scattering/boundaries-v-real-incoming-right.pdf")
-close()
-"""
-
-"""
-plot( v_bndIR, imag(𝕨_bndIR), lab="sol-incoming-right")
-plot!(v_bndIR, imag(ϕ_bndIR), lab="phi-incoming-right")
-savefig("../output/scattering/boundaries/boundaries-v-imag-incoming-right.pdf")
-close()
-"""
-
-"""
-plot( v_bndOR, imag(𝕨_bndOR), lab="sol-outgoing-right")
-plot!(v_bndOR, imag(ϕ_bndOR), lab="phi-outgoing-right")
-savefig("../output/scattering/boundaries/boundaries-v-imag-outgoing-right.pdf")
-close()
-"""
-"""
-plot( u_bndIL, real(𝕨_bndIL), lab="sol-incoming-left")
-plot!(u_bndIL, real(ϕ_bndIL), lab="phi-incoming-left")
-savefig("../output/scattering/boundaries/boundaries-u-real-incoming-left.pdf")
-close()
-"""
-
-"""
-plot( u_bndIL, imag(𝕨_bndIL), lab="sol-incoming-left")
-plot!(u_bndIL, imag(ϕ_bndIL), lab="phi-incoming-left")
-savefig("../output/scattering/boundaries/boundaries-u-imag-incoming-left.pdf")
-close()
-"""
-=#
