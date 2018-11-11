@@ -13,11 +13,11 @@ export Null, Spacelike, U, V,
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
        Chebyshev, GaussLobatto, Taylor, spacetype 
-export Field, Boundary, Operator, ProductSpaceOperator,
+export Field, Boundary, Operator, ProductSpaceOperator, IntegrationOperator,
        Metric, Derivative, Christoffel, Ricci,
        inversemetrictransform, metricdet
 export order, dim, boundary, solve, ⦼, shape, delta 
-export collocation, derivative, 
+export collocation, derivative, integral,
        derivativetransform,
        basistransform, mapmetricindex, eye
 export cheb, chebx, chebd, chebw

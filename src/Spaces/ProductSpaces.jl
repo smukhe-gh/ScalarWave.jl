@@ -184,7 +184,17 @@ end
 function vec(A::ProductSpaceOperator{ProductSpace{S1, S2}})::Array{eltype(A.value),2} where {S1, S2}
     return reshape(A.value, (prod(size(ProductSpace{S1, S2})), prod(size(ProductSpace{S1, S2}))))
 end
-
+  
 function shape(PS::Type{ProductSpace{S1, S2}}, u::Array{T,1})::Array{eltype(u),2} where {S1, S2, T}
     return reshape(u, size(PS))
+end
+
+# compute integral and the only operation defined on it. 
+function integral(S::Type{T})::IntegrationOperator{S} where {T<:ProductSpace{S1, S2}} where {S1, S2}
+    W = diagm(0=>vec([chebw(i, order(S2))*chebw(j, order(S1)) for i in range(S2), j in range(S1)]))
+    return IntegrationOperator(S, W)
+end
+
+function *(W::IntegrationOperator{S}, u::Field{S})::Real where {S<:ProductSpace{S1, S2}} where {S1, S2}
+    return sum(W.value*vec(u.value)) 
 end

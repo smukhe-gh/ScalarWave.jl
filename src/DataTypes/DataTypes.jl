@@ -41,6 +41,11 @@ struct Operator{S, D, T}
     value::Array{T, D}
 end
 
+struct IntegrationOperator{S, D, T}
+    space::Type{S}
+    value::Array{T, D}
+end
+
 struct ProductSpace{S1<:Space, S2<:Space} end
 
 struct ProductSpaceOperator{S, D, T}

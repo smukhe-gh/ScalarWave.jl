@@ -73,7 +73,7 @@ end
 function *(A::Operator{S}, u::Field{S})::Field{S} where {S}
     v = similar(u.value)
     for index in range(S)
-        v[index] = sum(A.value[index,k]*u.value[k] for k in range(S))
+        v[index] = sum(a.value[index,k]*u.value[k] for k in range(S))
     end
     return Field(S, v)
 end
@@ -108,7 +108,17 @@ function derivative(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {
     return Operator(S, DS)
 end
 
-# compute identity matrixV
+# compute integral and the only operation defined on it. 
+function integral(S::Type{T})::IntegrationOperator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+    W = diagm(0=>[chebw(i, order(S)) for i in range(S)])
+    return IntegrationOperator(S, W)
+end
+
+function *(W::IntegrationOperator{S}, u::Field{S})::Real where {S}
+    return sum(W.value*u.value) 
+end
+
+# compute identity matrix
 function eye(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
     return Operator(S, Matrix{spacetype(S)}(I, length(S), length(S)))
 end

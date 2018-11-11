@@ -4,16 +4,14 @@
 # Wave equation on Schwarzschild
 #--------------------------------------------------------------------
 
-using Einsum
-
 #--------------------------------------------------------------------
 # Define boundary and the product space
 #--------------------------------------------------------------------
 M = 1.0
-ω = 1.0
+ω = 2.0
 PV, PU = 29, 29
-Umax, Umin = -3M, -4M
-Vmin, Vmax =  3M,  4M
+Umax, Umin = -3M, -3M
+Vmin, Vmax =  3M,  3M
 SUV = ProductSpace{GaussLobatto(V,PV, Vmax, Vmin),
                    GaussLobatto(U,PU, Umax, Umin)}
 
@@ -78,7 +76,7 @@ end
 𝕃  = 𝔻𝕌*𝔻𝕍 + ((𝔻𝕌*r)/r)*𝔻𝕍 +((𝔻𝕍*r)/r)*𝔻𝕌
 
 #--------------------------------------------------------------------
-# Solve the system [also check the condition number and eigen values]
+# Solve the system
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
 𝕔 = basistransform(real(𝕨)) + im*basistransform(imag(𝕨))
@@ -86,17 +84,17 @@ end
 #--------------------------------------------------------------------
 # Visualize solutions 
 #--------------------------------------------------------------------
+
 drawpatch(𝕌, "../output/scattering/coordinates/U")
 drawpatch(𝕍, "../output/scattering/coordinates/V")
 drawpatch(t, "../output/scattering/coordinates/t")
 drawpatch(r, "../output/scattering/coordinates/r")
-
 drawpatch(real(ϕ), "../output/scattering/waves/phi-real")
 drawpatch(imag(ϕ), "../output/scattering/waves/phi-imag")
 drawpatch(real(𝕨), "../output/scattering/waves/wave-real")
 drawpatch(imag(𝕨), "../output/scattering/waves/wave-imag")
 
-
+"""
 using Plots
 pyplot()
 A = log10(abs(real(𝕔))).value
@@ -106,6 +104,7 @@ savefig("../output/scattering/coeffs/coeffs_real.pdf")
 heatmap(B)
 savefig("../output/scattering/coeffs/coeffs_imag.pdf")
 close()
+"""
 
 #--------------------------------------------------------------------
 # Compare solutions 
@@ -129,8 +128,6 @@ Dt_ψ = 𝔻t * ψ
 # Take time derivatives and check
 @show maximum(abs(real(𝔻t * 𝕧)))
 @show maximum(abs(imag(𝔻t * 𝕧)))
-@show maximum(abs(real(𝔻t * ψ)))
-@show maximum(abs(imag(𝔻t * ψ)))
 
 drawpatch(real(𝔻t * 𝕧), "../output/scattering/error/error-time-derivative-wave-real")
 drawpatch(imag(𝔻t * 𝕧), "../output/scattering/error/error-time-derivative-wave-imag")
@@ -149,6 +146,9 @@ v_bndOR = 𝕍.value[end, :]
 ϕ_bndOR = ϕ.value[end, :]
 𝕨_bndOR = 𝕨.value[end, :]
 
+
+using Plots
+pyplot()
 plot( u_bndOL, real(ϕ_bndOL), lab="phi-outgoing-left")
 plot!(u_bndOL, real(𝕨_bndOL), lab="sol-outgoing-left",  line=:dot)
 savefig("../output/scattering/boundaries/boundaries-u-real-outgoing-left.pdf")

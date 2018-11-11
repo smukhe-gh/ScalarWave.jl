@@ -36,3 +36,7 @@ function derivative(space::Type{S}, i::Int, j::Int)::Float64 where {S<:GaussLoba
     return chebd(i, j, N)*(2/(min - max))
 end
 
+function derivative(space::Type{S}, i::Int)::Float64 where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}
+    @assert i <= N+1
+    return chebw(i, N)*(2/(min - max))
+end
