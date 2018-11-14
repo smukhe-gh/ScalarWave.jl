@@ -191,7 +191,7 @@ end
 
 # compute integral and the only operation defined on it. 
 function integral(S::Type{T})::IntegrationOperator{S} where {T<:ProductSpace{S1, S2}} where {S1, S2}
-    W = diagm(0=>vec([chebw(i, order(S2))*chebw(j, order(S1)) for i in range(S2), j in range(S1)]))
+    W = diagm(0=>vec([integral(S2, i)*integral(S1, j) for i in range(S2), j in range(S1)]))
     return IntegrationOperator(S, W)
 end
 

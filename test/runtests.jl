@@ -11,10 +11,9 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["1D-Derivatives"]
-libraries = ["2D-Derivatives "]
-libraries = ["SchwarzschildMathematica"]
 libraries = ["Integral"]
+libraries = ["SchwarzschildMathematica"]
+libraries = ["BasisTransformation"]
 
 for file in libraries
     @info "Testing $file"

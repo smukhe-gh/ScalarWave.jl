@@ -110,7 +110,7 @@ end
 
 # compute integral and the only operation defined on it. 
 function integral(S::Type{T})::IntegrationOperator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
-    W = diagm(0=>[chebw(i, order(S)) for i in range(S)])
+    W = diagm(0=>[integral(S, i) for i in range(S)])
     return IntegrationOperator(S, W)
 end
 
