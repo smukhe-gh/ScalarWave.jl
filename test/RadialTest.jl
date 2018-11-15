@@ -45,11 +45,13 @@ else
     exit()
 end
 
+"""
 residual_re = 𝕃*ψ_re
 residual_im = 𝕃*ψ_im
 
 @show maximum(abs.(residual_re.value))
 @show maximum(abs.(residual_im.value))
+"""
 
 """
 using Plots
@@ -74,6 +76,15 @@ savefig("../output/psi-plot-$rmin-$rmax.pdf")
 𝕓 = Boundary(SR, th->ψ_re.value[1], tinf->ψ_re.value[end])
 ρ = Field(SR, v->0)
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓)
+
+@show 𝕓.value[1], 𝕓.value[end]
+@show r.value[1], r.value[end]
+
+@show ψ_re.value[50]
+@show r.value[50]
+@show 𝕨.value[50]
+
+#=
 @show maximum(abs.(𝕨.value[10:end-10] -ψ_re.value[10:end-10]))
 
 # imaginary part
@@ -92,3 +103,4 @@ savefig("../output/psi-solve-comparison-plot-$rmin-$rmax.pdf")
 plot(r.value[10:90], (𝕨.value[10:90] -ψ_re.value[10:90]) , leg=false)
 savefig("../output/psi-solve-difference-plot-$rmin-$rmax.pdf")
 """
+=#

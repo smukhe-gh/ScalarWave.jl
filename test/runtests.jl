@@ -11,9 +11,7 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["Integral"]
-libraries = ["SchwarzschildMathematica"]
-libraries = ["BasisTransformation"]
+libraries = ["ApproxFun"]
 
 for file in libraries
     @info "Testing $file"
