@@ -35,9 +35,7 @@ end
 
 ψ_re_solved = [B;L] \ [[ψ_re[1], ψ_re[end]], 0]
 @test abs(ψ_re[50] - ψ_re_solved(expr[50])) < 1e-10
-exit()
 
-#=
 #--------------------------------------------------------------------
 # Compute the 2D operator 
 #--------------------------------------------------------------------
@@ -58,23 +56,38 @@ L  = DU*DV + ((DV*r)*invr)*DU + ((DU*r)*invr)*DV
 #--------------------------------------------------------------------
 # Set the boundary conditions 
 #--------------------------------------------------------------------
-UB, VB = Fun(∂(d))
-UB, VB = components(UB),components(VB)
 
-# compute boundary conditions using the real solution 
-# from the radial solve
-ψ = Fun((U,V)->rsolved(r_of_UV(U,V,1))*cos(ω*t_of_UV(U,V)))
+# Compute the solution
+ϕ_re = Fun((U,V)->ψ_re_solved(find_r_of_UV(U,V,M))*cos(ω * find_t_of_UV(U,V,M)), d)
 
-u0 = (I⊗ldirichlet(dV))*ψ
-v0 = (ldirichlet(dU)⊗I)*ψ
+u_bnd = Fun(V->ϕ_re_solved(find_r_of_UV(-4, V, 1))*cos(ω * find_t_of_UV(-4, V, 1)))
+v_bnd = Fun(U->ϕ_re_solved(find_r_of_UV( U, 3, 1))*cos(ω * find_t_of_UV( U, 3, 1)))
+
+SUV = ScalarWave.ProductSpace{GaussLobatto(V, 150, 4M, 3M), GaussLobatto(U, 150, -3M, -4M)}
+𝕌   = Field(SUV, (U,V)->U)
+𝕍   = Field(SUV, (U,V)->V)
+
+# for testing if the boundary conditions are applied correctly
+ϕ_re_array = zeros(151, 151)
+for _u in 1:151, _v in 1:151
+    ϕ_re_array[_u, _v] = ϕ_re(𝕌.value[_u, _v], 𝕍.value[_u, _v]) 
+end
+
+ϕ_re_field = Field(SUV, ϕ_re_array)
+drawpatch(ϕ_re_field, "phi_re_array")
+
+using Plots
+pyplot()
+plot(𝕌, ϕ_re_field.value[1,:])
+plot(𝕍, ϕ_re_field.value[:, end])
+
+
+exit()
 
 # test by plotting? 
-u0 = rsolved(r_of_UV(UB[1], VB[1], 1))*cos(ω * t_of_UV(UB[1], VB[1], 1))
-v0 = rsolved(r_of_UV(UB[1], VB[1], 1))*cos(ω * t_of_UV(UB[1], VB[1], 1))
 
 B  = [I⊗ldirichlet(dV); ldirichlet(dU)⊗I]
 u  = \([I⊗ldirichlet(dV); ldirichlet(dU)⊗I; L], [u0; v0; 0;];
                     tolerance=1E-12)
 
 @test u(3.3, 3.5) ≈ ψ(3.3, 3.5)
-=#
