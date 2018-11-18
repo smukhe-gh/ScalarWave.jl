@@ -10,7 +10,10 @@ M  = 1.0
 ω  = 1.0
 l  = 0
 
-#=
+PV, PU = 69, 69
+Umax, Umin = -3M, -4M
+Vmin, Vmax =  3M,  4M
+
 #--------------------------------------------------------------------
 # Solve the radial equation 
 #--------------------------------------------------------------------
@@ -35,69 +38,88 @@ else
 end
 
 ψ_re_solved = [B;L] \ [[ψ_re[1], ψ_re[end]], 0]
+
+# Test if the radial solution matches that of Mathematica
 @test abs(ψ_re[50] - ψ_re_solved(expr[50])) < 1e-10
-=#
 
 #--------------------------------------------------------------------
-# Compute the 2D operator 
+# Construct the 2D operator 
 #--------------------------------------------------------------------
-
 dU = -4M .. -3M; 
 dV =  3M ..  4M;
 d  = dU × dV
 DU = ApproxFun.Derivative(d,[1,0]) 
 DV = ApproxFun.Derivative(d,[0,1])
 
-#=
 # Compute the r and t fields
 r  = Fun((U,V) -> find_r_of_UV(U,V,1.0), d)
 t  = Fun((U,V) -> find_t_of_UV(U,V,1.0), d)
 invr = Fun((U,V) -> 1/find_r_of_UV(U,V,1.0), d)
 
+# compute the operator
 L  = DU*DV + ((DV*r)*invr)*DU + ((DU*r)*invr)*DV
 
 #--------------------------------------------------------------------
 # Set the boundary conditions 
 #--------------------------------------------------------------------
+U0 = Fun((_, V) -> ψ_re_solved(find_r_of_UV(-4M,  V, M)) * cos(ω * find_t_of_UV(-4M,  V, M)), ConstantSpace(ApproxFun.Point(-4M)) ⊗ ApproxFun.Chebyshev(3M .. 4M))
+V0 = Fun((U, _) -> ψ_re_solved(find_r_of_UV(  U, 3M, M)) * cos(ω * find_t_of_UV(  U, 3M, M)), ApproxFun.Chebyshev(-4M .. -3M) ⊗ ConstantSpace(ApproxFun.Point(3M)))
 
-# Compute the solution
+# TODO: Scale the boundary operator appropriately
+# But first check if you get almost the same answer from ScalarWave
+B  = [I⊗ldirichlet(dV); ldirichlet(dU)⊗I]
+u  = \([B; L], [V0; U0; 0]; tolerance=1E-12)
+
+#--------------------------------------------------------------------
+# Test with Mathematica 
+#--------------------------------------------------------------------
 ϕ_re = Fun((U,V)->ψ_re_solved(find_r_of_UV(U,V,M))*cos(ω * find_t_of_UV(U,V,M)), d)
 
-U_bnd = Fun(V->ψ_re_solved(find_r_of_UV(-4M, 1.0*V, M)) * cos(ω * find_t_of_UV(-4M, 1.0*V, M)), dV)
-V_bnd = Fun(U->ψ_re_solved(find_r_of_UV(1.0*U, 3M, M))  * cos(ω * find_t_of_UV(1.0*U, 3M, M)),  dU)
+@test_broken u(-3.3, 3.5) ≈ ϕ_re(-3.3, 3.5)
+@test_broken u(-3.1, 3.9) ≈ ϕ_re(-3.1, 3.9)
+@test_broken u(-3.4, 3.4) ≈ ϕ_re(-3.3, 3.4)
 
-SUV = ScalarWave.ProductSpace{GaussLobatto(V, 150, 4M, 3M), GaussLobatto(U, 150, -3M, -4M)}
-𝕌   = Field(SUV, (U,V)->U)
-𝕍   = Field(SUV, (U,V)->V)
+#--------------------------------------------------------------------
+# Test with ScalarWave 
+#--------------------------------------------------------------------
 
-# for testing if the boundary conditions are applied correctly
-ϕ_re_array = zeros(151, 151)
-for _u in 1:151, _v in 1:151
-    ϕ_re_array[_u, _v] = ϕ_re(𝕌.value[_u, _v], 𝕍.value[_u, _v]) 
+SUV = ScalarWave.ProductSpace{GaussLobatto(V,PV, Vmax, Vmin),
+                   GaussLobatto(U,PU, Umax, Umin)}
+
+𝕌 = Field(SUV, (U,V)->U)
+𝕍 = Field(SUV, (U,V)->V)
+t = Field(SUV, (U,V)->find_t_of_UV(U, V, M))
+r = Field(SUV, (U,V)->find_r_of_UV(U, V, M))
+ρ = 0 
+
+𝔹 = boundary(Null, SUV)
+𝔻𝕍, 𝔻𝕌 = derivative(SUV) 
+𝔻r, 𝔻t = derivativetransform(SUV, t, r) 
+
+ϕ_real = Field(SUV, (U,V) -> ψ_re_solved(find_r_of_UV(U,V,M)) * cos(ω * find_t_of_UV(U,V,M))) 
+𝕓 = boundary(Null, SUV)*ϕ_real
+𝕃 = 𝔻𝕌*𝔻𝕍 + ((𝔻𝕌*r)/r)*𝔻𝕍 +((𝔻𝕍*r)/r)*𝔻𝕌
+
+# Compute the complex solution
+𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
+
+# Now compare the solutions; first the boundaries
+u_collocation = Field(SUV, (U,V)->u(U,V))
+testU =  𝕌.value[15, 24]
+testV =  𝕍.value[15, 24]
+
+@test maximum(abs(ϕ_re(testU, testV) - ϕ_real.value[15, 24])) < 1e-10
+@show u(testU, testV) # ApproxFun
+@show 𝕨.value[15,24]  # ScalarWave
+@show maximum(abs(u_collocation - 𝕨))
+
+# compare boundary conditions
+@assert PV == PU
+for i in 1:PV
+    @test maximum(abs(u(𝕌.value[i, 1], 𝕍.value[1, 1]) - ϕ_re(𝕌.value[i, 1], 𝕍.value[1, 1]))) < 1e-14 # boundary spanning U
+    @test maximum(abs(u(𝕌.value[1, 1], 𝕍.value[1, i]) - ϕ_re(𝕌.value[1, 1], 𝕍.value[1, i]))) < 1e-14 # boundary spanning V
+    @test maximum(abs(u(𝕌.value[i, 1], 𝕍.value[1, 1]) - ϕ_real.value[i, 1])) < 1e-14 # boundary spanning U
+    @test maximum(abs(u(𝕌.value[1, 1], 𝕍.value[1, i]) - ϕ_real.value[1, i])) < 1e-14 # boundary spanning V
 end
 
-# Now check if the boundaries are being computed properly
-"""
-using Plots
-pyplot()
-plot(U_bnd)
-plot!(V_bnd)
-savefig("../output/boundary-UV.pdf")
-close()
-"""
-=#
 
-# Test
-V0 = Fun(x->exp(-20x^2),dU)
-L  = DU*DV
-
-# TODO: scale the boundary operator appropriately
-B  = [I⊗ldirichlet(dV); ldirichlet(dU)⊗I]
-u  = \([B; L], [V0; 0; 0]; tolerance=1E-12)
-
-#=
-@test u(-3.3, 3.5) ≈ ϕ_re(-3.3, 3.5)
-@test u(-3.1, 3.9) ≈ ϕ_re(-3.1, 3.9)
-@test u(-3.4, 3.4) ≈ ϕ_re(-3.3, 3.4)
-println("Finished Testing solution")
-=#
