@@ -11,8 +11,7 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["Convection"]
-libraries = ["ApproxFun"]
+libraries = ["Schwarzschild"]
 
 for file in libraries
     @info "Testing $file"
