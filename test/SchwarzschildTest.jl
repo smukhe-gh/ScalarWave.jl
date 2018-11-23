@@ -10,7 +10,7 @@ M  = 1.0
 ω  = 1.0
 l  = 0
 
-PV, PU = 9, 9
+PV, PU = 29, 29
 Umax, Umin = -3M, -4M
 Vmin, Vmax =  3M,  4M
 
@@ -65,8 +65,6 @@ L  = DU*DV + ((DV*r)*invr)*DU + ((DU*r)*invr)*DV
 U0 = Fun((_, V) -> ψ_re_solved(find_r_of_UV(-4M,  V, M)) * cos(ω * find_t_of_UV(-4M,  V, M)), ConstantSpace(ApproxFun.Point(-4M)) ⊗ ApproxFun.Chebyshev(3M .. 4M))
 V0 = Fun((U, _) -> ψ_re_solved(find_r_of_UV(  U, 3M, M)) * cos(ω * find_t_of_UV(  U, 3M, M)), ApproxFun.Chebyshev(-4M .. -3M) ⊗ ConstantSpace(ApproxFun.Point(3M)))
 
-# TODO: Scale the boundary operator appropriately
-# But first check if you get almost the same answer from ScalarWave
 B  = [I⊗ldirichlet(dV); ldirichlet(dU)⊗I]
 u  = \([B; L], [V0; U0; 0]; tolerance=1E-12)
 
@@ -99,28 +97,23 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M))
 ϕ_real = Field(SUV, (U,V) -> ψ_re_solved(find_r_of_UV(U,V,M)) * cos(ω * find_t_of_UV(U,V,M))) 
 𝕓 = boundary(Null, SUV)*ϕ_real
 𝕃 = 𝔻𝕌*𝔻𝕍 + ((𝔻𝕌*r)/r)*𝔻𝕍 +((𝔻𝕍*r)/r)*𝔻𝕌
-𝕃 = ((𝔻𝕌*r)/r)*𝔻𝕍 +((𝔻𝕍*r)/r)*𝔻𝕌
-@show cond(𝕃)
-𝕃 = 𝔻𝕌*𝔻𝕍
-@show cond(𝕃)
-exit()
+
+# XXX: Scale the boundary operator
+scaling = (1/(((PV+1)^2)*((PU+1)^2)))
+invscaling = 1/scaling
+
+@show cond(𝕃 + invscaling*𝔹)
 
 # Compute the complex solution
-𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
+𝕨 = solve(𝕃 + invscaling*𝔹, ρ + invscaling*𝕓) 
 
 # Now compare the solutions; first the boundaries
 u_collocation = Field(SUV, (U,V)->u(U,V))
 testU =  𝕌.value[15, 24]
 testV =  𝕍.value[15, 24]
 
-@test maximum(abs(ϕ_re(testU, testV) - ϕ_real.value[15, 24])) < 1e-10
-@show u(testU, testV) # ApproxFun
-@show 𝕨.value[15,24]  # ScalarWave
-@show maximum(abs(u_collocation - 𝕨))
-@show abs.(eigvals(𝕃)[1:10])
-
-# compare boundary conditions
 @assert PV == PU
+@test maximum(abs(ϕ_re(testU, testV) - ϕ_real.value[15, 24])) < 1e-10
 for i in 1:PV
     @test maximum(abs(u(𝕌.value[i, 1], 𝕍.value[1, 1]) - ϕ_re(𝕌.value[i, 1], 𝕍.value[1, 1]))) < 1e-14 # boundary spanning U
     @test maximum(abs(u(𝕌.value[1, 1], 𝕍.value[1, i]) - ϕ_re(𝕌.value[1, 1], 𝕍.value[1, i]))) < 1e-14 # boundary spanning V
@@ -128,4 +121,15 @@ for i in 1:PV
     @test maximum(abs(u(𝕌.value[1, 1], 𝕍.value[1, i]) - ϕ_real.value[1, i])) < 1e-14 # boundary spanning V
 end
 
+# compare the solutions
+@show maximum(abs(u_collocation - 𝕨)) 
+@show maximum(abs(ϕ_real - 𝕨)) 
 
+# Compute the L2 norms
+@show L2Error(𝕨, ϕ_real)
+@show L2ErrorRelative(𝕨, ϕ_real)
+
+#--------------------------------------------------------------------
+# test if the operators satisfy the solution
+#--------------------------------------------------------------------
+@show maximum(abs(𝕃*ϕ_real))

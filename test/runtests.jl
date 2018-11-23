@@ -11,6 +11,7 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
+libraries = ["BasisTransformation"]
 libraries = ["Schwarzschild"]
 
 for file in libraries

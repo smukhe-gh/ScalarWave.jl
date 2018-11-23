@@ -8,8 +8,14 @@
 # TODO: Compute Linf norm
 # TODO: Compute error estimate from coefficents
 
+function L2Error(A::Field{S}, B::Field{S})::Real where {S}
+    WUV = integral(S)
+    L2  = sqrt(abs(WUV*(A - B)^2))
+    return L2
+end
 
-function L2normError(A::Field{S}, B::Field{S})::Real
-    D = (A - B)^2
-
+function L2ErrorRelative(A::Field{S}, B::Field{S})::Real where {S}
+    WUV = integral(S)
+    L2  = sqrt(abs(WUV*(A - B)^2))/sqrt(abs(WUV*B))
+    return L2
 end
