@@ -11,7 +11,8 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["Schwarzschild"]
+libraries = ["ODE"]
+libraries = ["Vaidya"]
 
 for file in libraries
     @info "Testing $file"

@@ -24,6 +24,9 @@ export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 
+export r_of_m_exp, f_of_m_exp,
+       r_of_collapse
+
 include("DataTypes/AbstractTypes.jl")
 include("DataTypes/DataTypes.jl")
 include("DataTypes/MetricDataTypes.jl")
@@ -38,9 +41,9 @@ include("Basis/BasisTransformation.jl")
 include("MetricFunctions.jl")
 include("MathFunctions.jl")
 include("CoordinateTransform.jl")
-include("DoubleNullCoordinates.jl")
+include("CoordinateSystems/DoubleNullCoordinates.jl")
 include("Visualization.jl")
 
-
+include("beta/Vaidya.jl")
 
 end 

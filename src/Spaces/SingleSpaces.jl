@@ -44,6 +44,7 @@ spacetype(S::Type{T}) where {T<:Taylor{Tag, N}} where {Tag, N} = Rational{BigInt
 # field / field
 +(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value + B.value)
 -(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value - B.value)
+-(A::Field{S}) where {S} = Field(S, -A.value)
 *(A::Field{S}, B::Field{S}) where {S<:Cardinal{Tag,N}} where {Tag, N} = Field(S, A.value .* B.value)
 /(A::Field{S}, B::Field{S}) where {S<:Cardinal{Tag,N}} where {Tag, N} = Field(S, A.value ./ B.value)
 ==(A::Field{S}, B::Field{S}) where {S} = (A.value == B.value)
@@ -73,7 +74,7 @@ end
 function *(A::Operator{S}, u::Field{S})::Field{S} where {S}
     v = similar(u.value)
     for index in range(S)
-        v[index] = sum(a.value[index,k]*u.value[k] for k in range(S))
+        v[index] = sum(A.value[index,k]*u.value[k] for k in range(S))
     end
     return Field(S, v)
 end
