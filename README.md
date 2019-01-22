@@ -1,9 +1,13 @@
 # ScalarWave
 
-[![Build Status](https://travis-ci.org/soham1112/ScalarWave.jl.svg?branch=master)](https://travis-ci.org/soham1112/ScalarWave.jl)
-[![Coverage Status](https://coveralls.io/repos/github/soham1112/ScalarWave.jl/badge.svg?branch=master)](https://coveralls.io/github/soham1112/ScalarWave.jl?branch=master)
-[![codecov](https://codecov.io/gh/soham1112/ScalarWave.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/soham1112/ScalarWave.jl)
+Solve the non-linear Einstein's field equations in spherical symmetry. This branch
+inherits all the features introduced in Schwarzschild, for e.g.; the type system
+and not in Vaidya, for e.g., symbolic differentiation [beta]. 
 
-Solving the scalar wave equation using spacetime discretization methods in Julia.
-
-UPDATED to Julia 1.0
+### This repository should
+[] Solve a test coupled non-linear equation for consistency checks.
+[] Solve the Einstein's field equations in spherical symmetry in double null coordinates. 
+[] Support arbitrary types for computation
+[] Implement symbolic differentiation to compute Ricci and Weyl tensors
+[] Use futures to distribute the computation
+[] Replace Master

@@ -73,7 +73,7 @@ end
 function *(A::Operator{S}, u::Field{S})::Field{S} where {S}
     v = similar(u.value)
     for index in range(S)
-        v[index] = sum(a.value[index,k]*u.value[k] for k in range(S))
+        v[index] = sum(A.value[index,k]*u.value[k] for k in range(S))
     end
     return Field(S, v)
 end
