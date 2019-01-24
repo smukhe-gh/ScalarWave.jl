@@ -68,7 +68,7 @@ function iterateNewtonKantorovich(F::Function, Fu::Function, tol::Float64, maxit
             @warn "Iterations did not converge."
             return 0
         end
-        delta = solve(D*D - Fu(uold)*I,  F(uold) - D*D*uold) 
+        delta = solve(D*D - Fu(uold)*I,  D*D*uold - F(uold)) 
         unew  = uold + delta 
         error = maximum(abs(unew - uold)) 
         @show iteration, error
