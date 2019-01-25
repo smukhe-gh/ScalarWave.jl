@@ -11,7 +11,7 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["Schwarzschild"]
+libraries = ["SchwarzschildHorizon"]
 
 for file in libraries
     @info "Testing $file"
