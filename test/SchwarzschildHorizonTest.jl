@@ -9,8 +9,8 @@
 #--------------------------------------------------------------------
 M = 1.0
 ω = 1.0
-PV, PU = 29, 29
-Umax, Umin = (1/5)*M, -(4/5)*M
+PV, PU = 49, 49
+Umax, Umin = (1/5)*M, -(4/5)*M # include the horizon
 Vmin, Vmax =      3M,       4M
 SUV = ProductSpace{GaussLobatto(V, PV, Vmax, Vmin),
                    GaussLobatto(U, PU, Umax, Umin)}
@@ -58,3 +58,13 @@ r = Field(SUV, (U,V)->find_r_of_UV(U, V, M), 𝕌, 𝕍)
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
 drawpatch(real(𝕨), "../output/real-psi")
+drawpatch(real(𝕌), "../output/coord-U")
+drawpatch(real(𝕍), "../output/coord-V")
+
+#--------------------------------------------------------------------
+# Compute the expansion
+#-------------------------------------------------------------------- 
+
+guv = -(32*(M^3)/r)*exp(-r/2M)
+Θ = (𝔻𝕍*r)/(r*abs(guv))
+drawpatch(100*abs(Θ), "../output/expansion")

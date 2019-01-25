@@ -16,13 +16,17 @@ function setcolormap(vec::Array{Float64,1}, map::String, samples::Int)
     return clrs[round.(Int, (nvec*samples) .+ 1)]
 end
 
+# XXX: Making a temporary hack to draw the horizon
 function drawpatch(u::Field, filename)
-    drawmultipatch(Dict([1,1]=>u), filename)
+    drawmultipatch(Dict([1,1]=>u), filename, u.space)
 end
 
-function drawmultipatch(dbase, filename)
+function drawmultipatch(dbase, filename, PS::Type{ProductSpace{S1, S2}}) where {S1, S2}
     M   = Int(sqrt(length(dbase)))
     AP  = Float64[]
+    
+    maxU = maximum(S2)
+    minU = minimum(S2)
 
     #-----------------------------------------------
     # Create color pallete
@@ -87,6 +91,7 @@ function drawmultipatch(dbase, filename)
     line(Point(lx0, ly0), Point(lxe, ly0), :stroke)
     line(Point(lxe, ly0), Point(lxe, lye), :stroke)
     line(Point(lx0, lye), Point(lxe, lye), :stroke)
+
 
     #-----------------------------------------------
     # tick labels
@@ -162,6 +167,17 @@ function drawmultipatch(dbase, filename)
         grestore()
         
     end 
+
+
+    # XXX: Hack for showing the horizon
+    sethue("red")
+    setline(1.4)
+    #lxh = (lx0 + lxe)/2 
+    lxh = (lx0*abs(maxU) + lxe*abs(minU))/(abs(maxU) + abs(minU))
+    line(Point(lxh, ly0), Point(lxh, lye), :stroke)
+
+    sethue("black")
+    setline(0.4)
     
     #-----------------------------------------------
     #arrow
