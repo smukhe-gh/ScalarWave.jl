@@ -37,6 +37,9 @@ range(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = 1:N+1
 length(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N} = N+1
 length(S::Type{T}) where {T<:Galerkin{Tag, N}} where {Tag, N} = N+1
 
+# for Galerkin
+order(S::Type{T}) where {T<:Galerkin{Tag, N}} where {Tag, N}  = N
+
 # type of space
 spacetype(S::Type{T}) where {T<:GaussLobatto{Tag, N}} where {Tag, N} = Float64
 spacetype(S::Type{T}) where {T<:Taylor{Tag, N}} where {Tag, N} = Rational{BigInt}
@@ -96,6 +99,12 @@ function Field(S::Type{T}, umap::Function)::Field{S} where {T<:Cardinal{Tag, N}}
     for index in range(S)
         value[index] = umap(collocation(S, index))
     end
+    return Field(S, value)
+end
+
+# create a zero coefficent field
+function Field(S::Type{T})::Field{S} where {T<:Space} where {Tag, N}
+    value = zeros(length(S))
     return Field(S, value)
 end
 

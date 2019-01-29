@@ -4,7 +4,13 @@
 #--------------------------------------------------------------------
 
 function cheb(m::Int, x::Float64)::Float64
-    return cos(m*acos(x))
+    if abs(x) <= 1
+        return cos(m*acos(x))
+    elseif x >= 1
+        return cosh(m*acosh(x))
+    else
+        return ((-1)^m)*cosh(m*acosh(-x))
+    end
 end
 
 function chebx(i::T, N::T)::Float64 where {T<:Int}

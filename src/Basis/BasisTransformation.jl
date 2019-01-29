@@ -1,34 +1,24 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Soham 09-2018
-# 1D and 2D Basis transformation functions with Type-I DFT
-# and partial summations. Note that we use a convention where the
-# first and the last coefficents are divided by 2. 
+# Soham 01-2019
+# Transform between Galerkin and Cardinal basis
 #--------------------------------------------------------------------
 
-function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}  
-    c = (1/N)*(FFTW.r2r(u.value, FFTW.REDFT00))
-    return Field(Chebyshev{Tag, N, max, min}, c)
+#--------------------------------------------------------------------
+# 1D case
+#--------------------------------------------------------------------
+
+function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}
+    α = Field(u.space, x->0)
+    for m in 0:N
+        α.value[m+1] = sum((2/N)*u.value[k]*cheb(m, chebx(k,N)) for k in 1:N+1)
+    end
+    return Field(Chebyshev{Tag, N, max, min}, α.value)
 end
 
-function basistransform(u::Field{Chebyshev{Tag, N, max, min}})::Field{GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  
-    n = (FFTW.r2r(N*u.value, FFTW.REDFT00))/(2*N)
-    return Field(GaussLobatto{Tag, N, max, min}, n)
-end
-
-function basistransform(u::Field{T}, 
-                        method::Symbol) where T<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1}, GaussLobatto{Tag2, N2, max2, min2}} where {Tag1, Tag2, N1, N2, max1, max2, min1, min2}
-    @assert method == :dft
-    c = (1/(N1*N2))*(FFTW.r2r(u.value, FFTW.REDFT00))
-    return Field(ProductSpace{Chebyshev{Tag1, N1, max1, min1}, Chebyshev{Tag2, N2, max2, min2}}, c)
-end
-
-function basistransform(u::Field{T}, 
-                        method::Symbol) where T<:ProductSpace{Chebyshev{Tag1, N1, max1, min1}, Chebyshev{Tag2, N2, max2, min2}} where {Tag1, Tag2, N1, N2, max1, max2, min1, min2}
-    @assert method == :dft
-    n = (FFTW.r2r((N1*N2)*u.value, FFTW.REDFT00))/(4*(N1*N2))
-    return Field(ProductSpace{GaussLobatto{Tag1, N1, max1, min1}, GaussLobatto{Tag2, N2, max2, min2}}, n)
-end
+#--------------------------------------------------------------------
+# 2D case
+#--------------------------------------------------------------------
 
 function basistransform(u::Field{T}) where T<:ProductSpace{Chebyshev{Tag2, N2, max2, min2}, 
                                                            Chebyshev{Tag1, N1, max1, min1}} where {Tag1, Tag2, N1, N2, max1, max2, min1, min2}
