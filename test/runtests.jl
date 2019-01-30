@@ -12,8 +12,8 @@ libraries = ["BasisTransformation",
              "Schwarzschild"]
 
 libraries = ["NonLinSolver"]
-libraries = ["BasisTransformation"]
 libraries = ["Evaluate"]
+libraries = ["BasisTransformation"]
 
 for file in libraries
     @info "Testing $file"

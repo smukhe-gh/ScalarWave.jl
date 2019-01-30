@@ -8,11 +8,6 @@ function prefactor(i, N)
     (i == 1 || i == N+1) ? (return 1/2) : (return 1)
 end
 
-function prefactor(i, j, N, M)
-    return prefactor(i, N)*prefactor(j,M)
-end
-
-
 #--------------------------------------------------------------------
 # 1D case
 #--------------------------------------------------------------------
@@ -33,34 +28,40 @@ function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebysh
     return α
 end
 
-#=
 #--------------------------------------------------------------------
 # 2D case
 #--------------------------------------------------------------------
 
-function basistransform(α::Field{T}) where T<:ProductSpace{Chebyshev{Tag2, N2, max2, min2}, 
-                                                           Chebyshev{Tag1, N1, max1, min1}} 
-                                                           where {Tag1, Tag2, N1, N2, max1, max2, min1, min2}
-    
-    u = Field(ProductSpace{GaussLobatto{Tag2, N2, max2, min2}, 
-                           GaussLobatto{Tag1, N1, max1, min1}}, zeros(size(α.space)))
+function basistransform(u::Field{T}) where T<:ProductSpace{Chebyshev{Tag2, N2, max2, min2}, 
+                                                           Chebyshev{Tag1, N1, max1, min1}} where {Tag1, Tag2, N1, N2, max1, max2, min1, min2}
+    A = u.value
+    α = zeros(reverse(size(u.space)))
+    f = zeros(size(u.space)) 
 
-    for i in 1:N1+1, j in 1:N2+1
-        u.value[i, j] = sum(prefactor(m+1, n+1, N1, N2)*α.value[m+1,n+1]*cheb(m, chebx(i, N1))*cheb(n, chebx(j, N2)) for m in 0:N1, n in 0:N2)
+    for m in 1:N1+1, j in 1:N2+1
+        α[j, m] = sum(prefactor(n+1, N2)*A[m, n+1]*cheb(n, chebx(j, N2)) for n in 0:N2)
     end
 
-    return u
+    for j in 1:N2+1, i in 1:N1+1
+        f[i, j] = sum(prefactor(m+1, N1)*α[j, m+1]*cheb(m, chebx(i, N1)) for m in 0:N1) 
+    end
+
+    return Field(ProductSpace{GaussLobatto{Tag2, N2, max2, min2}, GaussLobatto{Tag1, N1, max1, min1}}, f)
 end
 
 function basistransform(u::Field{T}) where T<:ProductSpace{GaussLobatto{Tag2, N2, max2, min2}, 
                                                            GaussLobatto{Tag1, N1, max1, min1}} where {Tag1, Tag2, N1, N2, max1, max2, min1, min2}
-    α = Field(ProductSpace{Chebyshev{Tag2, N2, max2, min2}, 
-                           Chebyshev{Tag1, N1, max1, min1}}, zeros(size(u.space)))
+    A = u.value
+    α = zeros(reverse(size(u.space)))
+    β = zeros(size(u.space)) 
 
-    for m in 0:N1, n in 0:N2
-        α.value[m+1, n+1] = sum(u.value[m+1,n+1]*cheb(m, chebx(i, N1))*cheb(n, chebx(j, N2)) for i in 1:N1+1, j in 1:N2+1)
+    for i in 0:N1, n in 0:N2
+        α[n+1, i+1] = sum(prefactor(j, N2)*A[i+1, j]*cheb(n, chebx(j, N2)) for j in 1:N2+1)
     end
 
-    return α
+    for n in 0:N2, m in 0:N1
+        β[m, n] = sum(prefactor(i, N1)*α[n+1, i]*cheb(m, chebx(i, N1)) for i in 1:N1+1) 
+    end
+
+    return Field(ProductSpace{Chebyshev{Tag2, N2, max2, min2}, Chebyshev{Tag1, N1, max1, min1}}, β)
 end
-=#
