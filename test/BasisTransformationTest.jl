@@ -13,7 +13,7 @@ fbar = basistransform(basistransform(f))
 @test f ≈ fbar
 
 #--------------------------------------------------------------------
-# test 2D spaces
+# Temporary tests
 #--------------------------------------------------------------------
 # Create a random coefficent array
 M = 4
@@ -44,3 +44,20 @@ cc = reversetransform(f)
 
 # now test if they are equal
 @test c ≈ cc
+
+#--------------------------------------------------------------------
+# test 2D spaces
+#--------------------------------------------------------------------
+
+S = ProductSpace{GaussLobatto{V, 9, 1, -1}, 
+                 GaussLobatto{U, 4, 1, -1}}
+
+uu = Field(S, (U,V)->U)
+vv = Field(S, (U,V)->V)
+ff = Field(S, (U,V)->U^2 + V^3)
+
+cc  = basistransform(ff)
+ffr = basistransform(cc) 
+ccr = basistransform(ffr) 
+@test ffr.value ≈ ff.value
+@test ccr.value ≈ cc.value
