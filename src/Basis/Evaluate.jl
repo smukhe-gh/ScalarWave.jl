@@ -4,6 +4,10 @@
 # Evaluate a field function at an arbitrary point it's space
 #--------------------------------------------------------------------
 
+function prefactor(i, N)
+    (i == 1 || i == N+1) ? (return 1/2) : (return 1)
+end
+
 #--------------------------------------------------------------------
 # Start with the 1D case 
 #--------------------------------------------------------------------
@@ -16,9 +20,10 @@ function Base. in(coordinate::Number, S)::Bool
     end
 end
 
-function (c::Field{S})(x::Number)::Number where {S<:Chebyshev{Tag, N}} where {Tag, N}
+function (c::Field{S})(x::Number)::Number where {S<:Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}
     @assert x in c.space
-    return sum(c.value[m]*chebmod(m-1, Float64(x)) for m in 1:(order(S)+1))
+    xmap = (x - (max + min)/2)*(2/(min - max))
+    return - sum(prefactor(order+1, N)*cheb(order, xmap)*c.value[order+1] for order in 0:N)
 end
 
 function (u::Field{S})(x::Number)::Number where {S<:GaussLobatto{Tag, N}} where {Tag, N}

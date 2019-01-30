@@ -10,21 +10,10 @@ function prefactor(i, N)
 end
 
 # construct the function
-N = 3
-c = rand(4) 
-f = [sum(prefactor(m,N)*cheb(m-1, chebx(i, 3))*c[m] for m in 1:4) for i in 1:4]
-
-# now get the coefficents back
-r = (2/N).*[sum(prefactor(i,N)*cheb(m-1, chebx(i, 3))*f[i] for i in 1:4) for m in 1:4]
-@test c ≈ r
-
-# Now, try the same with spaces
-
-# construct the function
 function transform(α::Field{Chebyshev{Tag, N, max, min}})::Field{GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}
     u = Field(GaussLobatto{Tag, N, max, min})
     for gridindex in 1:N+1
-        u.value[gridindex] = sum(prefactor(order+1, N)*cheb(order, chebx(gridindex, N))*α.value[order+1] for order in 0:N)
+         u.value[gridindex] = sum(prefactor(order+1, N)*cheb(order, chebx(gridindex, N))*α.value[order+1] for order in 0:N)
     end
     return u
 end
@@ -33,14 +22,42 @@ end
 function transform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}
     α = Field(Chebyshev{Tag, N, max, min})
     for order in 0:N
-        α.value[order+1] = (2/N)*sum(prefactor(gridindex, N)*cheb(order, chebx(gridindex, N))*u.value[gridindex] for gridindex in 1:N+1)
+         α.value[order+1] = (2/N)*sum(prefactor(gridindex, N)*cheb(order, chebx(gridindex, N))*u.value[gridindex] for gridindex in 1:N+1)
     end
     return α
 end
 
+# evaluate a field at a single point
+function evaluate(u::Field{GaussLobatto{Tag, N, max, min}}, x::Number)::Number where {Tag, N, max, min}
+    α = transform(u)
+    xmap = (x - (max + min)/2)*(2/(min - max))
+    # XXX: Why do we need a minus sign?   
+    return - sum(prefactor(order+1, N)*cheb(order, xmap)*α.value[order+1] for order in 0:N)
+end
+
+# check for domain from -1 to 1
+c  = rand(4)
 S  = Chebyshev(U, 3)
 cc = Field(S, c)
 ff = transform(cc)
 rr = transform(ff)
-
 @test rr ≈ cc
+
+# Now check what happens when the domain is no longer -1 to 1
+S  = Chebyshev(U, 3, 5, -3)
+cc = Field(S, c)
+ff = transform(cc)
+rr = transform(ff)
+@test rr ≈ cc
+
+# now test the function evaluation at a point
+f = Field(GaussLobatto{U, 10, 1, -1}, x->x^3)
+@show evaluate(f, -0.8)
+
+f = Field(GaussLobatto{U, 10, 5, -3}, x->x^3)
+@show evaluate(f, -0.8)
+
+f = Field(GaussLobatto{U, 10, 100, -30}, x->x^3)
+@show evaluate(f, -0.8)
+
+@show f(-0.8)

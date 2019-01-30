@@ -4,16 +4,28 @@
 # Transform between Galerkin and Cardinal basis
 #--------------------------------------------------------------------
 
+function prefactor(i, N)
+    (i == 1 || i == N+1) ? (return 1/2) : (return 1)
+end
+
 #--------------------------------------------------------------------
 # 1D case
 #--------------------------------------------------------------------
 
-function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}
-    α = Field(u.space, x->0)
-    for m in 0:N
-        α.value[m+1] = sum((2/N)*u.value[k]*cheb(m, chebx(k,N)) for k in 1:N+1)
+function basistransform(α::Field{Chebyshev{Tag, N, max, min}})::Field{GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}
+    u = Field(GaussLobatto{Tag, N, max, min})
+    for gridindex in 1:N+1
+        u.value[gridindex] = sum(prefactor(order+1, N)*cheb(order, chebx(gridindex, N))*α.value[order+1] for order in 0:N)
     end
-    return Field(Chebyshev{Tag, N, max, min}, α.value)
+    return u
+end
+
+function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}
+    α = Field(Chebyshev{Tag, N, max, min})
+    for order in 0:N
+        α.value[order+1] = (2/N)*sum(prefactor(gridindex, N)*cheb(order, chebx(gridindex, N))*u.value[gridindex] for gridindex in 1:N+1)
+    end
+    return α
 end
 
 #--------------------------------------------------------------------
