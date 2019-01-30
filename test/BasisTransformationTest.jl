@@ -11,39 +11,7 @@
 f = Field(GaussLobatto{U, 10, 2, -3}, rand(11))
 fbar = basistransform(basistransform(f))
 @test f ≈ fbar
-
-#--------------------------------------------------------------------
-# Temporary tests
-#--------------------------------------------------------------------
-# Create a random coefficent array
-M = 4
-N = 9
-c =  rand(M+1, N+1)
-
-function transform(c)
-    f = zeros(M+1, N+1)
-    for i in 1:M+1, j in 1:N+1
-        f[i,j] = sum(prefactor(m+1,n+1, M, N)*c[m+1,n+1]*cheb(m, chebx(i, M))*cheb(n, chebx(j,N)) for m in 0:M, n in 0:N) 
-    end
-    return f
-end
-
-function reversetransform(u)
-    c = zeros(M+1, N+1)
-    for m in 0:M, n in 0:N
-        c[m+1,n+1] = (4/(M*N))*sum(prefactor(i,j, M, N)*u[i,j]*cheb(m, chebx(i, M))*cheb(n, chebx(j,N)) for i in 1:M+1, j in 1:N+1) 
-    end
-    return c
-end
-
-# compute f from c
-f = transform(c)
-
-# now get back the coefficent vector from f
-cc = reversetransform(f)
-
-# now test if they are equal
-@test c ≈ cc
+u = Field(GaussLobatto{U, 10, 2, -3}, x->x^3)
 
 #--------------------------------------------------------------------
 # test 2D spaces
@@ -61,3 +29,16 @@ ffr = basistransform(cc)
 ccr = basistransform(ffr) 
 @test ffr.value ≈ ff.value
 @test ccr.value ≈ cc.value
+
+W = Field(S, (U,V)->exp(U) + V)
+@show W(0.3, 0.4)
+
+S = ProductSpace{GaussLobatto{V, 29, 5, -2}, 
+                 GaussLobatto{U, 34, 9, 6}}
+W = Field(S, (U,V)->exp(U) + V)
+@show W(6.5, -1)
+
+S = ProductSpace{GaussLobatto{V, 29, 5, -2}, 
+                 GaussLobatto{U, 34, 9, -6}}
+W = Field(S, (U,V)->exp(U) + V)
+@show W(0.3, 0.4)
