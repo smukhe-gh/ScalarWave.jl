@@ -14,6 +14,7 @@ libraries = ["BasisTransformation",
 libraries = ["NonLinSolver"]
 libraries = ["Evaluate"]
 libraries = ["BasisTransformation"]
+libraries = ["PyPlotVisualization"]
 
 for file in libraries
     @info "Testing $file"
