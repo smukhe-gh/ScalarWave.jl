@@ -47,8 +47,6 @@ end
 
 function (u::Field{S})(UU::Number, VV::Number)::Number where S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
                                                                              GaussLobatto{TagU, NU, maxU, minU}} where {TagV, TagU, NV, NU, maxV, maxU, minV, minU}
-    # @show UU, maxU, minV
-    # @show VV, maxV, minV
     @assert UU in Chebyshev{TagU, NU, maxU, minU}
     @assert VV in Chebyshev{TagV, NV, maxV, minV}
     c = basistransform(u)

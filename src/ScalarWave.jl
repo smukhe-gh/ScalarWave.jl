@@ -24,6 +24,7 @@ export collocation, derivative, integral,
 export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
+export refine, coarsen
 
 include("DataTypes/AbstractTypes.jl")
 include("DataTypes/DataTypes.jl")
@@ -43,5 +44,6 @@ include("DoubleNullCoordinates.jl")
 include("Visualization.jl")
 
 include("Basis/Evaluate.jl")
+include("AMR/AMR.jl")
 
 end 
