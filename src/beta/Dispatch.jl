@@ -11,10 +11,6 @@ struct Grid
     V::Tuple
 end
 
-struct Patch{S,D,T}
-    space::Type{S}
-    value::Field{S,D,T}
-end
 
 Database(D::Int) = Array{Union{Nothing, Patch}}(nothing, D, D)
 Grid(M, P) = Grid(M, P, (-1, 1), (-1, 1))

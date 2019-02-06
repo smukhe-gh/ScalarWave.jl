@@ -41,3 +41,25 @@ function coarsen(uL::Field{SL}, uR::Field{SR}) where {SL<:GaussLobatto{Tag, N, m
     end
     return u
 end
+
+function refine(u::Field{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
+                                                    GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, TagU, NU, maxU, minU}
+    SLL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2},
+                       GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
+
+    SRR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV}, 
+                       GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
+
+    SLR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV},
+                       GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
+
+    SRL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2}, 
+                       GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
+
+    uLL = Field(SLL, (x,y)->u(x,y))
+    uRR = Field(SRR, (x,y)->u(x,y))
+    uRL = Field(SRL, (x,y)->u(x,y))
+    uLR = Field(SLR, (x,y)->u(x,y))
+    return (uLL, uRR, uRL, uLR)
+end
+
