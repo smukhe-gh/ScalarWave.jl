@@ -25,7 +25,7 @@ export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, coarsen
-export plot, pcolormesh, contourf
+export plot, pcolormesh, contourf, contour
 
 include("utilities/datatypes/AbstractTypes.jl")
 include("utilities/datatypes/Datatypes.jl")
@@ -46,5 +46,6 @@ include("geometry/MetricFunctions.jl")
 include("geometry/CoordinateTransform.jl")
 include("spacetimes/DoubleNullCoordinates.jl")
 include("utilities/MathFunctions.jl")
+
 include("utilities/visualization/PyPlot.jl")
 end 
