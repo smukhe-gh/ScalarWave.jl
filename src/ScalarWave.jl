@@ -4,7 +4,7 @@
 #--------------------------------------------------------------------
 
 module ScalarWave
-using Luxor, Colors, FFTW, Einsum, Roots, LinearAlgebra, Plots
+using Luxor, Colors, FFTW, Roots, LinearAlgebra, PyPlot
 
 export Grid, distribute
 export Null, Spacelike, U, V,
@@ -25,25 +25,26 @@ export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, coarsen
+export plot, pcolormesh, contourf
 
-include("DataTypes/AbstractTypes.jl")
-include("DataTypes/DataTypes.jl")
-include("DataTypes/MetricDataTypes.jl")
-include("Spaces/SingleSpaces.jl")
-include("Spaces/ProductSpaces.jl")
-include("Spaces/MetricSpaces.jl")
-include("Basis/TaylorGrid.jl")
-include("Basis/GaussLobattoGrid.jl")
-include("Basis/SpecBasis.jl")
-include("Basis/BasisTransformation.jl")
+include("utilities/datatypes/AbstractTypes.jl")
+include("utilities/datatypes/Datatypes.jl")
+include("utilities/dataTypes/MetricDataTypes.jl")
 
-include("MetricFunctions.jl")
-include("MathFunctions.jl")
-include("CoordinateTransform.jl")
-include("DoubleNullCoordinates.jl")
-include("Visualization.jl")
+include("utilities/spectral/spaces/SingleSpaces.jl")
+include("utilities/spectral/spaces/ProductSpaces.jl")
+include("utilities/spectral/spaces/MetricSpaces.jl")
+include("utilities/spectral/basis/TaylorGrid.jl")
 
-include("Basis/Evaluate.jl")
-include("AMR/AMR.jl")
+include("utilities/spectral/basis/GaussLobattoGrid.jl")
+include("utilities/spectral/basis/SpecBasis.jl")
+include("utilities/spectral/basis/BasisTransformation.jl")
+include("utilities/spectral/basis/Evaluate.jl")
 
+include("utilities/AMR/AMR.jl")
+include("geometry/MetricFunctions.jl")
+include("geometry/CoordinateTransform.jl")
+include("spacetimes/DoubleNullCoordinates.jl")
+include("utilities/MathFunctions.jl")
+include("utilities/visualization/PyPlot.jl")
 end 

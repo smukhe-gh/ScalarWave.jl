@@ -7,7 +7,6 @@
 function collocation(space::Type{S}, i::Int)::Rational where  {S<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}
     @assert max > min
     @assert i <= N+1
-    @assert typeof(min - max) <: Rational
     return -(-1 + (2*(i-1)//N))*(min - max)/2 + (max + min)/2
 end
 

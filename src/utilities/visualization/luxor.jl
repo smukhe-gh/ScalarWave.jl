@@ -38,7 +38,7 @@ function drawmultipatch(dbase, filename)
     #-----------------------------------------------
     samplepatch = dbase[[1,1]].value
     (Nx, Ny) = size(samplepatch) .- 1
-    (wx, wy) = (chebweights(Nx), chebweights(Ny))
+    (wx, wy) = , chebweights(Ny))
     (lx, ly) = (sort(2.0 .- cumsum(wx))*200, sort(2.0 .- cumsum(wy))*200)
 
     #-----------------------------------------------
