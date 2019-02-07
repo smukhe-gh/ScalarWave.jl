@@ -27,25 +27,24 @@ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, coarsen
 export plot, pcolormesh, contourf, contour
 
-include("utilities/datatypes/AbstractTypes.jl")
-include("utilities/datatypes/Datatypes.jl")
-include("utilities/dataTypes/MetricDataTypes.jl")
+include("datatypes/AbstractTypes.jl")
+include("datatypes/Datatypes.jl")
+include("dataTypes/MetricDataTypes.jl")
 
-include("utilities/spectral/spaces/SingleSpaces.jl")
-include("utilities/spectral/spaces/ProductSpaces.jl")
-include("utilities/spectral/spaces/MetricSpaces.jl")
-include("utilities/spectral/basis/TaylorGrid.jl")
+include("spectral/spaces/SingleSpaces.jl")
+include("spectral/spaces/ProductSpaces.jl")
+include("spectral/spaces/MetricSpaces.jl")
+include("spectral/basis/TaylorGrid.jl")
+include("spectral/basis/GaussLobattoGrid.jl")
+include("spectral/basis/SpecBasis.jl")
+include("spectral/basis/BasisTransformation.jl")
+include("spectral/basis/Evaluate.jl")
 
-include("utilities/spectral/basis/GaussLobattoGrid.jl")
-include("utilities/spectral/basis/SpecBasis.jl")
-include("utilities/spectral/basis/BasisTransformation.jl")
-include("utilities/spectral/basis/Evaluate.jl")
-
-include("utilities/AMR/AMR.jl")
+include("amr/AMR.jl")
 include("geometry/MetricFunctions.jl")
 include("geometry/CoordinateTransform.jl")
-include("spacetimes/DoubleNullCoordinates.jl")
+include("spacetimes/schwarzschild/DoubleNullCoordinates.jl")
+include("visualization/PyPlot.jl")
 include("utilities/MathFunctions.jl")
 
-include("utilities/visualization/PyPlot.jl")
 end 
