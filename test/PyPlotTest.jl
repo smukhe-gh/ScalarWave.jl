@@ -4,32 +4,29 @@
 # Plot fields using PyPlot
 #--------------------------------------------------------------------
 
-# test with single fields
 uu = Field(GaussLobatto{U, 10, 3.0, -3.0}, x->sin(x))
-vv = Field(ProductSpace{GaussLobatto{V, 8, 3, -1},
-                        GaussLobatto{U, 6, 5, -1}}, (x,y)->(x+y)) 
+vv = Field(ProductSpace{GaussLobatto{V, 8, 3, -3},
+                        GaussLobatto{U, 6, 5, -5}}, (x,y)->x+y) 
+nest = refine(uu)
+nest[[2]] = refine(nest[[2]])
+nest[[2]][[2]] = refine(nest[[2]][[2]])
 
-# plot(uu)
-# plot(uu, 100)
+@testset "PyPlot" begin
+    @test plot(uu) == 0
+    @test plot(uu, 101) == 0
+    @test contour(vv, 101) == 0
+    @test contourf(vv, 101) == 0
+    @test pcolormesh(vv) == 0
+    @test pcolormesh(vv, 101) == 0
+    @test plot(nest, 100) == 0
+    close()
+end
 
-# contour(vv, 100)
-# contourf(vv, 100)
-
-# pcolormesh(vv)
-# pcolormesh(vv, 100)
-
-# close()
-
+#--------------------------------------------------------------------
 # now test with refinement
-uL, uR = refine(uu)
-plot(uL, 100)
-plot(uR, 100, plotstyle="b-")
-show()
+#--------------------------------------------------------------------
 
-# now test with 2D refinement
-uLL, uRR, uLR, uRL = refine(vv)
-pcolormesh(uLL, 100)
-pcolormesh(uRL, 100)
-pcolormesh(uLR, 100)
-pcolormesh(uRR, 100)
+nest2D = refine(vv)
+nest2D[[2,2]] = refine(nest2D[[2,2]])
+contourf(nest2D, 100, globalmax=maximum(nest2D), globalmin=minimum(nest2D), globallevels=levels(nest2D, globallength=1000))
 show()

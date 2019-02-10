@@ -12,7 +12,7 @@ export Null, Spacelike, U, V,
 
 export Manifold, Space, ProductSpace, 
        Galerkin, Cardinal, 
-       Chebyshev, GaussLobatto, Taylor, spacetype 
+       Chebyshev, GaussLobatto, Taylor, spacetype, Tag
 export Field, Boundary, Operator, ProductSpaceOperator, IntegrationOperator,
        Metric, Derivative, Christoffel, Ricci,
        inversemetrictransform, metricdet
@@ -25,7 +25,7 @@ export cheb, chebx, chebd, chebw
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, coarsen
-export plot, pcolormesh, contourf, contour
+export plot, pcolormesh, contourf, contour, levels
 
 include("datatypes/AbstractTypes.jl")
 include("datatypes/Datatypes.jl")

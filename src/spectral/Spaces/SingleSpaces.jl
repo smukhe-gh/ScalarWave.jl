@@ -20,6 +20,9 @@ Taylor(Tag, N)                 = Taylor{Tag ,N, 1, -1}
 real(A::Field{S}) where {S} = Field(S, real(A.value))
 imag(A::Field{S}) where {S} = Field(S, imag(A.value))
 
+# Pull out the Tag
+Tag(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = Tag
+
 # Pull out the minimum and the maximum coordinate bounds
 minimum(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = min
 maximum(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = max

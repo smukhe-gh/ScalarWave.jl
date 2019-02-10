@@ -2,29 +2,15 @@
 # Spacetime Discretization methods in Julia
 # Soham 02-2019
 #--------------------------------------------------------------------
-# Divide a single patch into many patches
-# Each patch should know
-#   -- It's refinement level?
-#   -- It's connections? [Erik might disagree with this]
-#   -- It's field
-# We would also need to develop infrastructure so that 
-# the patch boundaries can talk to each other. 
 
-# We put field first refinement; i.e. only refine if the fields 
-# demand it. Thus, dividing the spaces is a result and not the driver.
-
-# Start with 1D fields and diving them in half.
-# It might also be useful to divide the patch in an arbitrary point
 function refine(u::Field{S}) where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}
     SL = GaussLobatto{Tag, N, max, (max + min)/2} 
     SR = GaussLobatto{Tag, N, (max + min)/2, min} 
     uL = Field(SL, x->u(x))
     uR = Field(SR, x->u(x))
-    return (uL, uR)
+    return Dict{Array{Int64,1}, Union{Field, Dict}}([1]=>uL, [2]=>uR)
 end
 
-# Now, join them together
-# Did we have a different way of doing this, using pseudo-inverse? Check.
 function coarsen(uL::Field{SL}, uR::Field{SR}) where {SL<:GaussLobatto{Tag, N, max, mid}, 
                                                       SR<:GaussLobatto{Tag, N, mid, min}} where {Tag, N, max, min, mid}
     S = GaussLobatto{Tag, N, max, min}
@@ -43,7 +29,9 @@ function coarsen(uL::Field{SL}, uR::Field{SR}) where {SL<:GaussLobatto{Tag, N, m
 end
 
 function refine(u::Field{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
-                                                    GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, TagU, NU, maxU, minU}
+                                                    GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, 
+                                                                                                TagU, NU, maxU, minU}
+
     SLL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2},
                        GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
 
@@ -60,6 +48,9 @@ function refine(u::Field{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV,
     uRR = Field(SRR, (x,y)->u(x,y))
     uRL = Field(SRL, (x,y)->u(x,y))
     uLR = Field(SLR, (x,y)->u(x,y))
-    return (uLL, uRR, uRL, uLR)
+
+    return Dict{Array{Int64,1}, Union{Field, Dict}}([1,1]=>uLL, [1,2]=>uLR, 
+                                                    [2,1]=>uRL, [2,2]=>uRR)
 end
+
 
