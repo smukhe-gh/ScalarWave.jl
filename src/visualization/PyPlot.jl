@@ -121,3 +121,18 @@ end
 function levels(nest::Dict{Array{Int64,1}, Union{Field, Dict}}; globallength=20)
     return collect(range(minimum(nest), stop=maximum(nest), length=globallength))
 end
+
+function PyPlot. plot(u::Type{S}) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
+                                                         GaussLobatto{Tag2, N2, max2, min2}}} where {Tag1, N1, max1, min1,
+                                                                                                     Tag2, N2, max2, min2}
+  vlines(x=[min2, max2], ymin=min1, ymax=max1)
+  hlines(y=[min1, max1], xmin=min2, xmax=max2)
+  return 0
+end
+
+function PyPlot. plot(dictionary::Dict)
+  for (key, value) in dictionary
+      plot(value)
+  end
+  return 0
+end

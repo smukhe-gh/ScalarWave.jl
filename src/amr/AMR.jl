@@ -47,11 +47,37 @@ function refine(u::Field{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV,
                                                     [2,1]=>uRL, [2,2]=>uRR)
 end
 
+function refine(u::Type{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
+                                                   GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, 
+                                                                                               TagU, NU, maxU, minU}
+
+    SLL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2},
+                       GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
+
+    SRR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV}, 
+                       GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
+
+    SLR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV},
+                       GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
+
+    SRL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2}, 
+                       GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
+
+    return Dict{Array{Int64,1}, Union{Any, Dict}}([1,1]=>SLL, [1,2]=>SLR, 
+                                                [2,1]=>SRL, [2,2]=>SRR)
+end
+
 #--------------------------------------------------------------------
 # Driver routines 
 #--------------------------------------------------------------------
 
 function driver(S::Type{GaussLobatto{Tag, N, max, min}}, condition::Function) where {Tag, N, max, min}
+    condition(S) ? (return refine(S)) : (return S)
+end
+
+function driver(S::Type{ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
+                                     GaussLobatto{Tag2, N2, max2, min2}}}, condition::Function) where {Tag1, N1, max1, min1,
+                                                                                                       Tag2, N2, max2, min2}
     condition(S) ? (return refine(S)) : (return S)
 end
 
@@ -73,16 +99,6 @@ function prune!(dictionary::Dict, condition::Function)
     return dictionary
 end
 
-function conductor(S::Type{GaussLobatto{Tag, N, max, min}}, condition::Function, maxlevel::Int) where {Tag, N, max, min}
-    dictionary = Dict{Array{Int64,1}, Any}([1]=>S)
-    for level in 1:maxlevel
-        for (key, value) in dictionary
-            dictionary[key] = driver(value, condition)
-        end
-    end
-    return prune!(dictionary, condition)
-end
-
 function Base. show(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}})
     for (key, value) in dictionary
         if typeof(value) <: Dict
@@ -93,23 +109,26 @@ function Base. show(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}})
     end
 end
 
-# function refine(u::Type{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
-                                                    # GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, 
-                                                                                                # TagU, NU, maxU, minU}
+function conductor(S::Type{GaussLobatto{Tag, N, max, min}}, condition::Function, maxlevel::Int) where {Tag, N, max, min}
+    dictionary = Dict{Array{Int64,1}, Any}([1]=>S)
+    for level in 1:maxlevel
+        for (key, value) in dictionary
+            dictionary[key] = driver(value, condition)
+        end
+    end
+    return prune!(dictionary, condition)
+end
 
-    # SLL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2},
-                       # GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
+function conductor(S::Type{ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
+                                        GaussLobatto{Tag2, N2, max2, min2}}}, condition::Function, maxlevel::Int) where {Tag1, N1, max1, min1,
+                                                                                                                         Tag2, N2, max2, min2}
+    dictionary = Dict{Array{Int64,1}, Union{Any, Dict}}([1,1]=>S)
+    for level in 1:maxlevel
+        for (key, value) in dictionary
+            dictionary[key] = driver(value, condition)
+        end
+    end
+    return prune!(dictionary, condition)
+end
 
-    # SRR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV}, 
-                       # GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
-
-    # SLR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV},
-                       # GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
-
-    # SRL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2}, 
-                       # GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
-
-    # return Dict{Array{Int64,1}, Union{S, Dict}}([1,1]=>SLL, [1,2]=>SLR, 
-                                                # [2,1]=>SRL, [2,2]=>SRR)
-# end
 
