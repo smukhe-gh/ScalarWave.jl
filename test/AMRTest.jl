@@ -4,62 +4,165 @@
 # Plot fields using PyPlot
 #--------------------------------------------------------------------
 
-using PyPlot
-
-#--------------------------------------------------------------------
-# Refine in 1D first
-#--------------------------------------------------------------------
-
-# construct the field
 S = GaussLobatto{U, 100, 3.0, -3.0}
-x = Field(S, x->x)
-y = sin(x)
-
-# divide the space in 2
-yL, yR = refine(y)
-
-function coords(u::Field{S}) where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}
-    coords = zeros(N+1)
-    for i in 1:N+1
-        coords[i] = collocation(S, i)
-    end
-    return Field(S, coords)
-end
-
-# pass it to the plotting routine
-# plot(coords(yL).value, yL.value, "r")
-# plot(coords(yR).value, yR.value, "b")
-
-# now join the space 
-yLR = coarsen(yL, yR)
-# plot(coords(yLR).value, yLR.value, "go")
-
-# show()
-
-#--------------------------------------------------------------------
-# Now do a 2D refinement 
-#--------------------------------------------------------------------
+# y = Field(S, x->sin(x))
+# yLRdict = refine(y)
 
 SUV = ProductSpace{GaussLobatto{V, 20,  5.0, -5.0},
                    GaussLobatto{U, 20,  5.0, -5.0}}
+# ϕ = Field(SUV, (U,V)->sinpi(U)*cospi(V))
+# ϕLRdict = refine(ϕ) 
 
-ϕ   = Field(SUV, (U,V)->sinpi(U)*cospi(V))
+# # TODO: Replace with actual tests
+# @testset "AMR" begin
+    # @test length(yLRdict) == 2
+    # @test length(ϕLRdict) == 4
+# end
 
-SUV = ProductSpace{GaussLobatto{V, 20,  15.0, 5.0},
-                   GaussLobatto{U, 20,  15.0, 5.0}}
+#--------------------------------------------------------------------
+# Now test refinement drive with a space-filling algorithm
+#--------------------------------------------------------------------
 
-ψ   = Field(SUV, (U,V)->sinpi(U)*cospi(V))
-
-function PyPlot. imshow(u::Field{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
-                                                            GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, 
-                                                                                                        TagU, NU, maxU, minU}
-    ucoefficents = basistransform(u)
-    Scartesian   = ProductSpace{Taylor{TagV, 100, rationalize(maxV), rationalize(minV)},
-                                Taylor{TagU, 100, rationalize(maxU), rationalize(minU)}}
-    ucartesian   = Field(Scartesian, (x,y)->ucoefficents(x,y))
-    return imshow(ucartesian.value, origin="lower", extent=[minV, maxV, minU, maxU])
+function condition(S::Type{GaussLobatto{Tag, N, max, min}}, threshold::Float64)::Bool where {Tag, N, max, min}
+    maximum(S) > 1 ? return 1 : return 0 
 end
 
-p = imshow(ϕ)
-q = imshow(ψ)
+function driver(S::Type{GaussLobatto{Tag, N, max, min}}, check::Bool) where {Tag, N, max, min}
+    check ? return refine(S) : return S
+end
+
+function driver(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}}, check::Bool)
+    for (key, value) in dictionary
+        dictionary[key] = driver(value, check)
+    end
+    return dictionary
+end
+
+function prune!(nest::Dict, threshold::Float64)
+    for (key, value) in nest
+        if typeof(value) <: Dict
+            prune!(value, threshold)
+        else
+            ( maximum(value) > threshold) ? delete!(nest, key) : 0
+        end
+    end
+    return nest
+end
+
+function driver(S::Type{GaussLobatto{Tag, N, max, min}}, threshold::Float64, maxlevel::Int) where {Tag, N, max, min}
+    dict = Dict{Array{Int64,1}, Any}([1]=>S)
+    for level in 1:maxlevel
+        for (key, value) in dict
+            dict[key] = refinespace(value, threshold)
+        end
+    end
+    prune!(dict, threshold)
+    return dict
+end
+
+function showdict(nest::Dict)
+    for (key, value) in nest
+        if typeof(value) <: Dict
+            showdict(value)
+        else
+            println(value) 
+        end
+    end
+end
+
+function prune!(nest::Dict, threshold::Float64)
+    for (key, value) in nest
+        if typeof(value) <: Dict
+            prune!(value, threshold)
+        else
+            ( maximum(value) > threshold) ? delete!(nest, key) : 0
+        end
+    end
+    return nest
+end
+
+nest1D = driver(S, 1.0, 12)
+showdict(nest1D)
+
+exit()
+#--------------------------------------------------------------------
+# Now try the same with 2D grids
+#--------------------------------------------------------------------
+
+function refinespace(space::Type{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
+                                                    GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, 
+                                                                                                TagU, NU, maxU, minU}
+
+    SLL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2},
+                       GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
+
+    SRR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV}, 
+                       GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
+
+    SLR = ProductSpace{GaussLobatto{TagV, NV, (maxV + minV)/2, minV},
+                       GaussLobatto{TagU, NU, maxU, (maxU + minU)/2}}
+
+    SRL = ProductSpace{GaussLobatto{TagV, NV, maxV, (maxV + minV)/2}, 
+                       GaussLobatto{TagU, NU, (maxU + minU)/2, minU}} 
+
+    return Dict{Array{Int64,1}, Union{Any, Dict}}([1,1]=>SLL, [1,2]=>SLR, 
+                                                  [2,1]=>SRL, [2,2]=>SRR)
+end
+
+function refinespace(space::Type{S}, threshold::Float64) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, 
+                                                                                GaussLobatto{TagU, NU, maxU, minU}}} where {TagV, NV, maxV, minV, 
+                                                                                                                            TagU, NU, maxU, minU}
+    if prod(maximum(space)) > threshold 
+        return refinespace(S)
+    else
+        return S
+    end
+end
+
+function prune2D!(nest::Dict, threshold::Float64)
+    for (key, value) in nest
+        if typeof(value) <: Dict
+            prune2D!(value, threshold)
+        else
+            (prod(maximum(value)) > threshold) ? delete!(nest, key) : 0
+        end
+    end
+    return nest
+end
+
+function driver(S::Type{ProductSpace{GaussLobatto{TagV, NV, maxV, minV},
+                                         GaussLobatto{TagU, NU, maxU, minU}}}, threshold::Float64,
+                                                                               maxlevel::Int) where {TagV, NV, maxV, minV, 
+                                                                                                     TagU, NU, maxU, minU}
+    newdict = Dict{Array{Int64,1}, Any}([1,1]=>S)
+    for level in 1:maxlevel
+        for (key, value) in newdict
+            newdict[key] = refinespace(value, threshold)
+        end
+    end
+    prune2D!(newdict, threshold)
+    return newdict
+end
+
+nest2D = driver(SUV, 1.0, 6)
+# showdict(nest2D)
+
+using PyPlot
+
+function PyPlot. plot(u::Type{S}) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
+                                                       GaussLobatto{Tag2, N2, max2, min2}}} where {Tag1, N1, max1, min1,
+                                                                                                   Tag2, N2, max2, min2}
+    vlines(x=[min2, max2], ymin=min1, ymax=max1)
+    hlines(y=[min1, max1], xmin=min2, xmax=max2)
+    return 0
+end
+
+function PyPlot. plot(nest::Dict)
+    for (key, value) in nest
+        plot(value)
+    end
+    return 0
+end
+
+plot(nest2D)
 show()

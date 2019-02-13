@@ -4,7 +4,7 @@
 # Define basic math and array operations for 2D spaces
 #--------------------------------------------------------------------
 
-import Base: +, -, *, /, size, range, vec, zero, similar
+import Base: +, -, *, /, size, range, vec, zero, similar, maximum, minimum
 
 # dimensions and shape
 order(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (order(S2), order(S1))
@@ -15,6 +15,10 @@ size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (length(S2), length(S1))
 # typeof
 spacetype(::Type{ProductSpace{S1, S2}}) where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N} = Float64
 spacetype(::Type{ProductSpace{S1, S2}}) where {S1, S2 <: Taylor{Tag,N}} where {Tag, N} = Rational{BigInt}
+
+# maximum and minimum
+maximum(::Type{ProductSpace{S1, S2}}) where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N} = (maximum(S1), maximum(S2))
+minimum(::Type{ProductSpace{S1, S2}}) where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N} = (minimum(S1), minimum(S2))
 
 # identity element
 zero(u::Type{T}) where {T<:Field} = 0.0

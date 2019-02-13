@@ -53,7 +53,7 @@ function PyPlot. pcolormesh(u::Field{S}, npoints::Int; globalmax=nothing, global
 
     # N.B: Unnecessary type conversion. Need to fix this.
     pcolormesh(Float64.(c1), Float64.(c2), Float64.(uu.value), snap=true, vmin=globalmin, vmax=globalmax)        
-   return 0
+    return 0
 end
 
 function PyPlot. contourf(u::Field{S}, npoints::Int; globalmax=nothing, globalmin=nothing, globallevels=nothing) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
@@ -69,16 +69,16 @@ function PyPlot. contourf(u::Field{S}, npoints::Int; globalmax=nothing, globalmi
 end
 
 
-function PyPlot. contour(u::Field{S}, npoints::Int) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
-                                                                          GaussLobatto{Tag2, N2, max2, min2}}} where {Tag1, N1, max1, min1,
-                                                                                                                      Tag2, N2, max2, min2}
-    cc  = basistransform(u)
-    xx1 = Field(Taylor{Tag1, npoints, max1, min1}, x->x)
-    xx2 = Field(Taylor{Tag2, npoints, max2, min2}, x->x)
-    uu  = Field(ProductSpace{Taylor{Tag1, npoints, max1, min1},
-                             Taylor{Tag2, npoints, max2, min2}}, (x,y)->cc(x,y)) 
-     contour(Float64.(xx1.value), Float64.(xx2.value), Float64.(uu.value))
-     return 0
+function PyPlot. contour(u::Field{S}, npoints::Int; globalmax=nothing, globalmin=nothing, globallevels=nothing) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
+                                                                           GaussLobatto{Tag2, N2, max2, min2}}} where {Tag1, N1, max1, min1,
+                                                                                                                       Tag2, N2, max2, min2}
+   cc  = basistransform(u)
+   xx1 = Field(Taylor{Tag1, npoints, max1, min1}, x->x)
+   xx2 = Field(Taylor{Tag2, npoints, max2, min2}, x->x)
+   uu  = Field(ProductSpace{Taylor{Tag1, npoints, max1, min1},
+                            Taylor{Tag2, npoints, max2, min2}}, (x,y)->cc(x,y)) 
+   contour(Float64.(xx1.value), Float64.(xx2.value), Float64.(uu.value), vmin=globalmin, vmax=globalmax, levels=globallevels)
+   return 0
 end
 
 function PyPlot. plot(nest::Dict, npoints::Int; plotstyle="-")
@@ -89,9 +89,17 @@ function PyPlot. plot(nest::Dict, npoints::Int; plotstyle="-")
 end
 
 function PyPlot. contourf(nest::Dict{Array{Int64,1}, Union{Field, Dict}}, npoints::Int64; globalmax=nothing, globalmin=nothing, globallevels=nothing)
-    for (loc, value) in nest
+    for (loc, value) in nest 
         contourf(value, npoints, globalmax=globalmax, globalmin=globalmin, globallevels=globallevels)
     end
+    return 0
+end
+
+function PyPlot. contour(nest::Dict{Array{Int64,1}, Union{Field, Dict}}, npoints::Int64; globalmax=nothing, globalmin=nothing, globallevels=nothing)
+    for (loc, value) in nest
+        contour(value, npoints, globalmax=globalmax, globalmin=globalmin, globallevels=globallevels)
+    end
+    return 0
 end
 
 function Base. maximum(nest::Dict{Array{Int64,1}, Union{Field, Dict}})
