@@ -1,0 +1,159 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+* (A::Operator, …)	src/spectral/Spaces/SingleSpaces.jl	/^function *(A::Operator{S}, B::Operator{S})::Operator{S} where {S}$/;"	f
+* (A::Operator, …)	src/spectral/Spaces/SingleSpaces.jl	/^function *(A::Operator{S}, u::Field{S})::Field{S} where {S}$/;"	f
+* (A::ProductSpaceOperator, …)	src/spectral/Spaces/ProductSpaces.jl	/^function *(A::ProductSpaceOperator{ProductSpace{S1,S2}},$/;"	f
+* (W::IntegrationOperator, …)	src/spectral/Spaces/ProductSpaces.jl	/^function *(W::IntegrationOperator{S}, u::Field{S})::Real where {S<:ProductSpace{S1, S2}} where {S1, S2}$/;"	f
+* (W::IntegrationOperator, …)	src/spectral/Spaces/SingleSpaces.jl	/^function *(W::IntegrationOperator{S}, u::Field{S})::Real where {S}$/;"	f
+* (u::Field, …)	src/spectral/Spaces/ProductSpaces.jl	/^function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} where {PS}$/;"	f
+* (u::Field, …)	src/spectral/Spaces/SingleSpaces.jl	/^function *(u::Field{S}, A::Operator{S})::Operator{S} where {S}$/;"	f
++ (u::Field, …)	src/spectral/Spaces/ProductSpaces.jl	/^function +(u::Field{ProductSpace{S1,S2}}, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}$/;"	f
++ (u::Field, …)	src/spectral/Spaces/SingleSpaces.jl	/^function +(u::Field{S}, b::Boundary{S})::Field{S} where {S}$/;"	f
++ (u::Real, …)	src/spectral/Spaces/ProductSpaces.jl	/^function +(u::Real, b::Boundary{ProductSpace{S1,S2}})::Field{ProductSpace{S1,S2}} where {S1,S2}$/;"	f
+Base. (coordinate::Number, …)	src/spectral/basis/Evaluate.jl	/^function Base. in(coordinate::Number, S)::Bool $/;"	f
+Base. (dictionary::Dict, …)	src/amr/AMR.jl	/^function Base. show(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}})$/;"	f
+Base. (nest::Dict, …)	src/visualization/PyPlot.jl	/^function Base. maximum(nest::Dict{Array{Int64,1}, Union{Field, Dict}})$/;"	f
+Base. (nest::Dict, …)	src/visualization/PyPlot.jl	/^function Base. minimum(nest::Dict{Array{Int64,1}, Union{Field, Dict}})$/;"	f
+Boundary	src/datatypes/DataTypes.jl	/^struct Boundary{S, D, T}$/;"	t
+Boundary (PS::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}$/;"	f
+Boundary (S::Type, …)	src/spectral/Spaces/SingleSpaces.jl	/^function Boundary(S::Type{T}, f::Function...)::Boundary{S} where {T<:Cardinal{Tag, N}} where {Tag, N}$/;"	f
+CU	src/datatypes/DataTypes.jl	/^struct CU end$/;"	t
+CV	src/datatypes/DataTypes.jl	/^struct CV end$/;"	t
+Chebyshev	src/datatypes/DataTypes.jl	/^struct Chebyshev{Tag ,N, min, max} <: Space{Tag} end$/;"	t
+Chebyshev (Tag, …)	src/spectral/Spaces/SingleSpaces.jl	/^Chebyshev(Tag, N)              = Chebyshev{Tag ,N, 1, -1}$/;"	f
+Chebyshev (Tag, …)	src/spectral/Spaces/SingleSpaces.jl	/^Chebyshev(Tag, N, max, min)    = Chebyshev{Tag ,N, max, min}$/;"	f
+Christoffel	src/datatypes/MetricDataTypes.jl	/^mutable struct Christoffel{Tag, D}$/;"	t
+Christoffel (g::Metric, …)	src/spectral/Spaces/MetricSpaces.jl	/^Christoffel(g::Metric) = Christoffel{_udd, dim(g)}(fill(zero(g[1,1].space), (dim(g), dim(g), dim(g))))$/;"	f
+Derivative	src/datatypes/MetricDataTypes.jl	/^struct Derivative{Tag, D}$/;"	t
+E1 (f::Field, …)	src/einstein/Equations.jl	/^function E1(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+E2 (f::Field, …)	src/einstein/Equations.jl	/^function E2(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+F (u::Field, …)	test/NonLinSolverTest.jl	/^function F(u::Field)$/;"	f
+Field	src/datatypes/DataTypes.jl	/^struct Field{S, D, T}$/;"	t
+Field (PS::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}$/;"	f
+Field (PS::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function,$/;"	f
+Field (S::Type, …)	src/spectral/Spaces/SingleSpaces.jl	/^function Field(S::Type{T})::Field{S} where {T<:Space} where {Tag, N}$/;"	f
+Field (S::Type, …)	src/spectral/Spaces/SingleSpaces.jl	/^function Field(S::Type{T}, umap::Function)::Field{S} where {T<:Cardinal{Tag, N}} where {Tag, N}$/;"	f
+Field (dictionary::Dict, …)	test/AMRTest.jl	/^function Field(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}}, map::Function)$/;"	f
+Fu (u::Field, …)	test/NonLinSolverTest.jl	/^function Fu(u::Field)$/;"	f
+GaussLobatto	src/datatypes/DataTypes.jl	/^struct GaussLobatto{Tag ,N, min, max} <: Space{Tag} end$/;"	t
+GaussLobatto (Tag, …)	src/spectral/Spaces/SingleSpaces.jl	/^GaussLobatto(Tag, N)           = GaussLobatto{Tag ,N, 1, -1} $/;"	f
+GaussLobatto (Tag, …)	src/spectral/Spaces/SingleSpaces.jl	/^GaussLobatto(Tag, N, max, min) = GaussLobatto{Tag ,N, max, min} $/;"	f
+H1 (f::Field, …)	src/einstein/Equations.jl	/^function H1(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+H2 (f::Field, …)	src/einstein/Equations.jl	/^function H2(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+IntegrationOperator	src/datatypes/DataTypes.jl	/^struct IntegrationOperator{S, D, T}$/;"	t
+Manifold	src/datatypes/AbstractTypes.jl	/^abstract type Manifold{Tag} end$/;"	t
+Metric	src/datatypes/MetricDataTypes.jl	/^struct Metric{Tag, D}$/;"	t
+Null	src/datatypes/DataTypes.jl	/^struct Null end$/;"	t
+Operator	src/datatypes/DataTypes.jl	/^struct Operator{S, D, T}$/;"	t
+ProductSpace	src/datatypes/DataTypes.jl	/^struct ProductSpace{S1<:Space, S2<:Space} end$/;"	t
+ProductSpaceOperator	src/datatypes/DataTypes.jl	/^struct ProductSpaceOperator{S, D, T}$/;"	t
+PyPlot. (dictionary::Dict, …)	src/visualization/PyPlot.jl	/^function PyPlot. plot(dictionary::Dict)$/;"	f
+PyPlot. (nest::Dict, …)	src/visualization/PyPlot.jl	/^function PyPlot. contour(nest::Dict{Array{Int64,1}, Union{Field, Dict}}, npoints::Int64; globalmax=nothing, globalmin=nothing, globallevels=nothing)$/;"	f
+PyPlot. (nest::Dict, …)	src/visualization/PyPlot.jl	/^function PyPlot. contourf(nest::Dict{Array{Int64,1}, Union{Field, Dict}}, npoints::Int64; globalmax=nothing, globalmin=nothing, globallevels=nothing)$/;"	f
+PyPlot. (nest::Dict, …)	src/visualization/PyPlot.jl	/^function PyPlot. plot(nest::Dict, npoints::Int; plotstyle="-")$/;"	f
+PyPlot. (u::Field, …)	src/visualization/PyPlot.jl	/^function PyPlot. contour(u::Field{S}, npoints::Int; globalmax=nothing, globalmin=nothing, globallevels=nothing) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},$/;"	f
+PyPlot. (u::Field, …)	src/visualization/PyPlot.jl	/^function PyPlot. contourf(u::Field{S}, npoints::Int; globalmax=nothing, globalmin=nothing, globallevels=nothing) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},$/;"	f
+PyPlot. (u::Field, …)	src/visualization/PyPlot.jl	/^function PyPlot. pcolormesh(u::Field{S}) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},$/;"	f
+PyPlot. (u::Field, …)	src/visualization/PyPlot.jl	/^function PyPlot. pcolormesh(u::Field{S}, npoints::Int; globalmax=nothing, globalmin=nothing) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},$/;"	f
+PyPlot. (u::Field, …)	src/visualization/PyPlot.jl	/^function PyPlot. plot(u::Field{S}, npoints::Int; plotstyle="-") where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+PyPlot. (u::Field, …)	src/visualization/PyPlot.jl	/^function PyPlot. plot(u::Field{S}; plotstyle="o") where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+PyPlot. (u::Type, …)	src/visualization/PyPlot.jl	/^function PyPlot. plot(u::Type{S}) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},$/;"	f
+Ricci	src/datatypes/MetricDataTypes.jl	/^mutable struct Ricci{Tag, D}$/;"	t
+Ricci (g::Metric, …)	src/spectral/Spaces/MetricSpaces.jl	/^Ricci(g::Metric) = Ricci{_dd, dim(g)}(fill(zero(g[1,1].space), (Int(dim(g)*((dim(g)+1)\/2)))))$/;"	f
+Space	src/datatypes/AbstractTypes.jl	/^abstract type Space{Tag} <: Manifold{Tag} end$/;"	t
+Spacelike	src/datatypes/DataTypes.jl	/^struct Spacelike end $/;"	t
+Taylor	src/datatypes/DataTypes.jl	/^struct Taylor{Tag ,N, min, max} <:Space{Tag} end$/;"	t
+Taylor (Tag, …)	src/spectral/Spaces/SingleSpaces.jl	/^Taylor(Tag, N)                 = Taylor{Tag ,N, 1, -1}$/;"	f
+Taylor (Tag, …)	src/spectral/Spaces/SingleSpaces.jl	/^Taylor(Tag, N, max, min)       = Taylor{Tag ,N, max, min}$/;"	f
+Tcollocation (::Type, …)	src/spectral/basis/TaylorGrid.jl	/^function Tcollocation(::Type{Rational}, i::Int, N::Int)::Rational$/;"	f
+Tderivative (::Type, …)	src/spectral/basis/TaylorGrid.jl	/^function Tderivative(::Type{Rational}, i::Int, j::Int, N::Int)::Rational$/;"	f
+U	src/datatypes/DataTypes.jl	/^struct U  end$/;"	t
+V	src/datatypes/DataTypes.jl	/^struct V  end$/;"	t
+X	test/NonLinSolverTest.jl	/^struct X end$/;"	t
+_d	src/datatypes/DataTypes.jl	/^struct _d  end$/;"	t
+_dd	src/datatypes/DataTypes.jl	/^struct _dd end$/;"	t
+_u	src/datatypes/DataTypes.jl	/^struct _u  end$/;"	t
+_udd	src/datatypes/DataTypes.jl	/^struct _udd end$/;"	t
+_uu	src/datatypes/DataTypes.jl	/^struct _uu end$/;"	t
+basistransform (u::Field, …)	src/spectral/basis/BasisTransformation.jl	/^function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+basistransform (u::Field, …)	src/spectral/basis/BasisTransformation.jl	/^function basistransform(u::Field{T}) where T<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1}, $/;"	f
+basistransform (u::Field, …)	src/spectral/basis/BasisTransformationMMT.jl	/^function basistransform(u::Field{GaussLobatto{Tag, N, max, min}})::Field{Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+basistransform (u::Field, …)	src/spectral/basis/BasisTransformationMMT.jl	/^function basistransform(u::Field{T}) where T<:ProductSpace{Chebyshev{Tag2, N2, max2, min2}, $/;"	f
+basistransform (u::Field, …)	src/spectral/basis/BasisTransformationMMT.jl	/^function basistransform(u::Field{T}) where T<:ProductSpace{GaussLobatto{Tag2, N2, max2, min2}, $/;"	f
+basistransform (α::Field, …)	src/spectral/basis/BasisTransformation.jl	/^function basistransform(α::Field{Chebyshev{Tag, N, max, min}})::Field{GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+basistransform (α::Field, …)	src/spectral/basis/BasisTransformation.jl	/^function basistransform(α::Field{T}) where T<:ProductSpace{Chebyshev{Tag1, N1, max1, min1}, $/;"	f
+basistransform (α::Field, …)	src/spectral/basis/BasisTransformationMMT.jl	/^function basistransform(α::Field{Chebyshev{Tag, N, max, min}})::Field{GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+boundary (::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}} where {Tag, N}$/;"	f
+boundary (::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function boundary(::Type{Spacelike}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}$/;"	f
+boundary (S::Type, …)	src/spectral/Spaces/SingleSpaces.jl	/^function boundary(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}$/;"	f
+cheb (m::Int, …)	src/spectral/basis/GaussLobattoGrid.jl	/^function cheb(m::Int, x::Float64)::Float64$/;"	f
+chebd (i::T, …)	src/spectral/basis/GaussLobattoGrid.jl	/^function chebd(i::T, j::T, N::T)::Float64 where {T<:Int}$/;"	f
+chebw (i::T, …)	src/spectral/basis/GaussLobattoGrid.jl	/^function chebw(i::T, N::T)::Float64 where {T<:Int}$/;"	f
+chebx (i::T, …)	src/spectral/basis/GaussLobattoGrid.jl	/^function chebx(i::T, N::T)::Float64 where {T<:Int}$/;"	f
+collocation (space::Type, …)	src/spectral/basis/SpecBasis.jl	/^function collocation(space::Type{S}, i::Int)::Float64 where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+collocation (space::Type, …)	src/spectral/basis/SpecBasis.jl	/^function collocation(space::Type{S}, i::Int)::Rational where  {S<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+computeRicci (𝔻, …)	test/RicciTest.jl	/^function computeRicci(𝔻, 𝕘, i, j)$/;"	f
+cond (A::ProductSpaceOperator, …)	src/utilities/MathFunctions.jl	/^function cond(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}$/;"	f
+condition (S::Type, …)	test/AMRTest.jl	/^function condition(S::Type{GaussLobatto{Tag, N, max, min}})::Bool where {Tag, N, max, min}$/;"	f
+condition2D (S::Type, …)	test/AMRTest.jl	/^function condition2D(S::Type{ProductSpace{S1, S2}})::Bool where {S1, S2}$/;"	f
+conductor (S::Type, …)	src/amr/AMR.jl	/^function conductor(S::Type{GaussLobatto{Tag, N, max, min}}, condition::Function, maxlevel::Int) where {Tag, N, max, min}$/;"	f
+conductor (S::Type, …)	src/amr/AMR.jl	/^function conductor(S::Type{ProductSpace{GaussLobatto{Tag1, N1, max1, min1},$/;"	f
+delta (i::T, …)	src/utilities/Utilities.jl	/^function delta{T<:Int}(i::T, j::T)::Float64$/;"	f
+derivative (PS::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function derivative(PS::Type{ProductSpace{S1, S2}}) where {S1, S2}$/;"	f
+derivative (S::Type, …)	src/spectral/Spaces/SingleSpaces.jl	/^function derivative(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}$/;"	f
+derivative (space::Type, …)	src/spectral/basis/SpecBasis.jl	/^function derivative(space::Type{S}, i::Int, j::Int)::Float64 where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+derivative (space::Type, …)	src/spectral/basis/SpecBasis.jl	/^function derivative(space::Type{S}, i::Int, j::Int)::Rational where {S<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+derivativetransform (PS::Type, …)	src/geometry/CoordinateTransform.jl	/^function derivativetransform(PS::Type{ProductSpace{S1, S2}}, 𝒖::Field{ProductSpace{S1, S2}}, $/;"	f
+driver (S::Type, …)	src/amr/AMR.jl	/^function driver(S::Type{GaussLobatto{Tag, N, max, min}}, condition::Function) where {Tag, N, max, min}$/;"	f
+driver (S::Type, …)	src/amr/AMR.jl	/^function driver(S::Type{ProductSpace{GaussLobatto{Tag1, N1, max1, min1},$/;"	f
+driver (dictionary::Dict, …)	src/amr/AMR.jl	/^function driver(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}}, condition::Function)$/;"	f
+eigvals (A::ProductSpaceOperator, …)	src/utilities/MathFunctions.jl	/^function eigvals(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}$/;"	f
+eigvals (g::Metric, …)	src/geometry/MetricFunctions.jl	/^function eigvals(g::Metric{_dd, 4})$/;"	f
+eltype (g::Metric, …)	src/spectral/Spaces/MetricSpaces.jl	/^eltype(g::Metric) = eltype(g.components)$/;"	f
+eltype (gamma::Christoffel, …)	src/spectral/Spaces/MetricSpaces.jl	/^eltype(gamma::Christoffel) = eltype(gamma.components)$/;"	f
+eltype (ricci::Ricci, …)	src/spectral/Spaces/MetricSpaces.jl	/^eltype(ricci::Ricci) = eltype(ricci.components)$/;"	f
+eye (S::Type, …)	src/spectral/Spaces/SingleSpaces.jl	/^function eye(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}$/;"	f
+f (r, …)	src/spacetimes/schwarzschild/DoubleNullCoordinates.jl	/^        f(r) = (r\/2M - 1)*exp(r\/2M) + U*V $/;"	f
+find_U_of_tr (t::T, …)	src/spacetimes/schwarzschild/DoubleNullCoordinates.jl	/^function find_U_of_tr(t::T, r::T, M::Float64)::T where {T<:Float64}$/;"	f
+find_V_of_tr (t::T, …)	src/spacetimes/schwarzschild/DoubleNullCoordinates.jl	/^function find_V_of_tr(t::T, r::T, M::Float64)::T where {T<:Float64}$/;"	f
+find_r_of_UV (U::T, …)	src/spacetimes/schwarzschild/DoubleNullCoordinates.jl	/^function find_r_of_UV(U::T, V::T, M::Float64)::T where {T<:Float64}$/;"	f
+find_t_of_UV (U::T, …)	src/spacetimes/schwarzschild/DoubleNullCoordinates.jl	/^function find_t_of_UV(U::T, V::T, M::Float64)::T where {T<:Float64}$/;"	f
+getindex (d::Derivative, …)	src/spectral/Spaces/MetricSpaces.jl	/^function getindex(d::Derivative, a::Int) $/;"	f
+getindex (g::Metric, …)	src/spectral/Spaces/MetricSpaces.jl	/^function getindex(g::Metric, a::Int, b::Int) $/;"	f
+getindex (gamma::Christoffel, …)	src/spectral/Spaces/MetricSpaces.jl	/^function getindex(gamma::Christoffel, a::Int, b::Int, c::Int) $/;"	f
+getindex (ricci::Ricci, …)	src/spectral/Spaces/MetricSpaces.jl	/^function getindex(ricci::Ricci, a::Int, b::Int) $/;"	f
+integral (S::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function integral(S::Type{T})::IntegrationOperator{S} where {T<:ProductSpace{S1, S2}} where {S1, S2}$/;"	f
+integral (S::Type, …)	src/spectral/Spaces/SingleSpaces.jl	/^function integral(S::Type{T})::IntegrationOperator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}$/;"	f
+integral (space::Type, …)	src/spectral/basis/SpecBasis.jl	/^function integral(space::Type{S}, i::Int)::Float64 where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+inv (g::Metric, …)	src/geometry/MetricFunctions.jl	/^function inv(g::Metric{_dd, 4})::Metric{_uu, 4}   $/;"	f
+inversemetrictransform (guu::T, …)	src/geometry/CoordinateTransform.jl	/^function inversemetrictransform(guu::T, guv::T, gvv::T, 𝒖::T, 𝒗::T) where {T<:Field{ProductSpace{S1, S2}}}  where {S1, S2}$/;"	f
+iterate (tol, …)	test/NonLinSolverTest.jl	/^function iterate(tol, maxiter::Int)$/;"	f
+iterateNewtonKantorovich (F::Function, …)	test/NonLinSolverTest.jl	/^function iterateNewtonKantorovich(F::Function, Fu::Function, tol::Float64, maxiter::Int)$/;"	f
+levels (nest::Dict, …)	src/visualization/PyPlot.jl	/^function levels(nest::Dict{Array{Int64,1}, Union{Any, Field, Dict}}; globallength=20)$/;"	f
+linearE1 (f::Field, …)	src/einstein/Equations.jl	/^function linearE1(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+linearE2 (f::Field, …)	src/einstein/Equations.jl	/^function linearE2(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+linearH1 (f::Field, …)	src/einstein/Equations.jl	/^function linearH1(f::Field{S}, r::Field{S}, ϕ::Field{S})::ProductSpaceOperator{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+linearH2 (f::Field, …)	src/einstein/Equations.jl	/^function linearH2(f::Field{S}, r::Field{S}, ϕ::Field{S})::ProductSpaceOperator{S} where {S<:Cardinal{Tag}} where {Tag}$/;"	f
+mapmetricindex (i::Int, …)	src/spectral/Spaces/MetricSpaces.jl	/^function mapmetricindex(i::Int, j::Int, D::Int)$/;"	f
+metricdet (g::Metric, …)	src/geometry/MetricFunctions.jl	/^function metricdet(g::Metric{_dd, 4})::Field$/;"	f
+prefactor (i, …)	src/spectral/basis/BasisTransformation.jl	/^function prefactor(i, N)$/;"	f
+prefactor (i, …)	src/spectral/basis/BasisTransformation.jl	/^function prefactor(i, j, N, M)$/;"	f
+prefactor (i, …)	src/spectral/basis/BasisTransformationMMT.jl	/^function prefactor(i, N)$/;"	f
+println ("u, …)	test/NonLinSolverTest.jl	/^println("u(0) = ", unew.value[Int(order(S)\/2)+1])$/;"	f
+prune! (dictionary::Dict, …)	src/amr/AMR.jl	/^function prune!(dictionary::Dict, condition::Function)$/;"	f
+refine (space::Type, …)	src/amr/AMR.jl	/^function refine(space::Type{S}) where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+refine (u::Field, …)	src/amr/AMR.jl	/^function refine(u::Field{S}) where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}$/;"	f
+refine (u::Field, …)	src/amr/AMR.jl	/^function refine(u::Field{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, $/;"	f
+refine (u::Type, …)	src/amr/AMR.jl	/^function refine(u::Type{S}) where {S<:ProductSpace{GaussLobatto{TagV, NV, maxV, minV}, $/;"	f
+setindex! (gamma::Christoffel, …)	src/spectral/Spaces/MetricSpaces.jl	/^function setindex!(gamma::Christoffel, u::Field, a::Int, b::Int, c::Int) $/;"	f
+setindex! (ricci::Ricci, …)	src/spectral/Spaces/MetricSpaces.jl	/^function setindex!(ricci::Ricci, u::Field, a::Int, b::Int) $/;"	f
+shape (PS::Type, …)	src/spectral/Spaces/ProductSpaces.jl	/^function shape(PS::Type{ProductSpace{S1, S2}}, u::Array{T,1})::Array{eltype(u),2} where {S1, S2, T}$/;"	f
+solve (A::Operator, …)	src/spectral/Spaces/SingleSpaces.jl	/^function solve(A::Operator{S}, u::Field{S})::Field{S} where {S}$/;"	f
+solve (A::ProductSpaceOperator, …)	src/spectral/Spaces/ProductSpaces.jl	/^function solve(A::ProductSpaceOperator{ProductSpace{S1, S2}}, u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}$/;"	f
+vec (A::ProductSpaceOperator, …)	src/spectral/Spaces/ProductSpaces.jl	/^function vec(A::ProductSpaceOperator{ProductSpace{S1, S2}})::Array{eltype(A.value),2} where {S1, S2}$/;"	f
+vec (u::Field, …)	src/spectral/Spaces/ProductSpaces.jl	/^function vec(u::Field{ProductSpace{S1, S2}})::Array{eltype(u.value),1} where {S1, S2}$/;"	f
+⦼ (A::Operator, …)	src/spectral/Spaces/ProductSpaces.jl	/^function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}$/;"	f

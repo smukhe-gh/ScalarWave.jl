@@ -125,8 +125,8 @@ end
 function PyPlot. plot(u::Type{S}) where {S<:ProductSpace{GaussLobatto{Tag1, N1, max1, min1},
                                                          GaussLobatto{Tag2, N2, max2, min2}}} where {Tag1, N1, max1, min1,
                                                                                                      Tag2, N2, max2, min2}
-  vlines(x=[min2, max2], ymin=min1, ymax=max1)
-  hlines(y=[min1, max1], xmin=min2, xmax=max2)
+  hlines(y=[min2, max2], xmin=min1, xmax=max1)
+  vlines(x=[min1, max1], ymin=min2, ymax=max2)
   return 0
 end
 

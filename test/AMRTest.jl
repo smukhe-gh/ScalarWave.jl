@@ -41,7 +41,8 @@ function Field(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}}, map::Function
     return dictionary
 end
     
-# nest2DField = Field(nest2D, (x,y)->(x+y))
+nest2DField = Field(nest2D, (x,y)->(x+y))
+levels(nest2DField, globallength=20)
 # contourf(nest2DField, 100, globalmax=maximum(nest2DField), globalmin=minimum(nest2DField), globallevels=levels(nest2DField, globallength=20))
 # show()
     

@@ -13,6 +13,11 @@ nest[[2]][[2]] = refine(nest[[2]][[2]])
 
 nest2D = refine(vv)
 nest2D[[2,2]] = refine(nest2D[[2,2]])
+
+nest2Dspace = refine(ProductSpace{GaussLobatto{V, 8, 3, -3},
+                                  GaussLobatto{U, 6, 5, -5}})
+nest2Dspace[[2,2]] = refine(nest2Dspace[[2,2]])
+
 @testset "PyPlot" begin
     @test plot(uu) == 0
     @test plot(uu, 101) == 0
@@ -26,3 +31,6 @@ nest2D[[2,2]] = refine(nest2D[[2,2]])
     close()
 end
 
+contourf(nest2D, 100, globalmax=maximum(nest2D), globalmin=minimum(nest2D), globallevels=levels(nest2D, globallength=20))
+plot(nest2Dspace)
+show()
