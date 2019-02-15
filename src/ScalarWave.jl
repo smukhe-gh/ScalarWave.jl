@@ -19,9 +19,9 @@ export Field, Boundary, Operator, ProductSpaceOperator, IntegrationOperator,
 export order, dim, boundary, solve, ⦼, shape, delta 
 export collocation, derivative, integral,
        derivativetransform,
-       basistransform, prefactor 
+       basistransform, prefactor
 
-export cheb, chebx, chebd, chebw
+export cheb, chebx, chebd, chebw, eye
 export drawpatch, setcolormap, drawtensorfield
 export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, driver, conductor 

@@ -4,82 +4,50 @@
 # Test a nonlinear solver using Newton iterations
 #--------------------------------------------------------------------
 
-# Solve a simple non-linear BVP problem for confidence
+using LinearAlgebra
 # u_xx = Exp[u]; u(+/-1) =  0
 
-# set up space
 struct X end
-S = GaussLobatto(X, 16)
+S = GaussLobatto(X, 36)
 x = Field(S, x->x)
 D = derivative(S)
-I = eye(S)
 B = boundary(S)
+SI = eye(S)
 
-# start with an initial guess
-uold = Field(S, x->0) 
+abstol  = 1e-10
+maxiter = 40
 
-tol = 1e-14
-maxiter = 300
+function LinearAlgebra. norm(u::Field{S})
+    return norm(u.value)
+end
 
-# now iterate [setting up the iteration can be non-trivial]
-function iterate(tol, maxiter::Int)
-    for iteration in range(1, length=maxiter)
-        unew  = solve(D*D + B, exp(uold)) 
-        error = maximum(abs(unew - uold)) 
-        @show iteration, error
-        if error < tol 
-            return unew
-        else
-            for index in eachindex(uold.value)
-                uold.value[index] = unew.value[index]
-            end
-        end
+function nonlinres(u)
+    return D*D*u - exp(u)
+end
+
+function linOP(u)
+    return D*D - exp(u)*SI
+end
+
+function linRHS(u)
+    return (D*D)*u - exp(u)
+end
+
+u0 = Field(S, x->0) 
+b  = Field(S, x->0) 
+
+function iterate(maxiter::Int, abstol::Float64, uguess::Field{S}) where {S}
+    u = uguess
+    println("Starting non-linear solve")
+    for iteration in 1:maxiter
+        Δu = solve(linOP(u) + B, (-1)*linRHS(u))
+        u  = u + Δu
+        error = norm(nonlinres(u))
+        println("iter = $iteration, error = $error") 
+        (error < abstol) ? (return (u, error)) : 0
     end
+    return (u, error)
 end
 
-unew = iterate(tol, maxiter)
-println("u(0) = ", unew.value[Int(order(S)/2)+1])
-println("===============================================================")
-println("===============================================================")
-println("===============================================================")
-println("===============================================================")
-
-# The above problem doesn't give much intuition as to where the iterations
-# are coming from and why they would work. 
-# Below we set up an extensible model for solving general non-linear
-# partial differential equation: L(u) = F(u) where L is the principle part. 
-# We define two operators F and Fu
-# which generates a linear iteration for delta, i.e. u(i+1) = u(i) + delta
-
-function F(u::Field)
-    return exp(u)
-end
-
-function Fu(u::Field)
-    return exp(u)
-end
-
-# start with an initial guess
-uold = Field(S, x->0) 
-
-function iterateNewtonKantorovich(F::Function, Fu::Function, tol::Float64, maxiter::Int)
-    for iteration in range(1, length=maxiter)
-        if iteration == maxiter
-            @warn "Iterations did not converge."
-            return 0
-        end
-        delta = solve(D*D - Fu(uold)*I,  D*D*uold - F(uold)) 
-        unew  = uold + delta 
-        error = maximum(abs(unew - uold)) 
-        @show iteration, error
-        if error < tol 
-            return unew
-        else
-            for index in eachindex(uold.value)
-                uold.value[index] = unew.value[index]
-            end
-        end
-    end
-end
-
-unew = iterateNewtonKantorovich(F, Fu, tol, maxiter)
+(uf, err) = iterate(maxiter, abstol, u0)
+@test err < abstol

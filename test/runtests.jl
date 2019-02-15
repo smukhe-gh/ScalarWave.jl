@@ -11,11 +11,11 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["NonLinSolver"]
 libraries = ["Evaluate"]
 libraries = ["BasisTransformation"]
 libraries = ["AMR"]
 libraries = ["PyPlot"]
+libraries = ["NonLinSolver"]
 
 for file in libraries
     @info "Testing $file"
