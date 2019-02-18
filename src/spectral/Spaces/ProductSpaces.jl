@@ -139,6 +139,11 @@ function derivative(PS::Type{ProductSpace{S1, S2}}) where {S1, S2}
     return (derivative(S1) ⦼ eye(S2), eye(S1) ⦼ derivative(S2))
 end
 
+# create the identity operator
+function eye(PS::Type{ProductSpace{S1, S2}}) where {S1, S2}
+    return eye(S1) ⦼ eye(S2)
+end
+
 # Null and Spatial boundary operators
 function boundary(::Type{Spacelike}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}
     B = zeros(spacetype(PS), length(S2), length(S1))

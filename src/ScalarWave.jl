@@ -27,6 +27,9 @@ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, driver, conductor 
 export plot, pcolormesh, contourf, contour, levels
 
+export H, E, linearH, linearE, rhsH, rhsE, setBCs
+export linearOP, linearRHS, norm, Newton
+
 include("datatypes/AbstractTypes.jl")
 include("datatypes/Datatypes.jl")
 include("dataTypes/MetricDataTypes.jl")
@@ -46,5 +49,8 @@ include("geometry/CoordinateTransform.jl")
 include("spacetimes/schwarzschild/DoubleNullCoordinates.jl")
 include("visualization/PyPlot.jl")
 include("utilities/MathFunctions.jl")
+
+include("einstein/FieldEquations.jl")
+include("einstein/NonLinSolver.jl")
 
 end 
