@@ -107,8 +107,8 @@ function rhsE(f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol)::Field{S} wher
     return -E(f, r, ϕ, eq)
 end
 
-function boundaryOP(f::Field{S}, r::Field{S}, ϕ::Field{S}, var::Symbol) where {S}
-    B = boundary(S)
+function boundary(f::Field{S}, r::Field{S}, ϕ::Field{S}, var::Symbol) where {S}
+    B = boundary(Null, S)
     if var == :Δf || var == :Δr || var == :Δϕ
         return B
     else
@@ -116,8 +116,10 @@ function boundaryOP(f::Field{S}, r::Field{S}, ϕ::Field{S}, var::Symbol) where {
     end
 end
 
-function setBCs!(f::Field{S},   r::Field{S},   ϕ::Field{S},
-                 fBC::Field{S}, rBC::Field{S}, ϕBC::Field{S})::Field{S} where {S}
+function setBCs(f::Field{S},   r::Field{S},   ϕ::Field{S},
+                fBC::Field{S}, rBC::Field{S}, ϕBC::Field{S}) where {S}
+    B = boundary(Null, S)
+    I = eye(S) 
     return ((I-B)*f + B*fBC,
             (I-B)*r + B*rBC,
             (I-B)*ϕ + B*ϕBC)
