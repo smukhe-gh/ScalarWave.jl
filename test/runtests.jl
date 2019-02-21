@@ -13,8 +13,8 @@ libraries = ["BasisTransformation",
 
 libraries = ["Evaluate"]
 libraries = ["BasisTransformation"]
-libraries = ["AMR"]
 libraries = ["PyPlot"]
+libraries = ["AMR"]
 libraries = ["NonLinSolver"]
 
 for file in libraries

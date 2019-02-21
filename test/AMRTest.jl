@@ -30,8 +30,20 @@ function condition2D(S::Type{ProductSpace{S1, S2}})::Bool where {S1, S2}
     prod(maximum(S)) > 1 ? (return 1) : (return 0) 
 end
 
-nest2D = conductor(SUV, condition2D, 3)
+function condition2Dexcise(S::Type{ProductSpace{S1, S2}})::Bool where {S1, S2}
+    UV = Field(ProductSpace{S1, S2}, (x,y)->(x-y))
+    for value in vec(UV)
+        if abs(value) < 0.2
+            return 1
+        end
+    end
+    return 0
+end
+
+# nest2D = conductor(SUV, condition2Dexcise, 5)
 # plot(nest2D)
+# using PyPlot
+# axis("equal")
 # show()
 
 function Field(dictionary::Dict{Array{Int64,1}, Union{Any, Dict}}, map::Function)
