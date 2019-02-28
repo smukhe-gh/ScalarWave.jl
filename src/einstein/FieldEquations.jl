@@ -1,17 +1,22 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 01-2019
-# See Gundlach and Pullin 1997 for the 
-# relevant equations
+# See Waugh & Lake 1986 Appendix A for the relevant equations
+# TODO: Verify stress-energy tensor terms
+# F(x + ΔX) = F(x) + J Δx 
 #--------------------------------------------------------------------
 
-function H(f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol)::Field{S} where {S}
+function F(f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol)::Field{S} where {S}
     DV, DU = derivative(S)
-    if eq == :H1
-        return (DV*DU)*r + (1/r)*(DU*r)*(DV*r) - (1/r)*f
-    elseif eq == :H2
-        return DV*DU*log(f) + (2/r)*DV*DU*r + 2*(DU*ϕ)*(DV*ϕ)
-    elseif eq == :H3
+    if eq == :θθ
+        return (1/f^2)*(r^2)*((1/f)*(DU*f)*(DV*f) - (DU*DV)*f) - (2/f)*r*(DU*DV)*r 
+    elseif eq == :UV
+        return (1/r^2)*(f + 2*((DU*r)*(DV*r) + r*(DU*DV)*r)) - (DU*ϕ)*(DV*ϕ)
+    elseif eq == :UU
+        return (2/r)*((1/f)*(DU*r)*(DU*f) - (DU*DU)*r) - (DU*ϕ)^2
+    elseif eq == :VV
+        return (2/r)*((1/f)*(DV*r)*(DV*f) - (DV*DV)*r) - (DV*ϕ)^2
+    elseif eq == :TT
         return DU*DV*ϕ + ((DU*r)/r)*ϕ + ((DV*r)/r)*ϕ
     else
         @warn "Invalid equation."
@@ -19,108 +24,82 @@ function H(f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol)::Field{S} where {
     end
 end
 
-function E(f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol)::Field{S} where {S} 
+function J( f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol, 
+           Δf::Union{Field{S}, Symbol, Int}, Δr::Union{Field{S}, Symbol, Int}, 
+           Δϕ::Union{Field{S}, Symbol, Int})::Union{ProductSpaceOperator{S}, Field{S}} where {S}
     DV, DU = derivative(S)
-    if eq==:E1 
-        return DU*DU*r - ((DU*f)/f)*DU*r + (DU*ϕ)^2
-    elseif eq==:E2
-        return DV*DV*r - ((DV*f)/f)*DV*r + (DV*ϕ)^2
-    else
-        @warn "Invalid variable"
-        return zero(S)
-    end
-end
-
-function linearH(f::Field{S}, r::Field{S}, ϕ::Field{S}, 
-                 eq::Symbol, var::Symbol)::ProductSpaceOperator{S} where {S}
-    DV, DU = derivative(S)
-    I      = eye(S)
-    if eq == :H1
-        if var == :Δf
-            return -(1/r)*I
-        elseif var == :Δr   
-            return DU*DV + (1/r)*(DV*r)*DU + (1/r)*(DU*r)*DV + (1/r^2)*f*I - (1/r^2)*(DU*r)*(DV*r)*I
-        elseif var == :Δϕ
-            return (I - I) 
-        else
-            @warn "Invalid linearized variable"
-        end
-    elseif eq == :H2
-        if var == :Δf
-            return (1/f)*DU*DV - (1/f^2)*(DV*f)*DU - (1/f^2)*(DU*f)*DV + (2/f^3)*(DU*f)*(DV*f)*I - (1/f^2)*(DU*DV*f)*I
-        elseif var == :Δr   
-            return (2/r)*DU*DV - (1/r^2)*(DU*DV*r)*I
-        elseif var == :Δϕ
-            return 2*(DU*ϕ)*DV + 2*(DV*ϕ)*DU 
-        else
-            @warn "Invalid linearized variable"
-        end
-    elseif eq == :H3
-        if var == :Δf
-            return (I - I)
-        elseif var == :Δr
-            return (1/r)*(DV*ϕ)*DU + (1/r)*(DU*ϕ)*DV - (1/r^2)*(DV*r)*(DU*ϕ)*I - (1/r^2)*(DU*r)*(DV*ϕ)*I
-        elseif var == :Δϕ
-            return DU*DV + (1/r)*(DV*r)*DU + (1/r)*(DU*r)*DV
-        else
-            @warn "Invalid linearized variable"
-        end
+    if eq == :θθ
+        return ( -(1/2)*(r^2/f^2)*(DU*DV*Δf) - (r/f)*(DU*DV*Δr) + (1/2)*(r^2/f^3)*(DV*f)*(DU*Δf) + (1/2)*(r^2/f^3)*(DU*f)*(DV*Δf)
+				 -(3/2)*(r^2/f^4)*(DU*f)*(DV*f)*Δf + (r^2/f^3)*(DU*DV*f)*Δf + (r/f^2)*(DU*DV*r)*Δf + (r/f^3)*(DU*f)*(DV*f)*Δr
+				 -(r/f^2)*(DU*DV*f)*Δr - (1/f)*(DU*DV*r)*Δr )
+    elseif eq == :UV
+        return (  (2/r)*DU*DV*Δr + (2/r^2)*(DV*r)*(DU*Δr) + (2/r^2)*(DU*r)*(DV*Δr) + (2/r^2)*Δf 
+				 - 4*(f/r^3)*Δr - (4/r^3)*(DU*r)*(DV*r)*Δr - (2/r^2)*(DU*DV*r)*Δr )   
+    elseif eq == :UU
+        return ( -(2/r)*DU*DU*Δr + (2/f)*(1/r)*(DU*r)*(DU*Δf) + (2/f)*(1/r)*(DU*f)*(DU*Δr) 
+				 -(2/f^2)*(1/r)*(DU*f)*(DU*r)*Δf - (2/f)*(1/r^2)*(DU*f)*(DU*r)*Δr
+			     +(2/r^2)*(DU*DU*r)*Δr)
+    elseif eq == :VV
+        return ( -(2/r)*DV*DV*Δr + (2/f)*(1/r)*(DV*r)*(DV*Δf) + (2/f)*(1/r)*(DV*f)*(DV*Δr) 
+				 -(2/f^2)*(1/r)*(DV*f)*(DV*r)*Δf - (2/f)*(1/r^2)*(DV*f)*(DV*r)*Δr
+			     +(2/r^2)*(DV*DV*r)*Δr )
+    elseif eq == :TT
+        @error "Stress-energy terms haven't been included yet."
     else
         @warn "Invalid equation"
+        return DU*DV - DV*DU
     end
 end
 
-function linearE(f::Field{S}, r::Field{S}, ϕ::Field{S}, 
-                 eq::Symbol, var::Symbol)::ProductSpaceOperator{S} where {S}
-    DV, DU = derivative(S)
-    EI     = eye(S)
-    if  eq == :E1
-        if var == :Δf
-            return -(1/f)*(DU*r)*DU + (1/f^2)*(DU*f)(DU*r)*I
-        elseif var == :Δr   
-            return DU*DU - (1/f)*(DU*f)*DU
-        elseif var == :Δϕ
-            return 2*(DU*ϕ)*DU
-        else
-            @warn "Invalid linearized variable"
-        end
-    elseif eq == :E2
-        if var == :Δf
-            return -(1/f)*(DV*r)*DV + (1/f^2)*(DV*f)(DV*r)*I
-        elseif var == :Δr   
-            return DV*DV - (1/f)*(DV*f)*DV
-        elseif var == :Δϕ
-            return 2*(DV*ϕ)*DV
-        else
-            @warn "Invalid linearized variable"
-        end
-    else
-        @warn "Invalid equation"
-    end
+function B( f::Field{S}, r::Field{S}, ϕ::Field{S}, sym::Symbol)::ProductSpaceOperator{S} where {S} 
+    bnd = boundary(S)
+    (S == :Δ0) ? (return bnd - bnd) : (return bnd)
 end
 
-function rhsH(f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol)::Field{S} where {S}
-    return -H(f, r, ϕ, eq)
+#--------------------------------------------------------------------
+# Define multiplication rules to extract operators from J
+#--------------------------------------------------------------------
+#
+function Base. *(A::ProductSpaceOperator{S}, u::Symbol)::ProductSpaceOperator{S} where {S}
+    return A
 end
 
-function rhsE(f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol)::Field{S} where {S}
-    return -E(f, r, ϕ, eq)
+function Base. *(v::Field{S}, u::Symbol)::ProductSpaceOperator{S} where {S}
+    return v*eye(S)
 end
 
-function boundary(f::Field{S}, r::Field{S}, ϕ::Field{S}, var::Symbol) where {S}
-    B = boundary(Null, S)
-    if var == :Δf || var == :Δr || var == :Δϕ
-        return B
-    else
-        return B - B
-    end
+function Base. *(A::ProductSpaceOperator{S}, u::Int)::ProductSpaceOperator{S} where {S}
+    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
+    return (A-A)                 
 end
 
-function setBCs(f::Field{S},   r::Field{S},   ϕ::Field{S},
-                fBC::Field{S}, rBC::Field{S}, ϕBC::Field{S}) where {S}
-    B = boundary(Null, S)
-    I = eye(S) 
-    return ((I-B)*f + B*fBC,
-            (I-B)*r + B*rBC,
-            (I-B)*ϕ + B*ϕBC)
+function Base. *(v::Field{S}, u::Int)::ProductSpaceOperator{S} where {S}
+    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
+    return (eye(S) - eye(S))                
 end
+
+#--------------------------------------------------------------------
+# Construct interfaces to the non-linear solver
+#--------------------------------------------------------------------
+
+function Fvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,1}
+    return [vec(F(f, r, ϕ, :UV)); 
+            vec(F(f, r, ϕ, :θθ))]
+end
+
+function Jvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2}
+    return [vec(J(f, r, ϕ, :UV, :Δf, 0, 0)) vec(J(f, r, ϕ, :UV, 0, :Δr, 0)); 
+            vec(J(f, r, ϕ, :θθ, :Δf, 0, 0)) vec(J(f, r, ϕ, :θθ, 0, :Δr, 0))] 
+end
+
+function Bvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2}
+    return [vec(B(:Δf)) vec(B(:Δ0)); 
+            vec(B(:Δ0)) vec(B(:Δr))] 
+end
+
+function Svec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2}
+    return [vec(f); 
+            vec(r)] 
+end
+
+
