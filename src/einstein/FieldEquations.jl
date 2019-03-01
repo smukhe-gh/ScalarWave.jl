@@ -51,8 +51,8 @@ function J( f::Field{S}, r::Field{S}, ϕ::Field{S}, eq::Symbol,
     end
 end
 
-function B( f::Field{S}, r::Field{S}, ϕ::Field{S}, sym::Symbol)::ProductSpaceOperator{S} where {S} 
-    bnd = boundary(S)
+function B(space::Type{S}, sym::Symbol)::ProductSpaceOperator{S} where {S} 
+    bnd = boundary(Null, space)
     (S == :Δ0) ? (return bnd - bnd) : (return bnd)
 end
 
@@ -61,24 +61,32 @@ end
 # Construct interfaces to the non-linear solver
 #--------------------------------------------------------------------
 
-function Fvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,1} where {S}
+function Fvec(space::Type{S}, Svec::Array{Float64,1})::Array{Float64,1} where {S}
+    (f, r) = Sshape(space, Svec)
+    ϕ      = f - f
     return [vec(F(f, r, ϕ, :UV)); 
             vec(F(f, r, ϕ, :θθ))]
 end
 
-function Jvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2} where {S}
+function Jvec(space::Type{S}, Svec::Array{Float64,1})::Array{Float64,2} where {S}
+    (f, r) = Sshape(space, Svec)
+    ϕ      = f - f
     return [vec(J(f, r, ϕ, :UV, :Δf, 0, 0)) vec(J(f, r, ϕ, :UV, 0, :Δr, 0)); 
             vec(J(f, r, ϕ, :θθ, :Δf, 0, 0)) vec(J(f, r, ϕ, :θθ, 0, :Δr, 0))] 
 end
 
-function Bvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2} where {S}
-    return [vec(B(:Δf)) vec(B(:Δ0)); 
-            vec(B(:Δ0)) vec(B(:Δr))] 
+function Bvec(space::Type{S}, Svec::Array{Float64,1})::Array{Float64,2} where {S}
+    return [vec(B(space, :Δf)) vec(B(space, :Δ0)); 
+            vec(B(space, :Δ0)) vec(B(space, :Δr))] 
 end
 
-function Svec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2} where {S}
-    return [vec(f); 
-            vec(r)] 
+function Sshape(space::Type{S}, Svec::Array{Float64,1}) where {S}
+    Sshp = reshape(Svec, (prod(size(space)), 2))
+    return (Field(space, shape(space, Sshp[:, 1])), 
+            Field(space, shape(space, Sshp[:, 2]))) 
 end
 
-
+function Svec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,1} where {S}
+    return [vec(f);
+            vec(r)]
+end

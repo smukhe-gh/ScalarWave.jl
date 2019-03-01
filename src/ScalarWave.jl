@@ -27,7 +27,7 @@ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, driver, conductor 
 export plot, pcolormesh, contourf, contour, levels
 
-export F, J
+export F, J, Fvec, Jvec, Bvec, Svec, Sshape
 export norm, Newton
 
 include("datatypes/AbstractTypes.jl")

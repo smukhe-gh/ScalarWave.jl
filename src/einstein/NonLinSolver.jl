@@ -6,7 +6,7 @@
 
 function Newton(space::Type{S}, Xvec::Array{Float64,1},
                 Fvec::Function, Jvec::Function, Bvec::Function, 
-                maxiterations::Int, abstol::Float64)::Array{Float64,1} where {S<:Space{Tag}} where {Tag}
+                maxiterations::Int, abstol::Float64)::Array{Float64,1} where {S}
     for iteration in 1:maxiterations
         error = norm(Fvec(space, Xvec))
         @show iteration, error

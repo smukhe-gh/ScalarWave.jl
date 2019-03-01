@@ -170,7 +170,6 @@ function shape(S::Type{T}, u::Array{Float64,1})::Field{S} where {T<:GaussLobatto
 end
 
 # Define multiplication rules to extract operators from J
-
 function Base. *(A::Operator{S}, u::Symbol)::Operator{S} where {S}
     return A
 end
