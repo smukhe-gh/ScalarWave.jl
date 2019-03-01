@@ -3,6 +3,8 @@
 # u_xx = Exp[u]; u(+/-1) =  0
 #--------------------------------------------------------------------
 
+using LinearAlgebra
+
 struct X end
 S = GaussLobatto(X, 36)
 x = Field(S, x->x)
@@ -32,17 +34,18 @@ end
 u0 = Field(S, x->0) 
 b  = Field(S, x->0) 
 
-function iterate(maxiter::Int, abstol::Float64, uguess::Field{S}) where {S} u = uguess
+function iterate(maxiter::Int, abstol::Float64, uguess::Field{S}) where {S} 
+    u = uguess
     println("Starting non-linear solve")
     for iteration in 1:maxiter
+        error = norm(nonlinres(u))
         Δu = solve(linOP(u) + B, (-1)*linRHS(u))
         u  = u + Δu
-        error = norm(nonlinres(u))
         println("iter = $iteration, error = $error") 
         (error < abstol) ? (return (u, error)) : 0
     end
     return (u, error)
 end
 
-# (uf, err) = iterate(maxiter, abstol, u0)
-# @test err < abstol
+(uf, err) = iterate(maxiter, abstol, u0)
+@test err < abstol

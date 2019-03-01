@@ -155,3 +155,36 @@ end
 function +(u::Field{S}, b::Boundary{S})::Field{S} where {S}
     return Field(S, u.value + b.value)
 end
+
+# shape and reshape operators
+function Base. vec(u::Field{S})::Array{eltype(u.value),1} where {S<:GaussLobatto{Tag,N}} where {Tag, N}
+    return u.value
+end
+
+function Base. vec(A::Operator{S})::Array{eltype(A.value),2} where {S<:GaussLobatto{Tag,N}} where {Tag, N}
+    return A.value
+end
+  
+function shape(S::Type{T}, u::Array{Float64,1})::Field{S} where {T<:GaussLobatto{Tag,N}} where {Tag,N}
+    return Field(S, u)
+end
+
+# Define multiplication rules to extract operators from J
+
+function Base. *(A::Operator{S}, u::Symbol)::Operator{S} where {S}
+    return A
+end
+
+function Base. *(v::Field{S}, u::Symbol)::Operator{S} where {S}
+    return v*eye(S)
+end
+
+function Base. *(A::Operator{S}, u::Int)::Operator{S} where {S}
+    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
+    return (A-A)                 
+end
+
+function Base. *(v::Field{S}, u::Int)::Operator{S} where {S}
+    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
+    return (eye(S) - eye(S))                
+end

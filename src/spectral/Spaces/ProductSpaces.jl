@@ -207,3 +207,22 @@ end
 function *(W::IntegrationOperator{S}, u::Field{S})::Real where {S<:ProductSpace{S1, S2}} where {S1, S2}
     return sum(W.value*vec(u.value)) 
 end
+
+# Define multiplication rules to extract operators from J
+function Base. *(A::ProductSpaceOperator{S}, u::Symbol)::ProductSpaceOperator{S} where {S}
+    return A
+end
+
+function Base. *(v::Field{S}, u::Symbol)::ProductSpaceOperator{S} where {S<:ProductSpace{S1, S2}} where {S1, S2}
+    return v*eye(S)
+end
+
+function Base. *(A::ProductSpaceOperator{S}, u::Int)::ProductSpaceOperator{S} where {S}
+    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
+    return (A-A)                 
+end
+
+function Base. *(v::Field{S}, u::Int)::ProductSpaceOperator{S} where {S<:ProductSpace{S1, S2}} where {S1, S2}
+    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
+    return (eye(S) - eye(S))                
+end

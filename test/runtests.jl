@@ -15,7 +15,9 @@ libraries = ["Evaluate"]
 libraries = ["BasisTransformation"]
 libraries = ["PyPlot"]
 libraries = ["AMR"]
+libraries = ["NonLin1D"]
 libraries = ["NonLinSolver"]
+libraries = ["FieldEquations"]
 
 for file in libraries
     @info "Testing $file"

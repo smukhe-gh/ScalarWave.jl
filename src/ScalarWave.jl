@@ -27,7 +27,8 @@ export find_t_of_UV, find_r_of_UV, find_U_of_tr, find_V_of_tr
 export refine, driver, conductor 
 export plot, pcolormesh, contourf, contour, levels
 
-export F, J, norm
+export F, J
+export norm, Newton
 
 include("datatypes/AbstractTypes.jl")
 include("datatypes/Datatypes.jl")
@@ -51,5 +52,6 @@ include("utilities/MathFunctions.jl")
 
 include("einstein/FieldEquations.jl")
 include("einstein/NonLinSolver.jl")
+include("utilities/Utilities.jl")
 
 end 

@@ -56,48 +56,27 @@ function B( f::Field{S}, r::Field{S}, ϕ::Field{S}, sym::Symbol)::ProductSpaceOp
     (S == :Δ0) ? (return bnd - bnd) : (return bnd)
 end
 
-#--------------------------------------------------------------------
-# Define multiplication rules to extract operators from J
-#--------------------------------------------------------------------
-#
-function Base. *(A::ProductSpaceOperator{S}, u::Symbol)::ProductSpaceOperator{S} where {S}
-    return A
-end
-
-function Base. *(v::Field{S}, u::Symbol)::ProductSpaceOperator{S} where {S}
-    return v*eye(S)
-end
-
-function Base. *(A::ProductSpaceOperator{S}, u::Int)::ProductSpaceOperator{S} where {S}
-    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
-    return (A-A)                 
-end
-
-function Base. *(v::Field{S}, u::Int)::ProductSpaceOperator{S} where {S}
-    @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
-    return (eye(S) - eye(S))                
-end
 
 #--------------------------------------------------------------------
 # Construct interfaces to the non-linear solver
 #--------------------------------------------------------------------
 
-function Fvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,1}
+function Fvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,1} where {S}
     return [vec(F(f, r, ϕ, :UV)); 
             vec(F(f, r, ϕ, :θθ))]
 end
 
-function Jvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2}
+function Jvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2} where {S}
     return [vec(J(f, r, ϕ, :UV, :Δf, 0, 0)) vec(J(f, r, ϕ, :UV, 0, :Δr, 0)); 
             vec(J(f, r, ϕ, :θθ, :Δf, 0, 0)) vec(J(f, r, ϕ, :θθ, 0, :Δr, 0))] 
 end
 
-function Bvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2}
+function Bvec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2} where {S}
     return [vec(B(:Δf)) vec(B(:Δ0)); 
             vec(B(:Δ0)) vec(B(:Δr))] 
 end
 
-function Svec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2}
+function Svec(f::Field{S}, r::Field{S}, ϕ::Field{S})::Array{Float64,2} where {S}
     return [vec(f); 
             vec(r)] 
 end

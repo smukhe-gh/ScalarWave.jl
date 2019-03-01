@@ -3,7 +3,7 @@
 # Soham 01-2018
 #--------------------------------------------------------------------
 
-function delta{T<:Int}(i::T, j::T)::Float64
+function delta(i::T, j::T)::Float64 where {T}
 	return i==j ? 1 : 0
 end
 
