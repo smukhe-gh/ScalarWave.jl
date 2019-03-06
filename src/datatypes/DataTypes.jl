@@ -46,7 +46,9 @@ struct IntegrationOperator{S, D, T}
     value::Array{T, D}
 end
 
-struct ProductSpace{S1<:Space, S2<:Space} end
+# XXX: Check if this works!
+# struct ProductSpace{S1<:Space, S2<:Space} end
+struct ProductSpace{S1<:Space, S2<:Space, S3<:Space} end
 
 struct ProductSpaceOperator{S, D, T}
     space::Type{S}

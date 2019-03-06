@@ -31,6 +31,6 @@ nest2Dspace[[2,2]] = refine(nest2Dspace[[2,2]])
     close()
 end
 
-contourf(nest2D, 100, globalmax=maximum(nest2D), globalmin=minimum(nest2D), globallevels=levels(nest2D, globallength=20))
+contourf(nest2D, 100, globalmax=maximum(nest2D), globalmin=minimum(nest2D))
 plot(nest2Dspace)
 show()

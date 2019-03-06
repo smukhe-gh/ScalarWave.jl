@@ -12,19 +12,9 @@ dim(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = dim(S1) + dim(S2)
 range(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = CartesianIndices((length(S2), length(S1)))
 size(PS::Type{ProductSpace{S1, S2}}) where {S1, S2} = (length(S2), length(S1))
 
-# dimensions and shape [3D space]
-order(PS::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3} = (order(S3), order(S2), order(S1))
-dim(PS::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3} = dim(S1) + dim(S2) + dim(S3)
-range(PS::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3} = CartesianIndices((length(S3), length(S2), length(S1)))
-size(PS::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3} = (length(S3), length(S2), length(S1))
-
 # typeof
 spacetype(::Type{ProductSpace{S1, S2}}) where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N} = Float64
 spacetype(::Type{ProductSpace{S1, S2}}) where {S1, S2 <: Taylor{Tag,N}} where {Tag, N} = Rational{BigInt}
-
-# typeof [3D space]
-spacetype(::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: GaussLobatto{Tag,N}} where {Tag, N} = Float64
-spacetype(::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: Taylor{Tag,N}} where {Tag, N} = Rational{BigInt}
 
 # maximum and minimum
 maximum(::Type{ProductSpace{S1, S2}}) where {S1, S2 <: GaussLobatto{Tag,N}} where {Tag, N} = (maximum(S1), maximum(S2))
@@ -52,16 +42,6 @@ similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, si
 /(A::Field{ProductSpace{S1, S2}},
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}} where {Tag,N} = Field(ProductSpace{S1, S2}, A.value ./ B.value)
 
-# 3D space
-+(A::Field{ProductSpace{S1, S2, S3}},
-  B::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: Cardinal{Tag, N}} where {Tag,N} = Field(ProductSpace{S1, S2, S3}, A.value .+ B.value)
--(A::Field{ProductSpace{S1, S2, S3}},
-  B::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: Cardinal{Tag, N}} where {Tag,N} = Field(ProductSpace{S1, S2, S3}, A.value .- B.value)
-*(A::Field{ProductSpace{S1, S2, S3}},
-  B::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: Cardinal{Tag, N}} where {Tag,N} = Field(ProductSpace{S1, S2, S3}, A.value .* B.value)
-/(A::Field{ProductSpace{S1, S2, S3}},
-  B::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: Cardinal{Tag, N}} where {Tag,N} = Field(ProductSpace{S1, S2, S3}, A.value ./ B.value)
-
 # scalar / field
 +(a::T,
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a .+ B.value)
@@ -73,6 +53,7 @@ similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, si
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a ./ B.value)
 /(B::Field{ProductSpace{S1, S2}}, a::T) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, B.value ./ a)
 
+# TODO: Integrate this in scalar / field > Complex{Bool} / Field
 +(a::T,
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}, T<:Complex} where {Tag} = Field(ProductSpace{S1, S2}, a .+ B.value)
 -(a::T,
@@ -97,17 +78,6 @@ function *(A::ProductSpaceOperator{ProductSpace{S1,S2}},
     return ProductSpaceOperator(ProductSpace{S1, S2}, C)
 end
 
-# 3D case
-function *(A::ProductSpaceOperator{ProductSpace{S1,S2,S3}},
-           B::ProductSpaceOperator{ProductSpace{S1,S2,S3}})::ProductSpaceOperator{ProductSpace{S1, S2, S3}} where {S1, S2, S3}
-    nh = length(S2)
-    ni = length(S2)
-    nj = length(S1)
-    n = nh * ni * nj
-    C = reshape(reshape(A.value, n, n) * reshape(B.value, n, n), nh, ni, nj, nh, ni, nj)
-    return ProductSpaceOperator(ProductSpace{S1, S2, S3}, C)
-end
-
 # operator / field
 function *(A::ProductSpaceOperator{ProductSpace{S1,S2}},
            u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
@@ -119,17 +89,6 @@ function *(A::ProductSpaceOperator{ProductSpace{S1,S2}},
     return Field(ProductSpace{S1, S2}, v)
 end
 
-# 3D case
-function *(A::ProductSpaceOperator{ProductSpace{S1,S2,S3}},
-           u::Field{ProductSpace{S1, S2, S3}})::Field{ProductSpace{S1, S2, S3}} where {S1, S2, S3}
-    v = similar(u.value)
-    for index in CartesianIndices(size(v))
-        i, j, k = index.I
-        v[index] = sum(A.value[i, j, k, l, m, n]*u.value[l, m, n] for l in range(S3), m in range(S2), n in range(S1))
-    end
-    return Field(ProductSpace{S1, S2, S3}, v)
-end
-
 function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} where {PS}
     B = similar(A.value)
     for index in CartesianIndices(size(B))
@@ -139,25 +98,9 @@ function *(u::Field{PS}, A::ProductSpaceOperator{PS})::ProductSpaceOperator{PS} 
     return ProductSpaceOperator(PS, B)
 end
 
-# 3D case
-function *(u::Field{ProductSpace{S1, S2, S3}}, A::ProductSpaceOperator{ProductSpace{S1, S2, S3}})::ProductSpaceOperator{ProductSpace{S1, S2, S3}} where {S1, S2, S3}
-    B = similar(A.value)
-    for index in CartesianIndices(size(B))
-        i, j, k, l, m, n = index.I
-        B[index]     = u.value[i, j, k]*A.value[index]
-    end
-    return ProductSpaceOperator(ProductSpace{S1, S2, S3}, B)
-end
-
 function solve(A::ProductSpaceOperator{ProductSpace{S1, S2}}, u::Field{ProductSpace{S1, S2}})::Field{ProductSpace{S1, S2}} where {S1, S2}
     X =  vec(A) \ vec(u)
     return Field(ProductSpace{S1, S2}, shape(ProductSpace{S1, S2}, X))
-end
-
-# 3D case
-function solve(A::ProductSpaceOperator{ProductSpace{S1, S2, S3}}, u::Field{ProductSpace{S1, S2, S3}})::Field{ProductSpace{S1, S2, S3}} where {S1, S2, S3}
-    X =  vec(A) \ vec(u)
-    return Field(ProductSpace{S1, S2, S3}, shape(ProductSpace{S1, S2, S3}, X))
 end
 
 # compute fields
@@ -166,17 +109,6 @@ function Field(PS::Type{ProductSpace{S1, S2}}, umap::Function)::Field{PS} where 
     for index in range(PS)
         value[index] = umap(collocation(S2, index.I[1]),
                             collocation(S1, index.I[2]))
-    end
-    return Field(PS, value)
-end
-
-# compute fields [3D Space]
-function Field(PS::Type{ProductSpace{S1, S2, S3}}, umap::Function)::Field{PS} where {S1, S2, S3 <: Cardinal{Tag, N}} where {Tag, N}
-    value = zeros(spacetype(PS), size(PS))
-    for index in range(PS)
-        value[index] = umap(collocation(S3, index.I[1]),
-                            collocation(S2, index.I[2]),
-                            collocation(S1, index.I[3]))
     end
     return Field(PS, value)
 end
@@ -194,8 +126,7 @@ end
 
 # Kronecker product of two 1D operators
 function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}
-    AB = zeros(spacetype(A.space), length(S2), length(S1), 
-                                   length(S2), length(S1))
+    AB = zeros(spacetype(A.space), length(S2), length(S1), length(S2), length(S1))
     for index in CartesianIndices(size(AB))
         i ,j ,ii ,jj = index.I
         AB[index]    = A.value[j,jj]*B.value[i,ii]
@@ -203,31 +134,9 @@ function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpac
     return ProductSpaceOperator(ProductSpace{S1, S2}, AB)
 end
 
-# Kronecker product of three 1D operators [3D space]
-function ⦼(A::Operator{S1}, B::Operator{S2}, C::Operator{S3})::ProductSpaceOperator{ProductSpace{S1, S2, S3}} where {S1, S2, S3<: Cardinal{Tag, N}} where {Tag, N}
-    ABC = zeros(spacetype(A.space), length(S3), length(S2), length(S1), 
-                                    length(S3), length(S2), length(S1))
-    for index in CartesianIndices(size(ABC))
-        i ,j , k, ii ,jj, kk = index.I
-        ABC[index]    = A.value[j,jj]*B.value[i,ii]*C.value[k,kk]
-    end
-    return ProductSpaceOperator(ProductSpace{S1, S2, S3}, ABC)
-end
-
 # derivative operators
-function derivative(PS::Type{ProductSpace{S1, S2}}) where {S1, S2}
-    return (derivative(S1) ⦼ eye(S2), eye(S1) ⦼ derivative(S2))
-end
-
-function shape(S::Type{ProductSpace{S1, S2, S3}}, A::Array{Float64,2})::ProductSpaceOperator{ProductSpace{S1, S2, S3}} where {S1, S2, S3}
-    return ProductSpaceOperator(ProductSpace{S1, S2, S3}, reshape(A, (length(S3), length(S2), length(S1),
-                                                                      length(S3), length(S2), length(S1))))
-end
-
 function derivative(PS::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3}
-    return (shape(ProductSpace{S1, S2, S3}, kron(derivative(S1).value, eye(S2).value, eye(S3).value)),
-            shape(ProductSpace{S1, S2, S3}, kron(eye(S1).value, derivative(S2).value, eye(S3).value)),
-            shape(ProductSpace{S1, S2, S3}, kron(eye(S1).value, eye(S2).value, derivative(S3).value)))
+    return (derivative(S1) ⦼ eye(S2) ⦼ eye(S3), eye(S1) ⦼ derivative(S2) ⦼ eye(S3), eye(S1) ⦼ eye(S2) ⦼ derivative(S3))
 end
 
 # create the identity operator
@@ -249,25 +158,6 @@ function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOpe
     B[:, 1] .= convert(spacetype(PS), 1)
     return ProductSpaceOperator(ProductSpace{S1, S2}, reshape(diagm(0=>vec(B)), (length(S2), length(S1), length(S2), length(S1))))
 
-end
-
-# 3D case
-function boundary(::Type{Spacelike}, PS::Type{ProductSpace{S1, S2, S3}})::ProductSpaceOperator{ProductSpace{S1, S2, S3}} where {S1, S2, S3 <: Cardinal{Tag,N}}  where {Tag, N}
-    B = zeros(spacetype(PS), length(S3), length(S2), length(S1))
-    B[1, :, :] = B[end, :, :] .= convert(spacetype(PS), 1)
-    B[:, :, 1] = B[:, :, end] .= convert(spacetype(PS), 1)
-    B[:, 1, :] = B[:, end, :] .= convert(spacetype(PS), 1)
-    return ProductSpaceOperator(ProductSpace{S1, S2, S3}, reshape(diagm(0=>vec(B)), (length(S3), length(S2), length(S1), 
-                                                                                     length(S3), length(S2), length(S1))))
-end
-
-function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2, S3}})::ProductSpaceOperator{ProductSpace{S1, S2, S3}} where {S1, S2, S3 <: Cardinal{Tag,N}}  where {Tag, N}
-    B = zeros(spacetype(PS), length(S3), length(S2), length(S1))
-    B[1, :, :] .= convert(spacetype(PS), 1)
-    B[:, :, 1] .= convert(spacetype(PS), 1)
-    B[:, 1, :] .= convert(spacetype(PS), 1)
-    return ProductSpaceOperator(ProductSpace{S1, S2, S3}, reshape(diagm(0=>vec(B)), (length(S3), length(S2), length(S1), 
-                                                                                     length(S3), length(S2), length(S1))))
 end
 
 # map functions to boundaries
@@ -305,19 +195,6 @@ function vec(A::ProductSpaceOperator{ProductSpace{S1, S2}})::Array{eltype(A.valu
 end
   
 function shape(PS::Type{ProductSpace{S1, S2}}, u::Array{T,1})::Array{eltype(u),2} where {S1, S2, T}
-    return reshape(u, size(PS))
-end
-
-# 3D case
-function vec(u::Field{ProductSpace{S1, S2, S3}})::Array{eltype(u.value),1} where {S1, S2, S3}
-    return vec(u.value)
-end
-
-function vec(A::ProductSpaceOperator{ProductSpace{S1, S2, S3}})::Array{eltype(A.value),2} where {S1, S2, S3}
-    return reshape(A.value, (prod(size(ProductSpace{S1, S2, S3})), prod(size(ProductSpace{S1, S2, S3}))))
-end
-  
-function shape(PS::Type{ProductSpace{S1, S2, S3}}, u::Array{T,1})::Array{eltype(u),3} where {S1, S2, S3, T}
     return reshape(u, size(PS))
 end
 

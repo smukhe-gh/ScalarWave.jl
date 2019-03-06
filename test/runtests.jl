@@ -11,14 +11,8 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["Evaluate"]
-libraries = ["BasisTransformation"]
-libraries = ["PyPlot"]
-libraries = ["AMR"]
-libraries = ["FieldEquations"]
-libraries = ["NonLinSolver"]
-libraries = ["NonLinSolver1D"]
-libraries = ["NonLinSolver2D"]
+libraries = ["SkewCoordinates"]
+libraries = ["3DSpace"]
 
 for file in libraries
     @info "Testing $file"

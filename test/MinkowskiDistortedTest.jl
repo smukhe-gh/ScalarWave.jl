@@ -9,7 +9,7 @@
 # Derivative tests fails for P <= 20
 #--------------------------------------------------------------------
 nullboundary = Null
-P1, P2 = 30, 30
+P1, P2 = 60, 60
 SUV = ProductSpace{GaussLobatto(U,P1), GaussLobatto(V,P2)}
 
 #--------------------------------------------------------------------
@@ -22,7 +22,7 @@ SUV = ProductSpace{GaussLobatto(U,P1), GaussLobatto(V,P2)}
 #--------------------------------------------------------------------
 u = Field(SUV, (u,v)->u)
 v = Field(SUV, (u,v)->v)
-Ω = Field(SUV, (u,v)->(pi/8)*cospi(u/2)*cospi(v/2))
+Ω = Field(SUV, (u,v)->(pi)*cospi(u/2)*cospi(v/2))
 
 𝒖 =  u*cos(Ω) + v*sin(Ω)
 𝒗 = -u*sin(Ω) + v*cos(Ω)
@@ -51,5 +51,5 @@ gvv = Field(SUV, (u,v)-> 0)
 # Solve the system [also check the condition number and eigen values]
 #--------------------------------------------------------------------
 𝕨 = solve(𝕃 + 𝔹, ρ + 𝕓) 
-𝕔 = basistransform(𝕨)
-
+contourf(𝕨, 100, globallevels=200)
+show()
