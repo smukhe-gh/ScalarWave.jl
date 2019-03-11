@@ -123,7 +123,7 @@ end
 
 # create the identity operator
 function eye(PS::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3}
-    return eye(S1) ⦼ eye(S2) ⦼ eye(S3)
+    return reshape(ProductSpace{S1, S2, S3}, kron(eye(S1).value,  eye(S2).value, eye(S3).value))
 end
 
 # Null and Spatial boundary operators

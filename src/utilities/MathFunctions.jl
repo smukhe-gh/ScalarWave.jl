@@ -34,8 +34,11 @@ function cond(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
 end
 
 function cond(A::ProductSpaceOperator{ProductSpace{S1, S2, S3}}) where {S1, S2, S3}
-    return cond(vec(A))
+    return cond(reshape(A))
 end
+
+abs(A::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3<: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2, S3}, abs.(A.value))
+maximum(u::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3} = maximum(u.value)
 
 # FIXME: Remove repetition for fields in 1D space
 sqrt(A::Field{S}) where {S <: Space{Tag}} where {Tag} = Field(S, sqrt.(A.value))

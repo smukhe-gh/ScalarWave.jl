@@ -225,3 +225,9 @@ function Base. *(v::Field{S}, u::Int)::ProductSpaceOperator{S} where {S<:Product
     @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
     return (eye(S) - eye(S))                
 end
+
+function ⊙(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S})::ProductSpaceOperator{S} where {S}
+    I = eye(S)
+    return (I-B)*A + B*B
+end
+

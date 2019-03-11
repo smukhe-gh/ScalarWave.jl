@@ -187,3 +187,13 @@ function Base. *(v::Field{S}, u::Int)::Operator{S} where {S}
     @assert u == 0 "Right mutiplication with an Int is only allowed to represent \n action on a zero vector field"
     return (eye(S) - eye(S))                
 end
+
+function ⊙(A::Operator{S}, B::Operator{S})::Operator{S} where {S}
+    I = eye(S)
+    return (I-B)*A + B*B
+end
+
+function ⊙(u::Field{S}, b::Boundary{S})::Field{S} where {S}
+    I = eye(S)
+    return (I-B)*u + B*b
+end

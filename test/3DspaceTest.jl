@@ -6,9 +6,9 @@
 
 struct W end
 
-SW = GaussLobatto{W, 4, 2, -3} 
-SV = GaussLobatto{V, 2, 3, -4} 
-SU = GaussLobatto{U, 3, 4, -5} 
+SW = GaussLobatto{W, 14, 2, -3} 
+SV = GaussLobatto{V, 12, 3, -4} 
+SU = GaussLobatto{U, 13, 4, -5} 
 
 SUV  = ProductSpace{SV, SU}
 SUVW = ProductSpace{SW, SV, SU}
@@ -47,12 +47,12 @@ r = Field(SUVW, (U,V,W)->V*W)
 w = Field(SUVW, (U,V,W)->W)
 z = Field(SUVW, rand(size(SUVW)...))
 
-exit()
-
 @testset "3Dspace" begin
     @test reshape(SUVW, reshape(z)) == z
-    @test reshape(SUVW, reshape(D3U*D3V*D3W)) == D3U*D3V*D3W;
+    @test reshape(SUVW, reshape(D3U)).value == D3U.value
+    @test reshape(SUVW, reshape(D3U*D3V*D3W)).value ==  (D3U*D3V*D3W).value
     @test w*D3W*q ≈ q
+    @test D3U*D3V*q ≈ w
     @test D3V*q ≈ s
     @test D3U*q ≈ r
     @test D3W*f ≈ Field(SUVW, (U,V,W)->4*(W^3))
@@ -64,26 +64,28 @@ end
 # Now test Laplace equation in 3D
 #--------------------------------------------------------------------
 
+using LinearAlgebra
+
 struct Z end
 struct Y end
 struct X end
 
-SZ = GaussLobatto{Z, 11, 4, 3}
-SY = GaussLobatto{Z, 12, 3, 2}
-SX = GaussLobatto{Z, 13, 2, 1}
+SZ = GaussLobatto{Z, 2, 1, 0}
+SY = GaussLobatto{Y, 2, 1, 0}
+SX = GaussLobatto{X, 2, 1, 0}
 SXYZ = ProductSpace{SZ, SY, SX}
-DZ, DY, DX = derivative(SXYZ)
 
-D = [DZ, DY, DX]
+b = Field(SXYZ, (X,Y,Z)->X) 
+writevtk(b, "../output/laplace-boundary")
+exit()
+
+DZ, DY, DX = derivative(SXYZ)
 B = boundary(Spacelike, SXYZ)
 L = DZ*DZ + DY*DY + DX*DX
+u = solve(L⊙B, B*b)
 
-b = Field(SXYZ, (X,Y,Z)->X+Y+Z) 
-u = solve(L+B, B*b)
+@show maximum(abs(B*u - B*b))
 
-# test if solver keeps the boundary intact
-@test_broken B*u ≈ b
-@show norm(B*u - b) 
+writevtk(u, "../output/laplace")
 
-# writevtk(u)
 

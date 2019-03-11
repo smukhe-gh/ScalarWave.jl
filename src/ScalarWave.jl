@@ -17,7 +17,7 @@ export Manifold, Space, ProductSpace,
 export Field, Boundary, Operator, ProductSpaceOperator, IntegrationOperator,
        Metric, Derivative, Christoffel, Ricci,
        inversemetrictransform, metricdet
-export order, dim, boundary, solve, ⦼, shape, delta 
+export order, dim, boundary, solve, ⦼, ⊙, shape, delta 
 export collocation, derivative, integral,
        derivativetransform,
        basistransform, prefactor
