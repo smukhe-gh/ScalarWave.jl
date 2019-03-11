@@ -11,7 +11,6 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["SkewCoordinates"]
 libraries = ["3DSpace"]
 
 for file in libraries

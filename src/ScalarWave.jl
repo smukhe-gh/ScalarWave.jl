@@ -5,6 +5,7 @@
 
 module ScalarWave
 using Luxor, Colors, FFTW, Roots, LinearAlgebra, PyPlot
+using WriteVTK
 
 export Grid, distribute
 export Null, Spacelike, U, V,
@@ -29,13 +30,15 @@ export plot, pcolormesh, contourf, contour, levels
 
 export F, J, Fvec, Jvec, Bvec, Svec, Sshape
 export norm, Newton
+export writevtk
 
 include("datatypes/AbstractTypes.jl")
 include("datatypes/Datatypes.jl")
 include("dataTypes/MetricDataTypes.jl")
 
-include("spectral/spaces/SingleSpaces.jl")
-include("spectral/spaces/ProductSpaces.jl")
+include("spectral/spaces/1Dspace.jl")
+include("spectral/spaces/2Dspace.jl")
+include("spectral/spaces/3Dspace.jl")
 include("spectral/spaces/MetricSpaces.jl")
 include("spectral/basis/TaylorGrid.jl")
 include("spectral/basis/GaussLobattoGrid.jl")

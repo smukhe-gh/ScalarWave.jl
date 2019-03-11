@@ -1,57 +1,61 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 03-2019
-# Test operations with skew coordinates
-# Test Laplace equation with interesting boundary conditions
+# Test wave equation on Minkowski in 3D
 #--------------------------------------------------------------------
 
-struct X end
-struct Y end
-struct Z end
+using LinearAlgebra
+struct W end
 
-SXY = ProductSpace{GaussLobatto{Y, 20,  1.0, -1.0},
-                   GaussLobatto{X, 20,  1.0, -1.0}}
-DY, DX = derivative(SXY)
-B = boundary(Spacelike, SXY)
-L = DX*DX + DY*DY
-u = Field(SXY, (X,Y)->X*Y*(X+1)*(Y+1))
-u = solve(L+B, B*u)
-XF = Field(SXY, (X,Y)->X)
-YF = Field(SXY, (X,Y)->Y)
+SW = GaussLobatto{W, 8,  -0.75, -1.0} 
+SV = GaussLobatto{V, 8,  -0.75, -1.0}
+SU = GaussLobatto{U, 8,  -0.75, -1.0}
+SUVW  = ProductSpace{SW, SV, SW}
+DW, DV, DU = derivative(SUVW)
 
-α  = 0 
-β  = π/24 
-UF = Field(SXY, (X,Y)->cos(α)*X + cos(β)*Y)
-VF = Field(SXY, (X,Y)->sin(α)*X + sin(β)*Y)
+D = [DU, DV, DW]
+B = boundary(Null, SUVW)
+u = Field(SUVW, (U,V,W) -> exp(-((U - ((maximum(SU) + minimum(SU))/2))^2)/0.01)
+                         + exp(-((V - ((maximum(SV) + minimum(SV))/2))^2)/0.01)
+                         + exp(-((W - ((maximum(SW) + minimum(SW))/2))^2)/0.01))
 
-g = [    1     cos(α - β);
-     cos(α - β)     1    ]
-D = [DY, DX]
+b = B*u
 
-L = sum(g[i,j]*D[i]*D[j] for i in 1:2, j in 1:2)
-u = Field(SXY, (X,Y)->X*Y*(X+1)*(Y+1), VF, UF)
-u = solve(L+B, B*u)
+writevtk(u, "bulk")
+writevtk(b, "boundary")
 
-# Now test Laplace equation in 3D
-SXYZ = ProductSpace{GaussLobatto{Z, 10,  1.0, -1.0},
-                    GaussLobatto{Y, 10,  1.0, -1.0},
-                    GaussLobatto{X, 10,  1.0, -1.0}}
+guu = Field(SUVW, (U,V,W)->(1/3) - (1/sqrt(3)))
+guv = Field(SUVW, (U,V,W)->(1/3)) 
+guw = Field(SUVW, (U,V,W)->(-2/3)*sqrt(2 + sqrt(3)))
+gvv = Field(SUVW, (U,V,W)->(1/3) + (1/sqrt(3)))
+gvw = Field(SUVW, (U,V,W)->(sqrt(2)/3)*(-1 + sqrt(3)))
+gww = Field(SUVW, (U,V,W)->(2/3)) 
 
-DZ, DY, DX = derivative(SXYZ)
-g = [1 0 0;
-     0 1 0;
-     0 0 1]
-D = [DZ, DY, DX]
-B = boundary(Null, SXYZ)
-@time L = sum(g[i,j]*D[i]*D[j] for i in 1:3, j in 1:3)
-u = Field(SXYZ, (X,Y,Z)->X+Y+Z) 
-u = solve(L+B, B*u)
+g = Metric{_dd, 3}([guu, guv, guw,
+                         gvv, gvw,
+                              gww])
 
-CZ = Field(GaussLobatto{Z, 10,  1.0, -1.0}, X->X)
-CY = Field(GaussLobatto{Y, 10,  1.0, -1.0}, X->X)
-CX = Field(GaussLobatto{X, 10,  1.0, -1.0}, X->X)
+L = sum(g[i,j]*D[i]*D[j] for i in 1:3, j in 1:3)
+s = prod(size(SUVW))^(2.0)^(3.0)
+sinv = 1/prod(size(SUVW))^(2.0)^(3.0)
+ev = eigvals(vec(L+B))
 
-using WriteVTK
-vtkfile = vtk_grid("testVTK", CX.value, CY.value, CZ.value) 
-vtk_point_data(vtkfile, u.value, "scalar")
-outfiles = vtk_save(vtkfile)
+# @show maximum(abs.(eigvals(vec(L))))
+# @show maximum(abs.(ev))
+# @show minimum(abs.(ev))
+
+@show cond(vec(L+B))
+@show cond(vec(L + s*B))
+@show cond(vec(L + sinv*B))
+@show cond(vec(s*L + B))
+@show cond(vec(sinv*L + B))
+
+# using PyPlot
+# plot(abs.(ev))
+# show()
+
+@show maximum(u.value)
+u = solve(L + B, b)
+@show maximum(u.value)
+writevtk(u, "solution")
+writevtk(B*u, "boundary-solution")

@@ -53,7 +53,6 @@ similar(u::Field{S, D, T}) where {S, D, T} = Field(u.space, Array{T,D}(undef, si
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, a ./ B.value)
 /(B::Field{ProductSpace{S1, S2}}, a::T) where {S1, S2 <: Cardinal{Tag, N}, T<:Real} where {Tag,N} = Field(ProductSpace{S1, S2}, B.value ./ a)
 
-# TODO: Integrate this in scalar / field > Complex{Bool} / Field
 +(a::T,
   B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}, T<:Complex} where {Tag} = Field(ProductSpace{S1, S2}, a .+ B.value)
 -(a::T,
@@ -126,7 +125,8 @@ end
 
 # Kronecker product of two 1D operators
 function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag, N}} where {Tag, N}
-    AB = zeros(spacetype(A.space), length(S2), length(S1), length(S2), length(S1))
+    AB = zeros(spacetype(A.space), length(S2), length(S1), 
+                                   length(S2), length(S1))
     for index in CartesianIndices(size(AB))
         i ,j ,ii ,jj = index.I
         AB[index]    = A.value[j,jj]*B.value[i,ii]
@@ -135,8 +135,8 @@ function ⦼(A::Operator{S1}, B::Operator{S2})::ProductSpaceOperator{ProductSpac
 end
 
 # derivative operators
-function derivative(PS::Type{ProductSpace{S1, S2, S3}}) where {S1, S2, S3}
-    return (derivative(S1) ⦼ eye(S2) ⦼ eye(S3), eye(S1) ⦼ derivative(S2) ⦼ eye(S3), eye(S1) ⦼ eye(S2) ⦼ derivative(S3))
+function derivative(PS::Type{ProductSpace{S1, S2}}) where {S1, S2}
+    return (derivative(S1) ⦼ eye(S2), eye(S1) ⦼ derivative(S2))
 end
 
 # create the identity operator
@@ -160,7 +160,6 @@ function boundary(::Type{Null}, PS::Type{ProductSpace{S1, S2}})::ProductSpaceOpe
 
 end
 
-# map functions to boundaries
 function Boundary(PS::Type{ProductSpace{S1, S2}}, bmap::Function...)::Boundary{PS} where {S1, S2 <: Cardinal{Tag,N}}  where {Tag, N}
     B = zeros(spacetype(PS), length(S2), length(S1))
     @assert length(bmap) == 4

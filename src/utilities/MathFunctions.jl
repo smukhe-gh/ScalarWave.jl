@@ -33,6 +33,10 @@ function cond(A::ProductSpaceOperator{ProductSpace{S1, S2}}) where {S1, S2}
     return cond(vec(A))
 end
 
+function cond(A::ProductSpaceOperator{ProductSpace{S1, S2, S3}}) where {S1, S2, S3}
+    return cond(vec(A))
+end
+
 # FIXME: Remove repetition for fields in 1D space
 sqrt(A::Field{S}) where {S <: Space{Tag}} where {Tag} = Field(S, sqrt.(A.value))
 abs(A::Field{S}) where {S <: Space{Tag}} where {Tag} = Field(S, abs.(A.value))
