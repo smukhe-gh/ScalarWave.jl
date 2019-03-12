@@ -12,6 +12,7 @@ libraries = ["BasisTransformation",
              "Schwarzschild"]
 
 libraries = ["3DSpace"]
+libraries = ["SkewedCoordinates"]
 
 for file in libraries
     @info "Testing $file"

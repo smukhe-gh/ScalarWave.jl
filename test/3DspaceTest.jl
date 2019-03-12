@@ -70,22 +70,22 @@ struct Z end
 struct Y end
 struct X end
 
-SZ = GaussLobatto{Z, 2, 1, 0}
-SY = GaussLobatto{Y, 2, 1, 0}
-SX = GaussLobatto{X, 2, 1, 0}
+SZ = GaussLobatto{Z, 12, 1, -5}
+SY = GaussLobatto{Y, 11, 1, -5}
+SX = GaussLobatto{X, 12, 1, -5}
 SXYZ = ProductSpace{SZ, SY, SX}
 
-b = Field(SXYZ, (X,Y,Z)->X) 
-writevtk(b, "../output/laplace-boundary")
-exit()
 
 DZ, DY, DX = derivative(SXYZ)
 B = boundary(Spacelike, SXYZ)
 L = DZ*DZ + DY*DY + DX*DX
+b = Field(SXYZ, (X,Y,Z)->X+Y+Z) 
 u = solve(L⊙B, B*b)
 
 @show maximum(abs(B*u - B*b))
+@show maximum(abs(u))
 
 writevtk(u, "../output/laplace")
+writevtk(B*u, "../output/laplace-boundary")
 
 
