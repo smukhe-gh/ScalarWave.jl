@@ -231,3 +231,7 @@ function ⊙(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S})::ProductSpa
     return (I-B)*A + B*B
 end
 
+function ⊙(A::ProductSpaceOperator{S}, B::ProductSpaceOperator{S}, D::ProductSpaceOperator{S})::ProductSpaceOperator{S} where {S}
+    I = eye(S)
+    return (I-B)*A + B*D
+end

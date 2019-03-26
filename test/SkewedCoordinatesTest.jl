@@ -7,9 +7,9 @@
 using LinearAlgebra
 struct W end
 
-SW = GaussLobatto{W, 18, 1.0, -1.0} 
-SV = GaussLobatto{V, 18, 1.0, -1.0}
-SU = GaussLobatto{U, 18, 1.0, -1.0}
+SW = GaussLobatto{W, 10, 1.0, -1.0} 
+SV = GaussLobatto{V, 10, 1.0, -1.0}
+SU = GaussLobatto{U, 10, 1.0, -1.0}
 SUVW  = ProductSpace{SW, SV, SW}
 DW, DV, DU = derivative(SUVW)
 
@@ -29,7 +29,12 @@ g = Metric{_dd, 3}([0, -1, -1,
                             0])
 
 L = sum(g[i,j]*D[i]*D[j] for i in 1:3, j in 1:3)
+using LinearAlgebra
+@show cond(reshape(L ⊙ B))
 u = solve(L ⊙ B, B*u0)
+@show maximum(u.value[1, :, :] - u.value[end, :, :])
+@show maximum(u.value[:, 1, :] - u.value[:, end, :])
+@show maximum(u.value[:, :, end] - u.value[:, :, end])
 
 # Before moving ahead, check if the boundary is preserved. 
 # @test_broken B*u ≈ B*u0 

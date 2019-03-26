@@ -28,7 +28,7 @@ Galerkin{Tag, N} = Union{Chebyshev{Tag, N}}
 
 struct Field{S, D, T}
     space::Type{S}
-    value::Array{T, D}
+    value::AbstractArray{T, D}
 end
 
 struct Boundary{S, D, T}
