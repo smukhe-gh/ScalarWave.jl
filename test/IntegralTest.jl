@@ -4,21 +4,63 @@
 # Test integration on a patch
 #--------------------------------------------------------------------
 
-#--------------------------------------------------------------------
-# Test 1D operation
-#--------------------------------------------------------------------
-P = 80
-S = GaussLobatto(U, P, 3*pi, 4)
-F = Field(S, U->sin(U)^2)
-W = integral(S)  
-@show W*F
+# for P in 1:10
+    # S = GaussLobatto(U, P)
+    # F = Field(S, x->x^2)
+    # W = integral(S)  
+    # @show P, W*F - 2/3
+# end
 
-#--------------------------------------------------------------------
-# test 2D operations
-#--------------------------------------------------------------------
-P1, P2 = 28, 26
-SUV = ProductSpace{GaussLobatto(V, P2, 8*pi, 4), GaussLobatto(U, P1, -3, -5*pi)}
-FUV = Field(SUV, (U,V)->U^2 + V^4)
-WUV = integral(SUV)
-@show WUV*FUV
+function Base. *(A::IntegrationOperator{S}, B::Operator{S})::Operator{S} where {S}
+    AP = Operator(S, A.value)  
+    return AP*B
+end
 
+function Base. transpose(A::Operator{S})::Operator{S} where {S}
+    B = transpose(A.value) .+ 0
+    return Operator(S, B)
+end
+
+using LinearAlgebra
+
+function Base. show(A::Operator{S}) where {S}
+    display(A.value)
+    println()
+end
+
+function Base. show(A::IntegrationOperator{S}) where {S}
+    display(A.value)
+    println()
+end
+
+function Base. inv(A::IntegrationOperator{S})::IntegrationOperator{S} where {S}
+    return IntegrationOperator(S, inv(A.value))
+end
+
+function Base. transpose(u::Field{S}) where {S}
+    return Field(S, transpose(u.value) .+ 0)
+end
+
+function dot(u::Field{S}, v::Field{S})::Float64 where {S}
+    return sum((u*v).value) 
+end
+
+P = 3
+S = GaussLobatto(U, P)
+W = integral(S)
+D = derivative(S)
+
+# We test
+# <u,dw> + <w, du> = uLwL - uRwR 
+# u'*W*D*w + w'*W*D*u = u'*W*B*w
+# u'*W*D*w + u'(W*D)'*w = u'*W*B*w
+B = inv(W)*(W*D + transpose(W*D))
+
+# Test if B actually does project out the boundary
+u = Field(S, x->x^(P-2))
+v = Field(S, x->x^(P-1))
+
+@show dot(u, W*D*v) + dot(v, W*D*u)
+@show dot(u, W*D*v) + dot(u, transpose(W*D)*v)
+@show dot(u, W*B*v)
+show(B)

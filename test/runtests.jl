@@ -11,12 +11,7 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
-libraries = ["3DSpace"]
-libraries = ["NLSolve"]
-libraries = ["SpaceLikeHyperSurface"]
-libraries = ["SkewedCoordinates"]
-libraries = ["SummationByParts"]
-libraries = ["SpecBasisCopy"]
+libraries = ["Integral"]
 
 for file in libraries
     @info "Testing $file"
