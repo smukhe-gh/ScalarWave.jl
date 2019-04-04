@@ -59,36 +59,54 @@ function testSBP(x, w)
     end
 end
 
-# Specify collocation points, quadrature weights and 
-# associated basis functions to compute the SBP operator
-xx = [-1.0, -0.2898979485566356, 0.6898979485566357]
-w  = [0.2222222222222222, 1.0249716523768433, 0.7528061254009345]
-
-function basis(j,x)
-    S = 1.0
-    for m in 0:2
-        if m == j
-            S *= 1
-        else
-            S *= (x - xx[m+1])/(xx[j+1] - xx[m+1])
-        end
-    end
-    return S
-end
-
 function constructẼ(x)
-    ta = [basis(j,-1) for j in 0:2]
-    tb = [basis(j, 1) for j in 0:2]
-    ea = [1, 0, 0]
-    eb = [0, 0, 1]
-    T  = ea*ta' + eb*tb'
-    E  = zeros(3,3)
-    E[1,1] = -1
-    E[end, end] = 1
+    P  = length(x) - 1
+    ta = [basis(j, P, chebx(0,P)) for j in 0:P]
+    tb = [basis(j, P, chebx(P,P)) for j in 0:P]
+    e  = zeros(P)
+    e0 = [1, e...]
+    en = [e..., 1]
+    T  = e0*ta' + en*tb'
+    E  = zeros(P+1, P+1)
+    E[1,1] = 1
+    E[end, end] = -1
     Ẽ = T'*E*T
     return Ẽ
 end
 
+# Specify collocation points, quadrature weights and 
+# associated basis functions to compute the SBP operator
+# xx = [-1.0, -0.2898979485566356, 0.6898979485566357]
+# w  = [0.2222222222222222, 1.0249716523768433, 0.7528061254009345]
+
+# function basis(j,x)
+    # S = 1.0
+    # for m in 0:2
+        # if m == j
+            # S *= 1
+        # else
+            # S *= (x - xx[m+1])/(xx[j+1] - xx[m+1])
+        # end
+    # end
+    # return S
+# end
+
+function chebx(i, N)
+    return cospi(i/N)
+end
+
+function basis(j::Int, P::Int,  x::Float64)::Float64 
+    S = 0
+    for m in 0:P
+        pm = (m == 0 || m == P) ? 2 : 1
+        S += (1/pm)*cheb(m,x)*cheb(m, chebx(j, P))
+    end
+    pj = (j == 0 || j == P) ? 2 : 1
+    return (2/(P*pj))*S
+end
+
+P  = 3
+xx = [chebx(i, P) for i in 0:P]  
+w  = [chebw(i, P) for i in 1:P+1]
+# FIXME: Test failing for Chebyshev collocation points
 testSBP(xx,w)
-
-

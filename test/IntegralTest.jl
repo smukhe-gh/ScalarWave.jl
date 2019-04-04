@@ -4,13 +4,6 @@
 # Test integration on a patch
 #--------------------------------------------------------------------
 
-# for P in 1:10
-    # S = GaussLobatto(U, P)
-    # F = Field(S, x->x^2)
-    # W = integral(S)  
-    # @show P, W*F - 2/3
-# end
-
 function Base. *(A::IntegrationOperator{S}, B::Operator{S})::Operator{S} where {S}
     AP = Operator(S, A.value)  
     return AP*B
@@ -45,11 +38,24 @@ function dot(u::Field{S}, v::Field{S})::Float64 where {S}
     return sum((u*v).value) 
 end
 
-P = 3
+for P in 1:4
+    S = GaussLobatto(U, P)
+    D = derivative(S)
+    # F = Field(S, x->x^4)
+    # W = integral(S)  
+    # @show P, W*F - 2/5
+    show(D)
+end
+
+exit()
+
+P = 4
 S = GaussLobatto(U, P)
 W = integral(S)
 D = derivative(S)
 
+show(W)
+exit()
 # We test
 # <u,dw> + <w, du> = uLwL - uRwR 
 # u'*W*D*w + w'*W*D*u = u'*W*B*w
@@ -60,7 +66,11 @@ B = inv(W)*(W*D + transpose(W*D))
 u = Field(S, x->x^(P-2))
 v = Field(S, x->x^(P-1))
 
-@show dot(u, W*D*v) + dot(v, W*D*u)
-@show dot(u, W*D*v) + dot(u, transpose(W*D)*v)
-@show dot(u, W*B*v)
-show(B)
+# @show dot(u, W*D*v) + dot(v, W*D*u)
+# @show dot(u, W*D*v) + dot(u, transpose(W*D)*v)
+# @show dot(u, W*B*v)
+# show(D)
+# show(B)
+
+
+function quadratureweights()

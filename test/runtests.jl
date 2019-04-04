@@ -11,7 +11,11 @@ libraries = ["BasisTransformation",
              "Ricci",
              "Schwarzschild"]
 
+libraries = ["ConstructSBP"]
+libraries = ["MinkowskiDistorted"]
 libraries = ["Integral"]
+libraries = ["SkewedCoordinates"]
+libraries = ["NLSolve"]
 
 for file in libraries
     @info "Testing $file"

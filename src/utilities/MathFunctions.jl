@@ -20,6 +20,9 @@ log10(A::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} =
 ^(B::Field{S}, a::Int) where {S <: Cardinal{Tag}} where {Tag} = Field(S, (B.value).^a)
 inv(B::Field{ProductSpace{S1, S2}}) where {S1, S2 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2}, 1 ./(B.value))
 
+cos(A::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2, S3}, cos.(A.value))
+sin(A::Field{ProductSpace{S1, S2, S3}}) where {S1, S2, S3 <: Space{Tag}} where {Tag} = Field(ProductSpace{S1, S2, S3}, sin.(A.value))
+
 maximum(u::Field{ProductSpace{S1, S2}}) where {S1, S2} = maximum(u.value)
 minimum(u::Field{ProductSpace{S1, S2}}) where {S1, S2}  = minimum(u.value)
 

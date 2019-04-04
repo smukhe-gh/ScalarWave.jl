@@ -85,6 +85,10 @@ u = solve(L⊙B, B*b)
 @show maximum(abs(B*u - B*b))
 @show maximum(abs(u))
 
+@show maximum(abs(u.value[1, :, :] - u.value[end, :, :]))
+@show maximum(abs(u.value[:, 1, :] - u.value[:, end, :]))
+@show maximum(abs(u.value[:, :, 1] - u.value[:, :, end]))
+
 writevtk(u, "../output/laplace")
 writevtk(B*u, "../output/laplace-boundary")
 
