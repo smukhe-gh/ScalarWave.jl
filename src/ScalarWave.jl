@@ -31,11 +31,13 @@ export plot, pcolormesh, contourf, contour, levels
 export F, J, Fvec, Jvec, Bvec, Svec, Sshape
 export norm, Newton
 export writevtk
+export incomingboundary, outgoingboundary
 
 include("datatypes/AbstractTypes.jl")
 include("datatypes/Datatypes.jl")
 include("dataTypes/MetricDataTypes.jl")
 
+include("spectral/spaces/1DspaceNEW.jl")
 include("spectral/spaces/1Dspace.jl")
 include("spectral/spaces/2Dspace.jl")
 include("spectral/spaces/3Dspace.jl")

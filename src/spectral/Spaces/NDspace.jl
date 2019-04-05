@@ -4,7 +4,33 @@
 # Define operations for 1D spaces
 #--------------------------------------------------------------------
 
-import Base: +, -, *, /, ==, ≈, range, length, minimum, maximum, real, imag
+real(A::Field{S}) where {S} = Field(S, real(A.value))
+imag(A::Field{S}) where {S} = Field(S, imag(A.value))
+
+
+# Pull out the minimum and the maximum coordinate bounds
+minimum(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = min
+maximum(S::Type{T}) where {T<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}  = max
+
+minimum(S::Type{T}) where {T<:Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}  = min
+maximum(S::Type{T}) where {T<:Chebyshev{Tag, N, max, min}} where {Tag, N, max, min}  = max
+
+minimum(S::Type{T}) where {T<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}  = min
+maximum(S::Type{T}) where {T<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}  = max
+
+# dimensions and shape
+order(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = N
+dim(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}    = 1
+range(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N}  = 1:N+1
+length(S::Type{T}) where {T<:Cardinal{Tag, N}} where {Tag, N} = N+1
+length(S::Type{T}) where {T<:Galerkin{Tag, N}} where {Tag, N} = N+1
+
+# for Galerkin
+order(S::Type{T}) where {T<:Galerkin{Tag, N}} where {Tag, N}  = N
+
+# type of space
+spacetype(S::Type{T}) where {T<:GaussLobatto{Tag, N}} where {Tag, N} = Float64
+spacetype(S::Type{T}) where {T<:Taylor{Tag, N}} where {Tag, N} = Rational{BigInt}
 
 # field / field
 +(A::Field{S}, B::Field{S}) where {S} = Field(S, A.value + B.value)
@@ -34,25 +60,12 @@ function *(A::Operator{S}, B::Operator{S})::Operator{S} where {S}
     return Operator(S, C)
 end
 
-function reshape(A::Operator{S})::Array{T,2} where {T}
-    return reshape(A.value, (prod(size(S))..., prod(size(S))))
-end
-
-function reshape(u::Field{S})::Array{T,1} where {T}
-    return reshape(u.value, (prod(size(S))))
-end
-
-function reshape(::Type{S}, A::Array{T,2})::Operator{S} where {T} where {S}
-    return  reshape(A,  (size(S), size(S)))
-end
-
-function reshape(::Type{S}, u::Array{T,1})::Field{S} where {T} where {S}
-end
-
-
 # operator / field
 function *(A::Operator{S}, u::Field{S})::Field{S} where {S}
-    v = reshape(S, reshape(A)*reshape(u))
+    v = similar(u.value)
+    for index in range(S)
+        v[index] = sum(A.value[index,k]*u.value[k] for k in range(S))
+    end
     return Field(S, v)
 end
 
@@ -70,8 +83,8 @@ end
 
 # evaluate a field at grid points
 function Field(S::Type{T}, umap::Function)::Field{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
-    value = zeros(length(S))
-    for index in CartesianIndices(value) 
+    value = zeros(spacetype(S), length(S))
+    for index in range(S)
         value[index] = umap(collocation(S, index))
     end
     return Field(S, value)
@@ -83,9 +96,62 @@ function Field(S::Type{T})::Field{S} where {T<:Space} where {Tag, N}
     return Field(S, value)
 end
 
+# compute derivative
+function derivative(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+    DS = zeros(spacetype(S), length(S), length(S))
+    for index in CartesianIndices(size(DS))
+        DS[index] = derivative(S, index.I[1], index.I[2])
+    end
+    return Operator(S, DS)
+end
+
+# compute integral and the only operation defined on it. 
+function integral(S::Type{T})::IntegrationOperator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+    W = diagm(0=>[integral(S, i) for i in range(S)])
+    return IntegrationOperator(S, W)
+end
+
+function *(W::IntegrationOperator{S}, u::Field{S})::Real where {S}
+    return sum(W.value*u.value) 
+end
+
+# compute identity matrix
+function eye(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+    return Operator(S, Matrix{spacetype(S)}(I, length(S), length(S)))
+end
+
+function boundary(S::Type{T})::Operator{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+    B = zeros(spacetype(S), length(S))
+    B[1] = B[end] = 1
+    return Operator(S, diagm(0 => vec(B)))
+end
+
+# map boundaries
+function Boundary(S::Type{T}, f::Function...)::Boundary{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
+    b      = zeros(spacetype(S), length(S))
+    bnd1val = f[1](collocation(S, 1))
+    bnd2val = f[2](collocation(S, length(S)))
+    typeof(bnd1val) <: spacetype(S) ? b[1]   = bnd1val : error("Mapping doesn't preserve eltype. Aborting.")
+    typeof(bnd2val) <: spacetype(S) ? b[end] = bnd2val : error("Mapping doesn't preserve eltype. Aborting.")
+    return Boundary(S, b)
+end
+
 # field / boundary
 function +(u::Field{S}, b::Boundary{S})::Field{S} where {S}
     return Field(S, u.value + b.value)
+end
+
+# shape and reshape operators
+function Base. vec(u::Field{S})::Array{eltype(u.value),1} where {S<:GaussLobatto{Tag,N}} where {Tag, N}
+    return u.value
+end
+
+function Base. vec(A::Operator{S})::Array{eltype(A.value),2} where {S<:GaussLobatto{Tag,N}} where {Tag, N}
+    return A.value
+end
+  
+function shape(S::Type{T}, u::Array{Float64,1})::Field{S} where {T<:GaussLobatto{Tag,N}} where {Tag,N}
+    return Field(S, u)
 end
 
 # Define multiplication rules to extract operators from J

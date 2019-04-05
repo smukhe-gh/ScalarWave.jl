@@ -5,4 +5,4 @@
 #--------------------------------------------------------------------
 
 abstract type Manifold{Tag} end
-abstract type Space{Tag} <: Manifold{Tag} end
+abstract type Space{Tag, N, max, min} <: Manifold{Tag} end

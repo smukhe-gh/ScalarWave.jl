@@ -15,7 +15,7 @@ libraries = ["ConstructSBP"]
 libraries = ["MinkowskiDistorted"]
 libraries = ["Integral"]
 libraries = ["SkewedCoordinates"]
-libraries = ["NLSolve"]
+libraries = ["1DspaceNEW"]
 
 for file in libraries
     @info "Testing $file"
