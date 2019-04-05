@@ -34,28 +34,7 @@ function *(A::Operator{S}, B::Operator{S})::Operator{S} where {S}
     return Operator(S, C)
 end
 
-function reshape(A::Operator{S})::Array{T,2} where {T}
-    return reshape(A.value, (prod(size(S))..., prod(size(S))))
-end
-
-function reshape(u::Field{S})::Array{T,1} where {T}
-    return reshape(u.value, (prod(size(S))))
-end
-
-function reshape(::Type{S}, A::Array{T,2})::Operator{S} where {T} where {S}
-    return  reshape(A,  (size(S), size(S)))
-end
-
-function reshape(::Type{S}, u::Array{T,1})::Field{S} where {T} where {S}
-end
-
-
 # operator / field
-function *(A::Operator{S}, u::Field{S})::Field{S} where {S}
-    v = reshape(S, reshape(A)*reshape(u))
-    return Field(S, v)
-end
-
 function *(u::Field{S}, A::Operator{S})::Operator{S} where {S}
     B = similar(A.value)
     for index in CartesianIndices(size(B))
@@ -70,9 +49,9 @@ end
 
 # evaluate a field at grid points
 function Field(S::Type{T}, umap::Function)::Field{S} where {T<:Cardinal{Tag, N}} where {Tag, N}
-    value = zeros(length(S))
+    value = zeros(size(S))
     for index in CartesianIndices(value) 
-        value[index] = umap(collocation(S, index))
+        value[index] = umap(collocation(S, index.I[1]))
     end
     return Field(S, value)
 end

@@ -10,11 +10,10 @@ function collocation(space::Type{S}, i::Int)::Rational where  {S<:Taylor{Tag, N,
     return -(-1 + (2*(i-1)//N))*(min - max)/2 + (max + min)/2
 end
 
-function collocation(space::Type{S}, i::CartesianIndex)::Float64 where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}
+function collocation(space::Type{S}, i::Int)::Float64 where {S<:GaussLobatto{Tag, N, max, min}} where {Tag, N, max, min}
     @assert max > min
-    @show i.I
-    @assert i.I[1] <= N+1
-    return chebx(i.I[1], N)*(min - max)/2 + (max + min)/2
+    @assert i <= N+1
+    return chebx(i, N)*(min - max)/2 + (max + min)/2
 end
 
 function derivative(space::Type{S}, i::Int, j::Int)::Rational where {S<:Taylor{Tag, N, max, min}} where {Tag, N, max, min}

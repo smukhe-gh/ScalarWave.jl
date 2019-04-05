@@ -38,6 +38,8 @@ include("datatypes/Datatypes.jl")
 include("dataTypes/MetricDataTypes.jl")
 
 include("spectral/spaces/1DspaceNEW.jl")
+include("spectral/spaces/2DspaceNEW.jl")
+
 include("spectral/spaces/1Dspace.jl")
 include("spectral/spaces/2Dspace.jl")
 include("spectral/spaces/3Dspace.jl")

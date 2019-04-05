@@ -41,13 +41,11 @@ struct Operator{S, D, T}
     value::AbstractArray{T, D}
 end
 
-struct IntegrationOperator{S, D, T}
+struct IntegrationOperator{S}
     space::Type{S}
-    value::Array{T, D}
+    value::Union{AbstractArray{T, D}, UniformScaling} where {T,D}
 end
 
-# XXX: Check if this works!
-# struct ProductSpace{S1<:Space, S2<:Space} end
 struct ProductSpace{S1<:Space, S2<:Space, S3<:Space} end
 
 struct ProductSpaceOperator{S, D, T}
