@@ -2,6 +2,7 @@
 # Spacetime Discretization methods in Julia
 # Soham 01-2019
 # Transform between Galerkin and Cardinal basis
+# TODO: Use MMT to make the transforms faster.
 #--------------------------------------------------------------------
 
 function prefactor(i, N)
@@ -38,7 +39,6 @@ end
 
 #--------------------------------------------------------------------
 # 2D case
-# TODO: Use MMT to make the transforms faster.
 #--------------------------------------------------------------------
 
 function basistransform(α::Field{T}) where T<:ProductSpace{Chebyshev{Tag1, N1, max1, min1}, 
