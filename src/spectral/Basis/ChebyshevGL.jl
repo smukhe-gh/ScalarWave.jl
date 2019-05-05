@@ -1,6 +1,8 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 05-2019
+# Chebyshev Polynomials: Gauss Lobatto grid 
+# See Boyd F.8
 #--------------------------------------------------------------------
 
 function collocation(S::ChebyshevGaussLobatto{Tag, N, min, max}, i::Int) where {Tag, N, min, max}

@@ -1,39 +1,44 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 05-2019
+# Legendre Polynomials: Gauss Lobatto grid
+# See Boyd F.10
 #--------------------------------------------------------------------
+
+using FastGaussQuadrature
+using Memoize
+
+@memoize function nodes(N::Int)::Array{Float64,1}
+    return gausslobatto(N+1)[1]
+end
 
 function collocation(S::GaussLobatto{Tag, N, min, max}, i::Int) where {Tag, N, min, max}
     @assert max > min
     @assert i <= N+1
-    return cospi(abs((i-1))/N)*(max - min)/2 + (max + min)/2
+    return (nodes(N)[i])*(max-min)/2 + (max + min)/2
+
 end
 
 function derivative(S::GaussLobatto{Tag, N, min, max}, i::Int, j::Int) where {Tag, N, min, max}
+    @assert max > min
     @assert i <= N+1
     @assert j <= N+1
-	if i==j==1
-		return (2N^2 + 1)/6
-	elseif i==j==N+1
-		return -(2N^2 + 1)/6
-	elseif i==j
-		return -chebx(j, N)/(2(1-chebx(j, N)^2))
-	else
-		ci = (i == 1 || i == N+1) ? 2 : 1
-		cj = (j == 1 || j == N+1) ? 2 : 1
-		s  = (i + j) % 2 != 0 ? -1 : 1
-		return (ci/cj)*(s/(chebx(i,N)-chebx(j,N)))*(2/(max - min))
-	end
+    if i == j == 1
+        return (1/4)*N*(N+1)
+    elseif i == j == N+1
+        return -(1/4)*N*(N+1)
+    elseif i == j && j < N+1
+        return 0
+    else
+        xi = collocation(S, i)
+        xj = collocation(S, j)
+        return (legendre(N, xi)/legendre(N, xj))*(xi - xj)
+    end
 end
 
 function quadrature(S::GaussLobatto{Tag, N, min, max}, i::Int) where {Tag, N, min, max}
-    # FIXME: Check order required for exact integration
-	W = 0.0
-	for j in 1:N+1
-		w = (j == 1 ? 1 : (j-1)%2 == 0 ? 2/(1-(j-1)^2) : 0)
-		l = (i == 1 || i == N+1 ? (1/N)*cospi((i-1)*(j-1)/N) : (2/N)*cospi((i-1)*(j-1)/N))
-		W +=  w*l
-	end
-	return W*(max - min)/2
-
+    @assert max > min
+    @assert i <= N+1
+    xj = collocation(S, j)
+    return 2/(N*(N+1)*(legendre(N, xj))^2)
 end
