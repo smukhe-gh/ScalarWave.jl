@@ -5,17 +5,7 @@
 
 using ScalarWave, Test
 
-libraries = ["BasisTransformation",
-             "MinkowskiDistorted",
-             "Radial",
-             "Ricci",
-             "Schwarzschild"]
-
-libraries = ["ConstructSBP"]
-libraries = ["MinkowskiDistorted"]
-libraries = ["Integral"]
-libraries = ["SkewedCoordinates"]
-libraries = ["1DspaceNEW"]
+libraries = ["Dev"]
 
 for file in libraries
     @info "Testing $file"

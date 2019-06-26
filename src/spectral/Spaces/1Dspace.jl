@@ -4,31 +4,40 @@
 # Define operations for 1D spaces
 #--------------------------------------------------------------------
 
+using LinearAlgebra
 import Base: maximum, minimum, range, size
+export order, identity, incomingboundary, outgoingboundary
 
-# FIXME: maximum and minimum functions are swapped. 
-maximum(S::Type{T}) where {T<:Space{Tag, N, max, min}} where {Tag, N, max, min} = min
-minimum(S::Type{T}) where {T<:Space{Tag, N, max, min}} where {Tag, N, max, min} = max
-order(S::Type{T})   where {T<:Space{Tag, N, max, min}} where {Tag, N, max, min} = N 
-size(S::Type{T})    where {T<:Space{Tag, N, max, min}} where {Tag, N, max, min} = N + 1 
+minimum(space::S) where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = space.min
+maximum(space::S) where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = space.max
+order(space::S)   where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = N-1 
+size(space::S)    where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = N 
+range(space::S)   where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = (minimum(space), maximum(space))
 
-function Base. identity(S::Type{T})::Operator{S} where {T<:Space{Tag}} where {Tag}
-    return Operator(S, Diagonal(ones(size(S))))
+function Base. identity(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+    return Operator(space, Diagonal(ones(T, size(space))))
 end
 
-function incomingboundary(S::Type{T})::Operator{S} where {T<:Space{Tag}} where {Tag}
-    return Operator(S, Diagonal([1, zeros(order(S))...])) 
+function incomingboundary(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+    return Operator(space, Diagonal([1, zeros(T, order(space))...])) 
 end
 
-function outgoingboundary(S::Type{T})::Operator{S} where {T<:Space{Tag}} where {Tag}
-    return Operator(S, Diagonal([zeros(order(S))..., 1])) 
+function outgoingboundary(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+    return Operator(space, Diagonal([zeros(T, order(space))..., 1])) 
 end
 
-function derivative(S::Type{T})::Operator{S} where {T<:Cardinal{Tag,N}} where {Tag, N}
-    return Operator(S, [derivative(S, i, j) for i in 1:size(S), j in 1:size(S)])
+function derivative(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+    return Operator(space, [derivative(space, i, j) for i in 1:size(space), j in 1:size(space)])
 end
 
-function integral(S::Type{T})::Operator{S} where {T<:Cardinal{Tag,N}} where {Tag,N}
-    return Operator(S, Diagonal([integral(S, i) for i in 1:size(S)]))
+function integral(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+    return Operator(space, Diagonal([integral(space, i) for i in 1:size(space)]))
 end
 
+function Field(space::S, umap::Function)::Field{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+    value = zeros(T, size(space))
+    for index in CartesianIndices(value)
+        value[index] = umap(collocation(space, index.I[1]))
+    end
+    return Field(space, value)
+end
