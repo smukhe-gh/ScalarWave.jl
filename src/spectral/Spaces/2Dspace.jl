@@ -28,12 +28,8 @@ function outgoingboundary(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1,  
     return kron(identity(PS.S2), outgoingboundary(PS.S1)) + kron(outgoingboundary(PS.S2), identity(PS.S1))  
 end
 
-function transpose(A::Operator{S})::Operator{S} where {S}
-    return Operator(A.space, A.value)
-end
-
 function derivative(PS::ProductSpace{S1, S2})::NTuple{2, Operator{ProductSpace{S1,  S2}}} where {S1, S2}
-    return (kron(identity(PS.S2), derivative(PS.S1)), kron(transpose(derivative(PS.S2)), identity(PS.S1)))
+    return (kron(identity(PS.S2), derivative(PS.S1)), kron(derivative(PS.S2), identity(PS.S1)))
 end
 
 function integral(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1,  S2}}  where {S1, S2}

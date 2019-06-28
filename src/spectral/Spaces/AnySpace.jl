@@ -41,3 +41,9 @@ function Base. \(A::Operator{S}, u::Field{S})::Field{S} where {S}
     @assert range(A.space) == range(u.space)
     return reshape(A.space, reshape(A)\reshape(u))
 end
+
+function Base. isapprox(u::Field{S}, v::Field{S})::Bool where {S}
+    @assert range(u.space) == range(v.space)
+    return u.value ≈ v.value
+end
+
