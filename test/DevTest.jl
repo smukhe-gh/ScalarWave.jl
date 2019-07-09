@@ -1,129 +1,51 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Soham 06-2019
-# Test an implementation of Kronecker Structs a.k.a. sparse operators
-# The algebra of sparse operators is a ring +, *
-#--------------------------------------------------------------------
-#    DenseOperator     DenseOperator
-#         |                 |
-#          -----------------
-#                 | ⦼
-#          SparseOperator{⦼}    SparseOperator{⦼}
-#                 |                    |
-#                  --------------------
-#                           | +, *
-#          SparseOperator{+}, SparseOperator{⦼}
+# Soham 07-2019
+# Solve the wave equation with a fixed background 
+# in spherically-symmetric spacetimes 
 #--------------------------------------------------------------------
 
-abstract type Operator end
+struct U end
+struct V end
+using LinearAlgebra
 
-struct M end
-struct ⦼ end
 
-struct DenseOperator{S, D, T} <: Operator
-    space::S
-    value::AbstractArray{T, D}
+function LinearAlgebra. display(A::Operator{S}) where {S}
+    display(reshape(A))
 end
 
-struct SparseOperator{S, T} <: Operator
-    O1::Operator
-    O2::Operator
+function LinearAlgebra. display(A::Field{S}) where {S}
+    display(A.value)
 end
 
-function Base. *(A::DenseOperator{S}, B::DenseOperator{S})::DenseOperator{S} where {S}
-    return DenseOperator(A.space, A.value*B.value)
-end
+# Construct the space
+SU  = ChebyshevGL{U, 2, Float64}(-1, 1)
+SV  = ChebyshevGL{V, 2, Float64}(-1, 1)
+SUV = ProductSpace(SU, SV)
 
-function Base. *(A::SparseOperator{S, ⦼}, B::SparseOperator{S, ⦼})::SparseOperator{S, ⦼} where {S}
-    return SparseOperator{S, ⦼}(A.O1*B.O1, A.O2*B.O2)
-end
+# Construct the derivatives and the field
+DU, DV = derivative(SUV)
+f = Field(SUV, (U,V)->1)
+r = Field(SUV, (U,V)->U-V)
 
-function Base. *(u::Field{S}, B::SparseOperator{S, ⦼})::SparseOperator{S, ⦼} where {S}
-    return 0
-end
+# Construct the operator
+L = DU*DV + ((DV*r)/r)*DU + ((DU*r)/r)*DV
 
-function Base. *(A::SparseOperator{S, ⦼}, u::Field{S})::SparseOperator{S, ⦼} where {S}
-    return Field(u.space, (A.O2.value*u.value*A.O1.value'))
-end
+# Constuct the boundary operator
+B = incomingboundary(SUV)
 
-function Base. collect(A::SparseOperator{S, ⦼})::AbstractArray  where {S}
-    @warn "Colleting a Kronecker struct is an expensive operation. Avoid this"
-    return kron(A.O1.value, A.O2.value)
-end
+# Enforce regularity on axis and boundary conditions at the incoming boundaries
+A = axisboundary(SUV) 
+M = Operator(A.space, isfinite.(L.value).*L.value)
+L = (M + A*(DU*DV)) ⊕ B
+# display(L)
+println()
+@show cond(reshape(L))
+@show sort(abs.(eigvals(reshape(L))))
 
-function Base. +(A::SparseOperator{S, ⦼}, B::SparseOperator{S, ⦼})::SparseOperator{S, +} where {S}
-    return SparseOperator{S, +}(A, B)
-end
+# Now set boundary conditions
+b = Field(SUV, (U,V)->sin(U-V)*cos(U+V)) 
+ϕ = solve(L, B*b)
+display(ϕ)
 
-function Base. +(A::SparseOperator{S, +}, B::SparseOperator{S, ⦼})::SparseOperator{S, +} where {S}
-    return SparseOperator{S, +}(A, B)
-end
 
-function Base. getindex(A::DenseOperator{S}, i::T, j::T)::Number where {S} where {T<:Int}
-    return A.value[i,j]
-end
-
-function Base. getindex(A::SparseOperator{S, ⦼}, i::T, j::T, k::T, l::T)::Number where {S} where {T<:Int}
-    return A.O1[i, k]*A.O2[j, l]
-end
-
-function Base. getindex(A::SparseOperator{S, +}, i::T, j::T, k::T, l::T)::Number where {S} where {T<:Int}
-    return A.O1[i,j,k,l] + A.O2[i,j,k,l]
-end
-
-function Base. getindex(A::SparseOperator{S, ⦼}, i::T, j::T)::Number where {S} where {T<:Int}
-    (m, n) = size(A.O1.value)    
-    (k, l) = size(A.O2.value)    
-    return A.O1[cld(i, k), cld(j, l)] * A.O2[(i - 1) % k + 1, (j - 1) % l + 1]
-end
-
-function Base. getindex(A::SparseOperator{S, +}, i::T, j::T)::Number where {S} where {T<:Int}
-    return A.O1[i,j] + A.O2[i,j]
-end
-
-#--------------------------------------------------------------------
-# Now test this shit!
-#--------------------------------------------------------------------
-#
-function test2index(A::SparseOperator{S, ⦼})::AbstractArray  where {S}
-    @warn "Colleting a Kronecker struct is an expensive operation. Avoid this"
-    (m, n) = size(A.O1.value)    
-    (p, q) = size(A.O2.value)    
-    value  = zeros(m*p, n*q)
-    for index in CartesianIndices(value)
-        value[index] = A[index.I...]
-    end
-    return reshape(value, (m*p, n*q))
-end
-
-function test4index(A::SparseOperator{S, ⦼})::AbstractArray  where {S}
-    @warn "Colleting a Kronecker struct is an expensive operation. Avoid this"
-    (m, n) = size(A.O1.value)    
-    (p, q) = size(A.O2.value)    
-    value  = zeros(m, p, n, q)
-    for index in CartesianIndices(value)
-        value[index] = A[index.I...]
-    end
-    return reshape(value, (m*p, n*q))
-end
-
-Sx = ChebyshevGL{M, 2, BigFloat}(-1, 1)
-Sy = ChebyshevGL{M, 2, BigFloat}(-3, 5)
-Dx = DenseOperator(Sx, derivative(Sx).value)
-Dy = DenseOperator(Sy, derivative(Sy).value)
-
-D2x = Dx*Dx 
-D2y = Dy*Dy
-
-D1 = SparseOperator{M, ⦼}(Dx, Dy) 
-D2 = D1 + D1 + D1
-D3 = D1 * D1
-
-@show typeof(D1)
-@show typeof(D2)
-@show typeof(D3)
-
-@test D3.O1.value ≈ D2x.value
-@test D3.O2.value ≈ D2y.value
-@test D2[1, 1, 2, 1] ≈ 3*D1[1, 1, 2, 1]
-@test collect(D1) ≈ kron(Dx.value, Dy.value)

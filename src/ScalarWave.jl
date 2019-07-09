@@ -11,6 +11,6 @@ include("./Spectral/Basis/ChebyshevGL.jl")
 include("./Spectral/Spaces/1Dspace.jl")
 include("./Spectral/Spaces/2Dspace.jl")
 include("./Spectral/Spaces/AnySpace.jl")
-
+include("AxiSymmetry.jl")
 
 end 
