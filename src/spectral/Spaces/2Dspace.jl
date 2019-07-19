@@ -5,6 +5,7 @@
 #--------------------------------------------------------------------
 
 import Base: maximum, minimum, range, size
+export axisboundary
 
 minimum(PS::T) where {T<:ProductSpace{S1, S2}} where {S1, S2} = (minimum(PS.S1), minimum(PS.S2))
 maximum(PS::T) where {T<:ProductSpace{S1, S2}} where {S1, S2} = (maximum(PS.S1), maximum(PS.S2))
@@ -21,11 +22,11 @@ function Base. identity(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1, S2}
 end
 
 function incomingboundary(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1,  S2}} where {S1, S2}
-    return kron(identity(PS.S2), incomingboundary(PS.S1)) + kron(incomingboundary(PS.S2), identity(PS.S1))  
+    return kron(identity(PS.S2), incomingboundary(PS.S1)) ⊕ kron(incomingboundary(PS.S2), identity(PS.S1))  
 end
 
 function outgoingboundary(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1,  S2}} where {S1, S2}
-    return kron(identity(PS.S2), outgoingboundary(PS.S1)) + kron(outgoingboundary(PS.S2), identity(PS.S1))  
+    return kron(identity(PS.S2), outgoingboundary(PS.S1)) ⊕ kron(outgoingboundary(PS.S2), identity(PS.S1))  
 end
 
 function derivative(PS::ProductSpace{S1, S2})::NTuple{2, Operator{ProductSpace{S1,  S2}}} where {S1, S2}

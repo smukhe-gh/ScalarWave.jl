@@ -7,45 +7,75 @@
 
 struct U end
 struct V end
-using LinearAlgebra
 
+#--------------------------------------------------------------------
+# Test away from the origin
+#--------------------------------------------------------------------
 
-function LinearAlgebra. display(A::Operator{S}) where {S}
-    display(reshape(A))
+if false
+    SU  = ChebyshevGL{U, 20, Float64}(-1, 1)
+    SV  = ChebyshevGL{V, 20, Float64}( 2, 4)
+    SUV = ProductSpace(SU, SV)
+    
+    u = Field(SUV, (u,v)->u)
+    v = Field(SUV, (u,v)->v)
+    r = Field(SUV, (u,v)->u-v)
+    
+    DU, DV = derivative(SUV)
+    B = incomingboundary(SUV)
+    I = identity(SUV)
+    
+    L = DU*DV + ((DU*r)/r)*DV + ((DV*r)/r)*DU 
+    
+    u = Field(SUV, (u,v)->sin(u+v))
+    b = Field(SUV, (u,v)->sin(u+v))
+    @show L1(L*u + b)
+    
+    ϕ  = solve(L ⊕ B, B*u - (I-B)*b)
+    @show L1(L*ϕ + b)
 end
 
-function LinearAlgebra. display(A::Field{S}) where {S}
-    display(A.value)
+
+#--------------------------------------------------------------------
+# Test on axis
+#--------------------------------------------------------------------
+
+if false
+    SU  = ChebyshevGL{U, 30, Float64}(-1, 1)
+    SV  = ChebyshevGL{V, 30, Float64}(-1, 1)
+    SUV = ProductSpace(SU, SV)
+    
+    u = Field(SUV, (u,v)->u)
+    v = Field(SUV, (u,v)->v)
+    r = Field(SUV, (u,v)->u-v)
+    
+    DU, DV = derivative(SUV)
+    B = incomingboundary(SUV)
+    I = identity(SUV)
+    
+    L = DU*DV + ((DU*r)/r)*DV + ((DV*r)/r)*DU 
+    L = enforceregularityonaxis(L, DU*DV)
+    @show cond(L ⊕ B)
+    
+    u = Field(SUV, (u,v)->sin(u+v))
+    b = Field(SUV, (u,v)->sin(u+v))
+    @show L1(L*u + b)
+    
+    using IterativeSolvers
+    using Preconditioners
+
+    A = reshape(L ⊕ B)
+    c = reshape(B*u - (I-B)*b)
+    P = DiagonalPreconditioner(A) 
+
+    # ϕ = reshape(SUV, gmres(A,c; verbose=true))
+    # ϕ = reshape(SUV, A \ c)
+    ϕ = reshape(SUV, cg(A,c, Pl=P))
+
+    @show L1(L*ϕ + b)
+    @show L1(ϕ - u)
+
+    pcolormesh(ϕ - u)
+    show()
 end
-
-# Construct the space
-SU  = ChebyshevGL{U, 2, Float64}(-1, 1)
-SV  = ChebyshevGL{V, 2, Float64}(-1, 1)
-SUV = ProductSpace(SU, SV)
-
-# Construct the derivatives and the field
-DU, DV = derivative(SUV)
-f = Field(SUV, (U,V)->1)
-r = Field(SUV, (U,V)->U-V)
-
-# Construct the operator
-L = DU*DV + ((DV*r)/r)*DU + ((DU*r)/r)*DV
-
-# Constuct the boundary operator
-B = incomingboundary(SUV)
-
-# Enforce regularity on axis and boundary conditions at the incoming boundaries
-A = axisboundary(SUV) 
-M = Operator(A.space, isfinite.(L.value).*L.value)
-L = (M + A*(DU*DV)) ⊕ B
-# display(L)
-println()
-@show cond(reshape(L))
-@show sort(abs.(eigvals(reshape(L))))
-
-# Now set boundary conditions
-b = Field(SUV, (U,V)->sin(U-V)*cos(U+V)) 
-ϕ = solve(L, B*b)
-display(ϕ)
-
 
