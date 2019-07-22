@@ -5,7 +5,7 @@
 #--------------------------------------------------------------------
 
 using LinearAlgebra
-export ⊕, solve, cond, L1
+export ⊕, solve, cond, L1, L2
 
 function Base. reshape(u::Field{S}) where {S}
     return reshape(u.value, (prod(size(u.space))))
@@ -115,7 +115,11 @@ function Base. maximum(u::Field{S})::Number where {S}
 end
     
 function Base. *(a::Number, u::Field{S})::Field{S} where {S}
-    return reshape(u.space, eltype(reshape(u))(a).*reshape(u))
+    return reshape(u.space, a.*reshape(u))
+end
+
+function Base. /(a::Number, u::Field{S})::Field{S} where {S}
+    return reshape(u.space, a./reshape(u))
 end
 
 function Base. display(A::Operator{S}) where {S}
@@ -126,4 +130,14 @@ end
 function L1(u::Field{S})::Number where {S}
     return maximum(abs(u))
 end
+
+function Base. sum(u::Field{S})::Number  where {S}
+    return sum(u.value)
+end
+
+function L2(u::Field{S})::Number where {S}
+    W = integral(u.space)
+    return sqrt(sum(W*(u^2)))
+end
+
 
