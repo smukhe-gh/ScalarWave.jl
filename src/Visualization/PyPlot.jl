@@ -4,10 +4,10 @@
 # Overload plotting routines from PyPlot
 #--------------------------------------------------------------------
 using PyPlot
-export pcolormesh
+export plot, pcolormesh
 
-function PyPlot. plot(u::Field{S}; plotstyle="o") where {S}
-    x = Field(S, x->x)
+function PyPlot. plot(u::Field{S}; plotstyle="-o") where {S}
+    x = Field(u.space, x->x)
     plot(x.value,  u.value, plotstyle) 
     return 0
 end

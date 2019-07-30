@@ -5,7 +5,7 @@
 
 using ScalarWave, Test
 
-libraries = ["Dev"]
+libraries = ["DualNumbers"]
 
 for file in libraries
     @info "Testing $file"

@@ -127,6 +127,11 @@ function Base. display(A::Operator{S}) where {S}
     println()
 end
 
+function Base. display(u::Field{S}) where {S}
+    display(u.value)
+    println()
+end
+
 function L1(u::Field{S})::Number where {S}
     return maximum(abs(u))
 end
@@ -140,4 +145,13 @@ function L2(u::Field{S})::Number where {S}
     return sqrt(sum(W*(u^2)))
 end
 
+function  ⊕(u::Field{S}, v::Field{S})::Field{S} where {S}
+    @assert range(u.space) == range(v.space)
+    I = identity(u.space)
+    B = incomingboundary(u.space)
+    return (I - B)*v + B*u
+end
 
+function Base. -(u::Field{S})::Field{S} where {S}
+    return Field(u.space, -u.value)
+end
