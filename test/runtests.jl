@@ -5,7 +5,7 @@
 
 using ScalarWave, Test
 
-libraries = ["DualNumbers"]
+libraries = ["AutomaticDiff"]
 
 for file in libraries
     @info "Testing $file"
