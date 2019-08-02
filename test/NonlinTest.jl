@@ -45,8 +45,3 @@ b = Field(S, x->1)
 
 u0 = (I-B)*s + B*b 
 uf = NewtonIterator(u0, J, F, abstol=1e-20)
-
-# using PyPlot
-# @show uf.value[8]
-# plot(uf)
-# show()

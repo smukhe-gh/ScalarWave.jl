@@ -5,7 +5,7 @@
 
 using ScalarWave, Test
 
-libraries = ["AutomaticDiff"]
+libraries = ["Dev"]
 
 for file in libraries
     @info "Testing $file"

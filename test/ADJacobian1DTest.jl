@@ -60,7 +60,7 @@ I = identity(S)
 u = Field(S, x->1)
 b = Field(S, x->0)  
 
-u = nlsolve(f!, j!, reshape(u); show_trace=true, ftol=1e-12)
+u = nlsolve(f!, reshape(u); autodiff=:forward, show_trace=true, ftol=1e-12)
 
 using PyPlot
 plot(reshape(S, u.zero))
