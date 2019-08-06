@@ -64,6 +64,12 @@ function F(f::Field{S}, r::Field{S}, ϕ::Field{S})::NTuple{3, Field{S}} where {S
     return (finalresf, finalresr, finalresϕ)
 end
 
+function C(f::Field{S}, r::Field{S}, ϕ::Field{S})::NTuple{2, Field{S}} where {S}
+    CU = 2*((1/f)*(DU*f)*(DU*r) - DU*DU*r)/r
+    CV = 2*((1/f)*(DV*f)*(DV*r) - DV*DV*r)/r
+    return (CU, CV)
+end
+
 function reshapeFromTuple(U::NTuple{3, Field})
     return vcat(reshape(U[1]), reshape(U[2]), reshape(U[3]))
 end
@@ -78,8 +84,8 @@ end
 #--------------------------------------------------------------------
 
 struct Q end
-S1 = ChebyshevGL{Q, 13, Float64}(-8, -4)
-S2 = ChebyshevGL{Q, 13, Float64}(3, 4)
+S1 = ChebyshevGL{Q, 23, Float64}(-8, -2)
+S2 = ChebyshevGL{Q, 23, Float64}(3, 7)
 S  = ProductSpace(S1, S2)
 DU, DV = derivative(S)
 B = incomingboundary(S)
@@ -157,6 +163,9 @@ if true
     bndϕ = B*ϕ
     
     resf, resr, resϕ = F(f, r, ϕ)
+    CU, CV = C(f, r, ϕ)
+    @show L2(CU)
+    @show L2(CV)
 
     # Iniital guess
     fac = 1e-1
@@ -168,4 +177,8 @@ if true
     @show L1(fsol-f)
     @show L1(rsol-r)
     @show L1(ϕsol-ϕ)
+
+    CU, CV = C(fsol, rsol, ϕsol)
+    @show L2(CU)
+    @show L2(CV)
 end
