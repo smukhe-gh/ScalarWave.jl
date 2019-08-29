@@ -5,6 +5,7 @@
 
 using ScalarWave, Test
 
+libraries = ["InitialDataSolver"]
 libraries = ["Dev"]
 
 for file in libraries

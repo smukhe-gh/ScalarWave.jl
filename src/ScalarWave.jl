@@ -13,5 +13,6 @@ include("./Spectral/Spaces/2Dspace.jl")
 include("./Spectral/Spaces/AnySpace.jl")
 include("./Visualization/PyPlot.jl")
 include("AxiSymmetry.jl")
+include("DoubleNullCoordinates.jl")
 
 end 

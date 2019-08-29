@@ -17,32 +17,32 @@ function f!(fvec::Array{T,1}, x::Array{T,1}) where {T}
     fvec[:] = reshapeFromTuple(F(reshapeToTuple(S, x)...))
 end
 
-function j!(J::Array{T,2}, x::Array{T,1}) where {T}
-    x = Array{Union{eltype(x), Dual{eltype(x)}}}(x) 
-    for index in 1:length(x)
-        J[:, index] = Δf(index, x)
-    end
-    x = Array{eltype(x)}(x) 
+abstract type SolverState end
+
+struct State{S} <: SolverState
+    f::Field{S}
+    r::Field{S}
+    ϕ::Field{S}
 end
 
-function Δf(j::Int, x::Array{T,1})::Array{T,1} where {N, T <: Union{X, Dual{X}}} where {X}
-    x[j] = Dual(x[j], 1)
-    δf   = reshapeFromTuple(F(reshapeToTuple(S, x)...)) 
-    x[j] = realpart(x[j])
-    return dualpart.(δf)
+struct Residual{S} <: SolverState
+    f::Field{S}
+    r::Field{S}
+    ϕ::Field{S}
+end
+
+function Base. reshape(state::State{S})::Array{Number, 1} where {S}
+    return 
+
+end
+
+function Base. reshape(x::Array{Number, 1}, space::S)::State{S} where {S}
+
 end
 
 #--------------------------------------------------------------------
 # Auxilliary functions 
 #--------------------------------------------------------------------
-
-function Base. log(u::Field{S})::Field{S} where {S}
-    return Field(u.space, log.(u.value))
-end
-
-function Base. exp(u::Field{S})::Field{S} where {S}
-    return Field(u.space, exp.(u.value))
-end
 
 function F(f::Field{S}, r::Field{S}, ϕ::Field{S})::NTuple{3, Field{S}} where {S}
 
@@ -84,7 +84,7 @@ end
 #--------------------------------------------------------------------
 
 struct Q end
-T  = Complex
+T  = Float64
 S1 = ChebyshevGL{Q, 10, T}(-8, -4)
 S2 = ChebyshevGL{Q, 10, T}(3, 5)
 S  = ProductSpace(S1, S2)
@@ -96,7 +96,7 @@ I = identity(S)
 # Schwarzschild Spacetime
 #--------------------------------------------------------------------
 
-if false
+if true
     println("Testing Schwarzschild in vacuum")
 
     # Analytic solution
@@ -130,34 +130,3 @@ if false
     @show L2(CU)
     @show L2(CV)
 end
-
-
-#--------------------------------------------------------------------
-# Arbitrary spacetime
-#--------------------------------------------------------------------
-
-ru02D = Field(S, (u,v)->exp(im*(u+v)/sqrt(2)))
-fu02D = Field(S, (u,v)->1)
-ϕu02D = Field(S, (u,v)->u+v)
-
-# Boundary conditions
-bndf = B*fu02D
-bndr = B*ru02D
-bndϕ = B*ϕu02D
-
-resf, resr, resϕ = F(fu02D, ru02D, ϕu02D)
-CU, CV = C(f, r, ϕ)
-@show L2(CU)
-@show L2(CV)
-
-# Iniital guess
-fac = 1e-4
-noise = Field(S, (u,v)->fac*rand())
-@show maximum(noise)
-
-u = nlsolve(f!, reshapeFromTuple((f + noise, r + noise, ϕ + noise)); autodiff=:forward, show_trace=true, ftol=1e-9)
-fsol, rsol, ϕsol = reshapeToTuple(S, u.zero)
-
-CU, CV = C(fsol, rsol, ϕsol)
-@show L2(CU)
-@show L2(CV)
