@@ -8,6 +8,7 @@ using LinearAlgebra
 import Base: maximum, minimum, range, size
 export order, identity, incomingboundary, outgoingboundary
 
+ndims(space::S)   where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = 1 
 minimum(space::S) where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = space.min
 maximum(space::S) where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = space.max
 order(space::S)   where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = N-1 

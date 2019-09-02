@@ -7,6 +7,7 @@
 import Base: maximum, minimum, range, size
 export axisboundary
 
+ndims(PS::T)   where {T<:ProductSpace{S1, S2}} where {S1, S2} = 2 
 minimum(PS::T) where {T<:ProductSpace{S1, S2}} where {S1, S2} = (minimum(PS.S1), minimum(PS.S2))
 maximum(PS::T) where {T<:ProductSpace{S1, S2}} where {S1, S2} = (maximum(PS.S1), maximum(PS.S2))
 order(PS::T)   where {T<:ProductSpace{S1, S2}} where {S1, S2} = (order(PS.S1), order(PS.S2)) 

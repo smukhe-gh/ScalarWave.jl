@@ -64,12 +64,12 @@ end
 
 function Base. *(u::Field{S}, v::Field{S})::Field{S} where {S}
     @assert range(u.space) == range(v.space)
-    return Field(u.space, reshape(u).*reshape(v))
+    return reshape(u.space, reshape(u).*reshape(v))
 end
     
 function Base. /(u::Field{S}, v::Field{S})::Field{S} where {S}
     @assert range(u.space) == range(v.space)
-    return Field(u.space, reshape(u)./reshape(v))
+    return reshape(u.space, reshape(u)./reshape(v))
 end
 
 function  ⊕(A::Operator{S}, B::Operator{S})::Operator{S} where {S}
@@ -107,7 +107,7 @@ function Base. ^(u::Field{S}, a::Number)::Field{S} where {S}
 end
 
 function Base. abs(u::Field{S})::Field{S} where {S}
-    return Field(u.space, abs.(reshape(u)))
+    return reshape(u.space, abs.(reshape(u)))
 end
 
 function Base. maximum(u::Field{S})::Number where {S}
@@ -156,23 +156,23 @@ function  ⊕(u::Field{S}, v::Field{S})::Field{S} where {S}
 end
 
 function Base. -(u::Field{S})::Field{S} where {S}
-    return Field(u.space, -reshape(u))
+    return reshape(u.space, -reshape(u))
 end
 
 function Base. +(a::Number, u::Field{S})::Field{S} where {S}
-    return Field(u.space, a .+ reshape(u))
+    return reshape(u.space, a .+ reshape(u))
 end
 
 function Base. /(u::Field{S}, a::Number)::Field{S} where {S}
-    return Field(u.space, reshape(u)./a)
+    return reshape(u.space, reshape(u)./a)
 end
 
 function Base. log(u::Field{S})::Field{S} where {S}
-    return Field(u.space, log.(reshape(u)))
+    return reshape(u.space, log.(reshape(u)))
 end
 
 function Base. exp(u::Field{S})::Field{S} where {S}
-    return Field(u.space, exp.(reshape(u)))
+    return reshape(u.space, exp.(reshape(u)))
 end
 
 
