@@ -18,21 +18,21 @@ function lineconstraints(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where
     return 2*(D*D*r - (1/f)*(D*f)*(D*r)) + r*(D*ϕ)^2
 end
 
-function extractUboundary(u::Field{ProductSpace{S1,S2}})::Field{S1} where {S1, S2}
+function extractUboundary(u::Field{ProductSpace{S1,S2}})::Field{S2} where {S1, S2}
     @assert ndims(u.value) == 2
-    return Field(u.space.S1, u.value[end, :])
+    return Field(u.space.S2, u.value[end, :])
 end
 
-function extractVboundary(u::Field{ProductSpace{S1,S2}})::Field{S2} where {S1, S2}
+function extractVboundary(u::Field{ProductSpace{S1,S2}})::Field{S1} where {S1, S2}
     @assert ndims(u.value) == 2
-    return Field(u.space.S2, u.value[:, end])
+    return Field(u.space.S1, u.value[:, end])
 end
 
-function combineUVboundary(u::Field{S1}, v::Field{S2})::Field{ProductSpace{S1, S2}} where {S1, S2}
-    PS = ProductSpace(u.space, v.space)
+function combineUVboundary(ubnd::Field{SV}, vbnd::Field{SU})::Field{ProductSpace{SU, SV}} where {SU, SV}
+    PS = ProductSpace(vbnd.space, ubnd.space)
     w  = Field(PS, (u,v)->rand())    
-    w.value[end, :] = u.value
-    w.value[:, end] = v.value
+    w.value[end, :] = ubnd.value
+    w.value[:, end] = vbnd.value
     return w
 end
 
@@ -40,13 +40,13 @@ end
 # Generic Spacetime 
 #--------------------------------------------------------------------
 
-using DoubleFloats
+import DoubleFloats.Double64
 struct U end
 struct V end
 
 T  = Double64
-SU = ChebyshevGL{U, 3, T}(-4, -3)
-SV = ChebyshevGL{V, 3, T}( 5,  6)
+SU = ChebyshevGL{U, 6, T}(-4, -3) 
+SV = ChebyshevGL{V, 6, T}( 5,  6)
 S  = ProductSpace(SU, SV)
 
 # Schwarzschild Analytic solution
@@ -57,21 +57,99 @@ f = ((16*M^3)/r)*exp(-r/2M)
 
 # test constraint equations and it's derivatives with 
 # Schwarzschild solution
-cu, cv = constraints(f, r, ϕ)
-@show L2(cu)
-@show L2(cv)
-
-# Now extract the boundaries and check constraints on the line. 
-u = Field(S, (u,v)->u)
-v = Field(S, (u,v)->v)
-
-@show extractUboundary(f)
-
-exit()
+# cu, cv = constraints(f, r, ϕ)
+# @show L2(cu)
+# @show L2(cv)
 
 # Now test constraints along lines
-clu = lineconstraints(extractUboundary(f),
-                      extractUboundary(r),
-                      extractUboundary(ϕ))
+# clu = lineconstraints(extractUboundary(f),
+                      # extractUboundary(r),
+                      # extractUboundary(ϕ))
 
-@show L2(clu)
+# clv = lineconstraints(extractVboundary(f),
+                      # extractVboundary(r),
+                      # extractVboundary(ϕ))
+# @show L2(clu)
+# @show L2(clv)
+
+#--------------------------------------------------------------------
+# Now test the solvers
+#--------------------------------------------------------------------
+
+#  Choose f and solve for r
+function IDSolverR(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Space{Tag}} where {Tag}
+    #  Construct local 1D operators
+    D = derivative(ϕ.space)
+    I = identity(ϕ.space)
+    A = 2*(D*D - (1/f)*(D*f)*(D)) + ((D*ϕ)^2)*I
+
+    # Specify boundary values at the end points for r
+    B = incomingboundary(ϕ.space) + outgoingboundary(ϕ.space)
+    b = B*r 
+
+    # Construct operator for r after choosing the gauge for f
+    # and solve the 1D equation
+    rsolved = solve(A ⊕ B, b)
+    return rsolved
+end
+
+# Choose r and solve for f
+function IDSolverF(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S<:Space{Tag}} where {Tag}
+    #  Construct local 1D operators
+    D = derivative(ϕ.space)
+    I = identity(ϕ.space)
+    A = 2*((D*D*r)*I - (D*r)*D) + (r*(D*ϕ)^2)*I
+
+    # Construct RHS to enforce boundary conditions
+    B = outgoingboundary(ϕ.space)
+    b = B*f 
+
+    # Construct operator for f and solve the 1D equation
+    fsolved = solve(A ⊕ B, b)
+    return fsolved
+end
+
+rsolvedU = IDSolverR(extractUboundary(f), 
+                     extractUboundary(r), 
+                     extractUboundary(ϕ))
+
+rsolvedV = IDSolverR(extractVboundary(f), 
+                     extractVboundary(r), 
+                     extractVboundary(ϕ))
+
+# rsolved = combineUVboundary(rsolvedU, rsolvedV)
+# display(outgoingboundary(S)*(rsolved - r))
+
+# @show L2(extractUboundary(r) - rsolved)
+
+# fsolved = IDSolverF(extractVboundary(f), 
+                    # extractVboundary(r), 
+                    # extractVboundary(ϕ))
+# @show L2(extractVboundary(f) - fsolved)
+
+#--------------------------------------------------------------------
+# Now test with generic spacetimes
+#--------------------------------------------------------------------
+
+M = T(1.0)
+r = Field(S, (u,v)->u-v)
+f = Field(S, (u,v)->1)
+ϕ = Field(S, (u,v)->exp(-v^2) + exp(-u^2))
+
+rsolvedU = IDSolverR(extractUboundary(f), 
+                     extractUboundary(r), 
+                     extractUboundary(ϕ))
+
+rsolvedV = IDSolverR(extractVboundary(f), 
+                     extractVboundary(r), 
+                     extractVboundary(ϕ))
+
+@show L2(lineconstraints(extractUboundary(f), rsolvedU, extractUboundary(ϕ)))
+@show L2(lineconstraints(extractVboundary(f), rsolvedV, extractVboundary(ϕ)))
+
+@show rsolvedU.value
+@show rsolvedV.value
+rsolved = combineUVboundary(rsolvedU, rsolvedV)
+display(rsolved)
+
+

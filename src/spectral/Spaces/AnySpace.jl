@@ -171,6 +171,10 @@ function Base. log(u::Field{S})::Field{S} where {S}
     return reshape(u.space, log.(reshape(u)))
 end
 
+function Base. log10(u::Field{S})::Field{S} where {S}
+    return reshape(u.space, log10.(reshape(u)))
+end
+
 function Base. exp(u::Field{S})::Field{S} where {S}
     return reshape(u.space, exp.(reshape(u)))
 end
