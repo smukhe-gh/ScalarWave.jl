@@ -4,7 +4,7 @@
 # Define operations for 2D spaces
 #--------------------------------------------------------------------
 
-import Base: maximum, minimum, range, size
+import Base: maximum, minimum, range, size, ndims
 export axisboundary
 
 ndims(PS::T)   where {T<:ProductSpace{S1, S2}} where {S1, S2} = 2 
@@ -37,7 +37,6 @@ end
 function integral(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1,  S2}}  where {S1, S2}
     return kron(integral(PS.S2), integral(PS.S1)) 
 end
-
 
 function Field(PS::ProductSpace{S1, S2}, umap::Function)::Field{ProductSpace{S1, S2}} where {S1, S2 <: Cardinal{Tag, N, T}} where {Tag, N, T}
     value = zeros(T, size(PS))

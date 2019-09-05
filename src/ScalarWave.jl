@@ -12,7 +12,9 @@ include("./Spectral/Spaces/1Dspace.jl")
 include("./Spectral/Spaces/2Dspace.jl")
 include("./Spectral/Spaces/AnySpace.jl")
 include("./Visualization/PyPlot.jl")
-include("AxiSymmetry.jl")
-include("DoubleNullCoordinates.jl")
+include("./Misc/AxiSymmetry.jl")
+include("./Misc/DoubleNullCoordinates.jl")
+include("./Misc/NonLinSolverUtil.jl")
+include("./Misc/InitialDataSolverUtil.jl")
 
 end 

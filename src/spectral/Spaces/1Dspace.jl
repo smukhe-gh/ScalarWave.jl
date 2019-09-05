@@ -5,7 +5,7 @@
 #--------------------------------------------------------------------
 
 using LinearAlgebra
-import Base: maximum, minimum, range, size
+import Base: maximum, minimum, range, size, ndims
 export order, identity, incomingboundary, outgoingboundary
 
 ndims(space::S)   where {S<:Cardinal{Tag, N, T}} where {Tag, N, T} = 1 
@@ -19,11 +19,11 @@ function Base. identity(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} wh
     return Operator(space, Diagonal(ones(T, size(space))))
 end
 
-function incomingboundary(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+function outgoingboundary(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
     return Operator(space, Diagonal([1, zeros(T, order(space))...])) 
 end
 
-function outgoingboundary(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
+function incomingboundary(space::S)::Operator{S} where {S<:Cardinal{Tag, N, T}} where {Tag, N, T}
     return Operator(space, Diagonal([zeros(T, order(space))..., 1])) 
 end
 
