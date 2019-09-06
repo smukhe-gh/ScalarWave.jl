@@ -225,10 +225,10 @@ uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 version = "0.2.4"
 
 [[FastGaussQuadrature]]
-deps = ["Compat", "LinearAlgebra", "SpecialFunctions"]
-git-tree-sha1 = "769ac4057ed875f433372e9a571a2cb86347d1be"
+deps = ["LinearAlgebra", "SpecialFunctions"]
+git-tree-sha1 = "af35c193d743c674a25c384a9b673299a179cc2b"
 uuid = "442a2c76-b920-505d-bb47-c5924d526838"
-version = "0.3.3"
+version = "0.4.0"
 
 [[FastTransforms]]
 deps = ["AbstractFFTs", "Compat", "DSP", "FFTW", "HierarchicalMatrices", "LinearAlgebra", "LowRankApprox", "ProgressMeter", "SpecialFunctions", "ToeplitzMatrices"]
@@ -283,6 +283,18 @@ deps = ["Colors", "Compat", "NaNMath"]
 git-tree-sha1 = "e3ead4211073d4117a0d2ef7d1efc5c8092c8412"
 uuid = "a2bd30eb-e257-5431-a919-1863eab51364"
 version = "0.4.0"
+
+[[Gtk]]
+deps = ["BinDeps", "Cairo", "Compat", "Dates", "Graphics", "Homebrew", "Libdl", "Reexport", "Serialization", "Test", "WinRPM"]
+git-tree-sha1 = "b4c6c9848a711cf4a400fb74b54c67073471b713"
+uuid = "4c0ca9eb-093a-5379-98c5-f87ac0bbbf44"
+version = "0.17.0"
+
+[[GtkReactive]]
+deps = ["Cairo", "Colors", "Dates", "FixedPointNumbers", "Graphics", "Gtk", "IntervalSets", "Reactive", "Reexport", "RoundingIntegers"]
+git-tree-sha1 = "8e13a1d8851667f0a59a8aa2a98b2b09eec3d310"
+uuid = "27996c0f-39cd-5cc1-a27a-05f136f946b6"
+version = "0.6.0"
 
 [[HDF5]]
 deps = ["BinDeps", "Blosc", "Distributed", "Homebrew", "Libdl", "LinearAlgebra", "Mmap", "Pkg", "Test", "WinRPM"]
@@ -456,10 +468,9 @@ uuid = "e89f7d12-3494-54d1-8411-f7d8b9ae1f27"
 version = "0.5.0"
 
 [[Missings]]
-deps = ["SparseArrays", "Test"]
-git-tree-sha1 = "f0719736664b4358aa9ec173077d4285775f8007"
+git-tree-sha1 = "29858ce6c8ae629cf2d733bffa329619a1c843d0"
 uuid = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
-version = "0.4.1"
+version = "0.4.2"
 
 [[Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
@@ -513,9 +524,9 @@ version = "0.11.0"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "db2b35dedab3c0e46dc15996d170af07a5ab91c9"
+git-tree-sha1 = "ef0af6c8601db18c282d092ccbd2f01f3f0cd70b"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "0.3.6"
+version = "0.3.7"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
@@ -559,6 +570,12 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 deps = ["Printf"]
 uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 
+[[ProfileView]]
+deps = ["Cairo", "Colors", "FileIO", "Graphics", "Gtk", "GtkReactive", "InteractiveUtils", "IntervalSets", "Profile", "UUIDs"]
+git-tree-sha1 = "956eb8b83eb9bbaee6307c55052288751838ee73"
+uuid = "c46f51b8-102a-5cf2-8d2c-8597cb0e0da7"
+version = "0.4.1"
+
 [[ProgressMeter]]
 deps = ["Distributed", "Printf"]
 git-tree-sha1 = "0f08e0e74e5b160ca20d3962a2620038b75881c7"
@@ -597,6 +614,12 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
+[[Reactive]]
+deps = ["DataStructures", "Distributed", "Test"]
+git-tree-sha1 = "5862d915387ebb954016f50a88e34f79a9e5fcd2"
+uuid = "a223df75-4e93-5b7c-acf9-bdd599c0f4de"
+version = "0.8.3"
+
 [[RecipesBase]]
 git-tree-sha1 = "7bdce29bc9b2f5660a6e5e64d64d91ec941f6aa2"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
@@ -619,6 +642,12 @@ deps = ["Compat", "Printf"]
 git-tree-sha1 = "9a66815d2530705097a5668efa8b88aa238ada47"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 version = "0.7.3"
+
+[[RoundingIntegers]]
+deps = ["Test"]
+git-tree-sha1 = "293ba0ab32218b9ffd596040224228def84f8da0"
+uuid = "d5f540fe-1c90-5db3-b776-2e2f362d9394"
+version = "0.2.0"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"

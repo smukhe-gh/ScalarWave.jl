@@ -5,8 +5,8 @@
 
 using ScalarWave, Test
 
-libraries = ["ConstraintSolver"]
 libraries = ["Dev"]
+libraries = ["Perf"]
 
 for file in libraries
     @info "Testing $file"

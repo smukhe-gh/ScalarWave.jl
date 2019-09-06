@@ -5,6 +5,7 @@
 #--------------------------------------------------------------------
 
 export initialdatasolver
+export extractUboundary, extractVboundary, combineUVboundary
 
 function extractUboundary(u::Field{ProductSpace{S1,S2}})::Field{S2} where {S1, S2}
     @assert ndims(u.value) == 2

@@ -179,4 +179,7 @@ function Base. exp(u::Field{S})::Field{S} where {S}
     return reshape(u.space, exp.(reshape(u)))
 end
 
+function Base. sin(u::Field{S})::Field{S} where {S}
+    return reshape(u.space, sin.(reshape(u)))
+end
 

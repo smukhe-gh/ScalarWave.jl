@@ -5,6 +5,7 @@
 #--------------------------------------------------------------------
 
 using NLsolve
+using Profile
 
 function nonlinearsolver(PS::ProductSpace{S1, S2})::NTuple{5, Field{ProductSpace{S1, S2}}} where {S1, S2}
 
@@ -42,7 +43,7 @@ function nonlinearsolver(PS::ProductSpace{S1, S2})::NTuple{5, Field{ProductSpace
     f0 = Field(PS, (u,v)->1)
 
     # Schwarzschild spacetime 
-    M = Double64(1.0)
+    M  = 1.0
     r0 = Field(PS, (u,v)->find_r_of_UV(u,v,M))
     f0 = ((16*M^3)/r0)*exp(-r0/2M)
     ϕ0 = Field(PS, (u,v)->0)
@@ -56,14 +57,14 @@ function nonlinearsolver(PS::ProductSpace{S1, S2})::NTuple{5, Field{ProductSpace
 
     # Compute constraints before solve
     E1, E2 = C(f0, rs, ϕ0)
-    @show L2(E1), L2(E2)
+    # @show L2(E1), L2(E2)
 
     # Start solve
     fsolved, rsolved, ϕsolved = reshapeToTuple(PS, nlsolve(f!, reshapeFromTuple((sin(f0) + f0, sin(r0) + r0, sin(ϕ0) + ϕ0)); 
                                                            autodiff=:forward, show_trace=false, ftol=1e-9).zero)
     # Compute constraints after solve
     E1, E2 = C(fsolved, rsolved, ϕsolved)
-    @show L2(E1), L2(E2)
+    # @show L2(E1), L2(E2)
    
     return (fsolved, rsolved, ϕsolved, E1, E2)
 end
@@ -74,27 +75,13 @@ end
 # Do a convergence test
 #--------------------------------------------------------------------
 
-NT = 20
-L2CU = zeros(NT)
-L2CV = zeros(NT)
-NVEC = zeros(NT)
-
 struct U end
 struct V end
 
-import DoubleFloats.Double64
+PS = ProductSpace(ChebyshevGL{U, 10, Float64}(-8, -6), 
+                  ChebyshevGL{V, 10, Float64}( 3,  5))
+nonlinearsolver(PS)
 
-for N in 4:NT
-    @show N
-    PS = ProductSpace(ChebyshevGL{U, N, Double64}(-8, -6), 
-                      ChebyshevGL{V, N, Double64}( 3,  5))
-    f, r, ϕ, cu, cv = nonlinearsolver(PS)
-    L2CU[N] = L2(cu)
-    L2CV[N] = L2(cv)
-    NVEC[N] = N
-end
-
-using PyPlot
-plot(NVEC, log10.(L2CU), "-o")
-plot(NVEC, log10.(L2CV), "-o")
-show()
+Profile.clear()
+@profile (for i = 1:10; nonlinearsolver(PS); end)
+Profile.print(format=:flat, sortedby=:count)
