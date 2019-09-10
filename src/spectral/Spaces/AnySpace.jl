@@ -183,3 +183,10 @@ function Base. sin(u::Field{S})::Field{S} where {S}
     return reshape(u.space, sin.(reshape(u)))
 end
 
+function Base. cos(u::Field{S})::Field{S} where {S}
+    return reshape(u.space, cos.(reshape(u)))
+end
+
+function Base. sqrt(u::Field{S})::Field{S} where {S}
+    return reshape(u.space, sqrt.(reshape(u)))
+end

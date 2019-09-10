@@ -6,9 +6,9 @@
 using PyPlot
 export plot, pcolormesh
 
-function PyPlot. plot(u::Field{S}; plotstyle="-o") where {S}
+function PyPlot. plot(u::Field{S}; plotstyle="-o", label="") where {S}
     x = Field(u.space, x->x)
-    plot(x.value,  u.value, plotstyle) 
+    plot(x.value,  u.value, plotstyle, label=label) 
     return 0
 end
 

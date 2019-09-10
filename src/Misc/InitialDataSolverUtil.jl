@@ -24,19 +24,3 @@ function combineUVboundary(ubnd::Field{SV}, vbnd::Field{SU})::Field{ProductSpace
     w.value[:, end] = vbnd.value
     return w
 end
-
-function solveR(f::Field{S}, r::Field{S}, ϕ::Field{S})::Field{S} where {S}
-    D = derivative(ϕ.space)
-    I = identity(ϕ.space)
-    B = incomingboundary(ϕ.space) + outgoingboundary(ϕ.space)
-    A = 2*(D*D - (1/f)*(D*f)*(D)) + ((D*ϕ)^2)*I
-    return solve(A ⊕ B, B*r)
-end
-
-function initialdatasolver(f::Field{S}, r::Field{S}, ϕ::Field{S})::NTuple{3, Field{S}} where {S}
-    rU = solveR(extractUboundary(f), extractUboundary(r), extractUboundary(ϕ))
-    rV = solveR(extractVboundary(f), extractVboundary(r), extractVboundary(ϕ))
-    r  = combineUVboundary(rU, rV)
-    return (f, r, ϕ)
-end
-

@@ -5,8 +5,8 @@
 
 using ScalarWave, Test
 
-libraries = ["Dev"]
-libraries = ["Perf"]
+libraries = ["InitialData"]
+libraries = ["NonLinSolver"]
 
 for file in libraries
     @info "Testing $file"
