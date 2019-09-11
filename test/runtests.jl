@@ -7,6 +7,7 @@ using ScalarWave, Test
 
 libraries = ["InitialData"]
 libraries = ["NonLinSolver"]
+libraries = ["Performance"]
 
 for file in libraries
     @info "Testing $file"

@@ -1,88 +1,194 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Soham 07-2019
-# Test functions inside functions
+# Soham 10-2019
+# Test the performance of the residual evaluator
 #--------------------------------------------------------------------
+# [1] Compute operators correctly.
+# [2] Compute product of operators and fields correctly.
+# [3] Compute product of fields correctly. 
+# [4] Can you simplify [1] and [2] into a single step? 
 
-using NLsolve
-using Profile
 
-function nonlinearsolver(PS::ProductSpace{S1, S2})::NTuple{5, Field{ProductSpace{S1, S2}}} where {S1, S2}
-
-    # Compute constraints
-    function C(f::Field{S}, r::Field{S}, ϕ::Field{S})::NTuple{2, Field{S}} where {S}
-        E1 = 2*(DU*DU*r - (1/f)*(DU*f)*(DU*r)) + r*(DU*ϕ)^2
-        E2 = 2*(DV*DV*r - (1/f)*(DV*f)*(DV*r)) + r*(DV*ϕ)^2
-        return (E1, E2)
-    end
-
-    # Compute residuals
-    function F(f::Field{S}, r::Field{S}, ϕ::Field{S})::NTuple{3, Field{S}} where {S}
-        resf = DU*(DV*log(abs(f))) + (2/r)*(DU*(DV*r)) + 2*(DU*ϕ)*(DV*ϕ)
-        resr = 2*(DU*(DV*r)) + (2/r)*(DU*r)*(DV*r) + (f/r)
-        resϕ = DU*DV*ϕ + (1/r)*(DU*r)*(DV*ϕ) + (1/r)*(DV*r)*(DU*ϕ)
-        finalresf = (I-B)*resf + B*(f - bndf)
-        finalresr = (I-B)*resr + B*(r - bndr)
-        finalresϕ = (I-B)*resϕ + B*(ϕ - bndϕ)
-        return (finalresf, finalresr, finalresϕ)
-    end
-    
-    # Wrapper for nlsolve
-    function f!(fvec::Array{T,1}, x::Array{T,1}) where {T}
-        fvec[:] = reshapeFromTuple(F(reshapeToTuple(PS, x)...))
-    end
-
-    # Compute common operators
-    DU, DV = derivative(PS)
-    B = incomingboundary(PS)
-    I = identity(PS)
-
-    # Set up free variables
-    ϕ0 = Field(PS, (u,v)->exp(-(v-4)^2))  # Incoming wave travelling in the u-direction
-    r0 = Field(PS, (u,v)->v-u)
-    f0 = Field(PS, (u,v)->1)
-
-    # Schwarzschild spacetime 
-    M  = 1.0
-    r0 = Field(PS, (u,v)->find_r_of_UV(u,v,M))
-    f0 = ((16*M^3)/r0)*exp(-r0/2M)
-    ϕ0 = Field(PS, (u,v)->0)
-    E1, E2 = C(f0, r0, ϕ0)
-    
-    # Solve constraints at the incoming boundary and set boundary conditions
-    f0, rs, ϕ0 = initialdatasolver(f0, r0, ϕ0)
-    bndf = B*f0
-    bndr = B*rs
-    bndϕ = B*ϕ0
-
-    # Compute constraints before solve
-    E1, E2 = C(f0, rs, ϕ0)
-    # @show L2(E1), L2(E2)
-
-    # Start solve
-    fsolved, rsolved, ϕsolved = reshapeToTuple(PS, nlsolve(f!, reshapeFromTuple((sin(f0) + f0, sin(r0) + r0, sin(ϕ0) + ϕ0)); 
-                                                           autodiff=:forward, show_trace=false, ftol=1e-9).zero)
-    # Compute constraints after solve
-    E1, E2 = C(fsolved, rsolved, ϕsolved)
-    # @show L2(E1), L2(E2)
-   
-    return (fsolved, rsolved, ϕsolved, E1, E2)
+function F(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S}, DV::Operator{S})::Field{S} where {S}
+    F1 = r*(DU*(DV*ϕ)) + (DU*r)*(DV*ϕ) + (DV*r)*(DU*ϕ)
+    return F1
 end
 
+function Fbasic(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S}, DV::Operator{S})::Field{S} where {S}
+    F1 = r*(DU*(DV*ϕ)) + (DU*r)*(DV*ϕ) + (DV*r)*(DU*ϕ)
+    return F1
+end
 
-#--------------------------------------------------------------------
-# Solve for an arbitrary spacetime
-# Do a convergence test
-#--------------------------------------------------------------------
+function unloop0(DU, I2, D1)
+    A = zeros(size(DU.value)) 
+    for index in CartesianIndices(A)
+        i, j, k, l = index.I
+        A[index]   = D1.value[i,k] * I2.value[j,l]
+    end
+    return A
+end
+
+function unloop1(DU, I2, D1, u)
+    w = zeros(size(u.value))
+    for index in CartesianIndices(w)
+        i, j = index.I
+        w[index] = sum(D1.value[i,k] * I2.value[j,l] * u.value[k,l] for k in 1:N, l in 1:N+1)
+    end
+    return w
+end
+
+function unloop2(DU, I2, D1, u, v)
+    w = zeros(size(u.value))
+    for index in CartesianIndices(w)
+        i, j = index.I
+        w[index] = sum(v.value[i,j] * D1.value[i,k] * I2.value[j,l] * u.value[k,l] for k in 1:N, l in 1:N+1)
+    end
+    return w
+end
+
+function unloop3(DU, DV, I1, I2, D1, D2)
+    A = zeros(size(DU.value)) 
+    for index in CartesianIndices(A)
+        i, j, k, l = index.I
+        A[index]   = sum(D1.value[i, m] * I2.value[j, n] * I1.value[m, k] * D2.value[n, l] for m in 1:N, n in 1:N+1)
+    end
+    return A
+end
+
+function unloop4(DU, DV, I1, I2, D1, D2, u)
+    w = zeros(size(u.value)) 
+    for index in CartesianIndices(w)
+        i, j = index.I
+        w[index]   = sum(u.value[k,l] * D1.value[i, m] * I2.value[j, n] * I1.value[m, k] * D2.value[n, l] for m in 1:N, n in 1:N+1, k in 1:N, l in 1:N+1)
+    end
+    return w
+end
+
+function unloop5(DU, DV, I1, I2, D1, D2, u, v)
+    w = zeros(size(u.value)) 
+    for index in CartesianIndices(w)
+        i, j = index.I
+        w[index]   = sum(v.value[i,j] * u.value[k,l] * D1.value[i, m] * I2.value[j, n] * I1.value[m, k] * D2.value[n, l] for m in 1:N, n in 1:N+1, k in 1:N, l in 1:N+1)
+    end
+    return w
+end
+
+function unloop6(DU, DV, I1, I2, D1, D2, u, v)  # <-- optimized
+    w = zeros(size(u.value)) 
+    for index in CartesianIndices(w)
+        i, j = index.I
+        w[index]   = sum(v.value[i,j] * u.value[k,l] * D1.value[i, k] * D2.value[j, l] for k in 1:N, l in 1:N+1)
+    end
+    return w
+end
+
+function unloop7(DU, DV, I1, I2, D1, D2, u, v)
+    w = zeros(size(u.value)) 
+    for index in CartesianIndices(w)
+        i, j = index.I
+        w[index] = sum(D1.value[i,k] * I2.value[j,l] * u.value[k,l] * I1.value[i,m] * D2.value[j,n] * v.value[m,n] for k in 1:N, l in 1:N+1, m in 1:N, n in 1:N+1)
+    end
+    return w
+end
+
+function unloop8(DU, DV, I1, I2, D1, D2, u, v) # <-- optimized
+    w = zeros(size(u.value)) 
+    for index in CartesianIndices(w)
+        i, j = index.I
+        w[index] = sum(D1.value[i,k] * u.value[k,j] * D2.value[j,n] * v.value[i,n] for k in 1:N, n in 1:N+1)
+    end
+    return w
+end
+
+function unloop9(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S1}, DV::Operator{S2})::Field{S} where {S, S1, S2}
+    F1 = zeros(size(a.value))
+    for index in CartesianIndices(F1)
+        i, j = index.I
+        F1[index] = (sum(r.value[i,j] * ϕ.value[k,l] * DU.value[i, k] * DV.value[j, l] for k in 1:N, l in 1:N+1)
+                    + sum(DU.value[i,k] * r.value[k,j] * DV.value[j,n] * ϕ.value[i,n] + DU.value[i,k] * ϕ.value[k,j] * DV.value[j,n] * r.value[i,n] for k in 1:N, n in 1:N+1))
+    end
+    return Field(a.space, F1)
+end
+
+function unloop10(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S1}, DV::Operator{S2})::Field{S} where {S, S1, S2} # <--optimized
+    F1 = zeros(size(a.value))
+    @inbounds for index in CartesianIndices(F1)
+        i, j = index.I
+        F1[index] = (sum(r.value[i,j] * ϕ.value[k,n] * DU.value[i, k] * DV.value[j,n] 
+                         + DU.value[i,k] * r.value[k,j] * DV.value[j,n] * ϕ.value[i,n] 
+                         + DU.value[i,k] * ϕ.value[k,j] * DV.value[j,n] * r.value[i,n] for k in 1:N, n in 1:N+1))
+    end
+    return Field(a.space, F1)
+end
+
+function unloop11(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S1}, DV::Operator{S2})::Field{S} where {S, S1, S2} # <--optimized with partial sums
+    F1 = r.value.*(DU.value*(ϕ.value*transpose(DV.value))) + (DU.value*r.value).*transpose((DV.value*transpose(ϕ.value))) + (DU.value*ϕ.value).*transpose((DV.value*transpose(r.value)))
+    return Field(a.space, F1)
+end
+
+#----------------------------------------------------------
+# Test loop expansions 
+#----------------------------------------------------------
+
+using Profile
 
 struct U end
 struct V end
 
-PS = ProductSpace(ChebyshevGL{U, 10, Float64}(-8, -6), 
-                  ChebyshevGL{V, 10, Float64}( 3,  5))
-nonlinearsolver(PS)
+N  = 10
+PS = ProductSpace(ChebyshevGL{U, N, Float64}(-8, -6), ChebyshevGL{V, N+1, Float64}( 3,  5))
+DU,DV = derivative(PS)
+u  = Field(PS, (u,v)->u)
+v  = Field(PS, (u,v)->v)
+x  = Field(PS, (u,v)->u*v)
+y  = Field(PS, (u,v)->u+v)
 
-Profile.clear()
-@profile (for i = 1:10; nonlinearsolver(PS); end)
-Profile.print()
-# Profile.print(format=:flat, sortedby=:count)
+D1 = derivative(PS.S1)
+D2 = derivative(PS.S2) 
+I1 = identity(PS.S1)
+I2 = identity(PS.S2) 
+
+@test unloop0(DU, I2, D1) == DU.value
+@test unloop1(DU, I2, D1, x) ≈ v.value
+@test unloop2(DU, I2, D1, x, y) ≈ (y*v).value
+@test unloop3(DU, DV, I1, I2, D1, D2) == (DU*DV).value
+@test unloop4(DU, DV, I1, I2, D1, D2, x) ≈ (DU*(DV*x)).value
+@test unloop5(DU, DV, I1, I2, D1, D2, x, v) ≈ v.value
+@test unloop6(DU, DV, I1, I2, D1, D2, x, v) ≈ v.value
+@test unloop7(DU, DV, I1, I2, D1, D2, x, x) ≈ (u*v).value
+@test unloop8(DU, DV, I1, I2, D1, D2, x, x) ≈ (u*v).value
+
+a = Field(PS, (u,v)->exp(u*v))
+r = Field(PS, (u,v)->v-u)
+ϕ = Field(PS, (u,v)->sin(u)*sin(v))
+
+@test F(a, r, ϕ, DU, DV) ≈ unloop9(a, r, ϕ, D1, D2)
+@test L2(F(a, r, ϕ, DU, DV) - unloop9(a, r, ϕ, D1, D2)) < 1e-12
+@test L2(F(a, r, ϕ, DU, DV) - unloop10(a, r, ϕ, D1, D2)) < 1e-12
+@test L2(Fbasic(a, r, ϕ, DU, DV) - unloop11(a, r, ϕ, D1, D2)) < 1e-12
+
+#----------------------------------------------------------
+# Now compare performance
+#----------------------------------------------------------
+
+N  = 100
+PS = ProductSpace(ChebyshevGL{U, N, Float64}(-8, -6), ChebyshevGL{V, N+1, Float64}( 3,  5))
+DU,DV = derivative(PS)
+D1 = derivative(PS.S1)
+D2 = derivative(PS.S2) 
+I1 = identity(PS.S1)
+I2 = identity(PS.S2) 
+a  = Field(PS, (u,v)->exp(u*v))
+r  = Field(PS, (u,v)->v-u)
+ϕ  = Field(PS, (u,v)->sin(u)*sin(v))
+
+@time Fbasic(a, r, ϕ, DU, DV) 
+@time unloop11(a, r, ϕ, D1, D2)
+
+println("\n==> F")
+@timev Fbasic(a, r, ϕ, DU, DV) 
+
+println("\n==> loopF")
+@timev unloop11(a, r, ϕ, D1, D2)
+
+

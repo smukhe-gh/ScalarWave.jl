@@ -25,7 +25,7 @@ struct DenseOperator{S, D, T} <: Operator
     value::AbstractArray{T, D}
 end
 
-struct SparseScalingOperator{S, T} <: Operator
+struct SparseScalingOperator{S, D, T} <: Operator
     space::S
     value::AbstractArray{T,D}
 end
@@ -120,10 +120,12 @@ function test4index(A::SparseOperator{S, ⦼})::AbstractArray  where {S}
     return reshape(value, (m*p, n*q))
 end
 
-Sx = ChebyshevGL{M, 2, BigFloat}(-1, 1)
-Sy = ChebyshevGL{M, 2, BigFloat}(-3, 5)
+Sx = ChebyshevGL{M, 3, BigFloat}(-1, 1)
+Sy = ChebyshevGL{M, 4, BigFloat}(-3, 5)
 Dx = DenseOperator(Sx, derivative(Sx).value)
 Dy = DenseOperator(Sy, derivative(Sy).value)
+Ix = DenseOperator(Sx, identity(Sx).value)
+Iy = DenseOperator(Sy, identity(Sy).value)
 
 D2x = Dx*Dx 
 D2y = Dy*Dy
@@ -140,3 +142,4 @@ D3 = D1 * D1
 @test D3.O2.value ≈ D2y.value
 @test D2[1, 1, 2, 1] ≈ 3*D1[1, 1, 2, 1]
 @test collect(D1) ≈ kron(Dx.value, Dy.value)
+
