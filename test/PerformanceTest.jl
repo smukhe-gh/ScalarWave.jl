@@ -14,9 +14,11 @@ function F(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S}, DV::Operator
     return F1
 end
 
-function Fbasic(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S}, DV::Operator{S})::Field{S} where {S}
+function F12(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S}, DV::Operator{S})::NTuple{3, Field{S}} where {S}
     F1 = r*(DU*(DV*ϕ)) + (DU*r)*(DV*ϕ) + (DV*r)*(DU*ϕ)
-    return F1
+    F2 = r*(DU*(DV*r)) + (DU*r)*(DV*r) + (1/4)*(a^2)
+    F3 = (1/a)*(DU*(DV*a)) - (1/a^2)*(DU*a)*(DV*a) + (1/r)*(DU*(DV*r)) + 4pi*(DU*ϕ)*(DV*ϕ)
+    return (F1, F2, F3)
 end
 
 function unloop0(DU, I2, D1)
@@ -126,6 +128,12 @@ function unloop11(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S1}, DV::
     return Field(a.space, F1)
 end
 
+function unloop12(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S1}, DV::Operator{S2})::NTuple{3, Field{S}} where {S, S1, S2} # <--optimized with partial sums
+    F1 = r.value.*(DU.value*(ϕ.value*transpose(DV.value))) + (DU.value*r.value).*transpose((DV.value*transpose(ϕ.value))) + (DU.value*ϕ.value).*transpose((DV.value*transpose(r.value)))
+    F2 = r.value.*(DU.value*(r.value*transpose(DV.value))) + (DU.value*r.value).*transpose((DV.value*transpose(r.value))) + (1/4)*(a.value.*a.value)
+    F3 = (1/a).value.*(DU.value*(a.value*transpose(DV.value))) + (1/a^2).value.*(DU.value*a.value).*transpose((DV.value*transpose(a.value))) + 4pi*(DU.value*ϕ.value).*transpose((DV.value*transpose(ϕ.value)))
+    return (Field(a.space, F1), Field(a.space, F2), Field(a.space, F3))
+end
 #----------------------------------------------------------
 # Test loop expansions 
 #----------------------------------------------------------
@@ -165,7 +173,9 @@ r = Field(PS, (u,v)->v-u)
 @test F(a, r, ϕ, DU, DV) ≈ unloop9(a, r, ϕ, D1, D2)
 @test L2(F(a, r, ϕ, DU, DV) - unloop9(a, r, ϕ, D1, D2)) < 1e-12
 @test L2(F(a, r, ϕ, DU, DV) - unloop10(a, r, ϕ, D1, D2)) < 1e-12
-@test L2(Fbasic(a, r, ϕ, DU, DV) - unloop11(a, r, ϕ, D1, D2)) < 1e-12
+@test L2(F(a, r, ϕ, DU, DV) - unloop11(a, r, ϕ, D1, D2)) < 1e-12
+# @test maximum.(F12(a, r, ϕ, DU, DV) .- unloop12(a, r, ϕ, D1, D2)) .<  1e-12
+# exit()
 
 #----------------------------------------------------------
 # Now compare performance
@@ -182,11 +192,11 @@ a  = Field(PS, (u,v)->exp(u*v))
 r  = Field(PS, (u,v)->v-u)
 ϕ  = Field(PS, (u,v)->sin(u)*sin(v))
 
-@time Fbasic(a, r, ϕ, DU, DV) 
+@time F(a, r, ϕ, DU, DV) 
 @time unloop11(a, r, ϕ, D1, D2)
 
 println("\n==> F")
-@timev Fbasic(a, r, ϕ, DU, DV) 
+@timev F(a, r, ϕ, DU, DV) 
 
 println("\n==> loopF")
 @timev unloop11(a, r, ϕ, D1, D2)
