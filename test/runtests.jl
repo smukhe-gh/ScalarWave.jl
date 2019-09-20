@@ -5,9 +5,9 @@
 
 using ScalarWave, Test
 
-libraries = ["InitialData"]
-libraries = ["NonLinSolver"]
 libraries = ["Performance"]
+libraries = ["Collapse"]
+libraries = ["MultiPatch"]
 
 for file in libraries
     @info "Testing $file"

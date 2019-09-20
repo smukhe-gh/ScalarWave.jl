@@ -59,16 +59,12 @@ function nonlinearsolver(PS::ProductSpace{S1, S2})::NTuple{5, Field{ProductSpace
     I = identity(PS)
 
     # Schwarzschild spacetime 
-    # M  = T(1.0)
-    # r0 = Field(PS, (u,v)->find_r_of_UV(u,v,M))
-    # ϕ0 = Field(PS, (u,v)->0)
-    # f0 = ((16*M^3)/r0)*exp(-r0/2M)
-    # a0 = -sqrt(2*f0) 
-
-    p  = 1e-1
-    f0 = Field(PS, (u,v)->1)
-    ϕ0 = Field(PS, (u,v)->p*exp(-(v-4)^2) + p*exp(-(u+7)^2))
-    r0 = Field(PS, (u,v)->v-u)
+    M  = T(1.0)
+    r0 = Field(PS, (u,v)->find_r_of_UV(u,v,M))
+    pcolormesh(r0)
+    show()
+    ϕ0 = Field(PS, (u,v)->0)
+    f0 = ((16*M^3)/r0)*exp(-r0/2M)
     a0 = -sqrt(2*f0) 
     
     # Solve constraints at the incoming boundary and set boundary conditions
@@ -90,31 +86,17 @@ end
 
 
 #--------------------------------------------------------------------
-# Solve for an arbitrary spacetime and check for convergence 
-# in L2 norm of constraints
+# Simulate the collapse of a field
 #--------------------------------------------------------------------
-
-NT = 100
-L2CU = zeros(NT)
-L2CV = zeros(NT)
-NVEC = zeros(NT)
 
 struct U end
 struct V end
 
-import DoubleFloats.Double64
-
-for N in 4:NT
-    @show N
-    PS = ProductSpace(ChebyshevGL{U, N, Float64}(-8, -6), 
-                      ChebyshevGL{V, N, Float64}( 3,  5))
-    f, r, ϕ, cu, cv = nonlinearsolver(PS)
-    L2CU[N] = L2(cu)
-    L2CV[N] = L2(cv)
-    NVEC[N] = N
+function outgoingexpansion(a::Field{S}, r::Field{S})::Field{S}
+    DU, DV = derivative(a.space)
+    return 2*(DV*r)/(r*abs(a))
 end
 
-using PyPlot
-plot(NVEC, log10.(L2CU), "-o")
-plot(NVEC, log10.(L2CV), "-o")
-show()
+PS = ProductSpace(ChebyshevGL{U, 20, Float64}(-2, -1), 
+                  ChebyshevGL{V, 20, Float64}( 1,  2))
+f, r, ϕ, cu, cv = nonlinearsolver(PS)

@@ -5,10 +5,13 @@
 #--------------------------------------------------------------------
 
 export Manifold, Space, ProductSpace, SingleSpaces,
-       Field, Operator
+       Field, Operator, U, V
 
 abstract type Manifold{Tag} end
 abstract type Space{Tag, N} <: Manifold{Tag} end
+
+struct U end
+struct V end
 
 struct Field{S, D, T}
     space::S

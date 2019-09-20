@@ -4,7 +4,7 @@
 # Overload plotting routines from PyPlot
 #--------------------------------------------------------------------
 using PyPlot
-export plot, pcolormesh
+export plot, pcolormesh, contour, contourf
 
 function PyPlot. plot(u::Field{S}; plotstyle="-o", label="") where {S}
     x = Field(u.space, x->x)
@@ -21,7 +21,24 @@ function PyPlot. pcolormesh(f::Field{ProductSpace{S1, S2}}) where {S1, S2}
     cv = v.value .- (wv/2) 
     append!(cu, u.value[end] + (wu[end]/2))
     append!(cv, v.value[end] + (wv[end]/2))
-    pcolormesh(cu, cv, f.value, snap=true)
+    pcolormesh(cv, cu, f.value, snap=true)
+    # colorbar()
+    return 0
+end
+
+function PyPlot. contour(f::Field{ProductSpace{S1, S2}}, levels) where {S1, S2} 
+    u  = Field(f.space.S1, u->u)
+    v  = Field(f.space.S2, v->v)
+    cp = contour(v.value, u.value, f.value, levels, colors="k")
+    clabel(cp, inline=1, fontsize=5, colors="k")
+    # colorbar()
+    return 0
+end
+
+function PyPlot. contourf(f::Field{ProductSpace{S1, S2}}, levels) where {S1, S2} 
+    u  = Field(f.space.S1, u->u)
+    v  = Field(f.space.S2, v->v)
+    contourf(v.value, u.value, f.value, levels)
     colorbar()
     return 0
 end
