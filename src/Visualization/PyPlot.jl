@@ -9,7 +9,6 @@ export plot, pcolormesh, contour, contourf
 function PyPlot. plot(u::Field{S}; plotstyle="-o", label="") where {S}
     x = Field(u.space, x->x)
     plot(x.value,  u.value, plotstyle, label=label) 
-    return 0
 end
 
 function PyPlot. pcolormesh(f::Field{ProductSpace{S1, S2}}) where {S1, S2} 
@@ -22,24 +21,42 @@ function PyPlot. pcolormesh(f::Field{ProductSpace{S1, S2}}) where {S1, S2}
     append!(cu, u.value[end] + (wu[end]/2))
     append!(cv, v.value[end] + (wv[end]/2))
     pcolormesh(cv, cu, f.value, snap=true)
-    # colorbar()
-    return 0
+    xlabel("v")
+    ylabel("u")
+    colorbar()
 end
 
-function PyPlot. contour(f::Field{ProductSpace{S1, S2}}, levels) where {S1, S2} 
+function PyPlot. contour(f::Field{ProductSpace{S1, S2}}, levels::Union{Array{Number, 1}}, Int) where {S1, S2} 
     u  = Field(f.space.S1, u->u)
     v  = Field(f.space.S2, v->v)
     cp = contour(v.value, u.value, f.value, levels, colors="k")
     clabel(cp, inline=1, fontsize=5, colors="k")
-    # colorbar()
-    return 0
+    xlabel("v")
+    ylabel("u")
+    colorbar()
 end
 
-function PyPlot. contourf(f::Field{ProductSpace{S1, S2}}, levels) where {S1, S2} 
+function PyPlot. contourf(f::Field{ProductSpace{S1, S2}}, levels::Union{Array{Number, 1}, Int}) where {S1, S2} 
     u  = Field(f.space.S1, u->u)
     v  = Field(f.space.S2, v->v)
     contourf(v.value, u.value, f.value, levels)
+    xlabel("v")
+    ylabel("u")
     colorbar()
-    return 0
+end
+
+function PyPlot. contourf(grid::Array{Field, 2}, levels::Int)
+    gridmin = minimum((minimum.(grid)))
+    gridmax = maximum((maximum.(grid)))
+    gridlvl = collect(range(gridmin, stop=gridmax, length=levels))
+    for index in CartesianIndices(grid) 
+        f  = grid[index]
+        u  = Field(f.space.S1, u->u)
+        v  = Field(f.space.S2, v->v)
+        contourf(v.value, u.value, f.value, levels, vmin = gridmin, vmax = gridmax)
+    end
+    xlabel("v")
+    ylabel("u")
+    colorbar()
 end
 
