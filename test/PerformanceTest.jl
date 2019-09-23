@@ -128,10 +128,6 @@ function unloop11(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S1}, DV::
     return Field(a.space, F1)
 end
 
-# F1 = r*(DU*(DV*ϕ)) + (DU*r)*(DV*ϕ) + (DV*r)*(DU*ϕ)
-# F2 = r*(DU*(DV*r)) + (DU*r)*(DV*r) + (1/4)*(a^2)
-# F3 = (1/a)*(DU*(DV*a)) - (1/a^2)*(DU*a)*(DV*a) + (1/r)*(DU*(DV*r)) + 4pi*(DU*ϕ)*(DV*ϕ)
-    
 function unloop12(a::Field{S}, r::Field{S}, ϕ::Field{S}, DU::Operator{S1}, DV::Operator{S2})::NTuple{3, Field{S}} where {S, S1, S2} # <--optimized with partial sums
     F1 = r.value.*(DU.value*(ϕ.value*transpose(DV.value))) + (DU.value*r.value).*transpose((DV.value*transpose(ϕ.value))) + (DU.value*ϕ.value).*transpose((DV.value*transpose(r.value)))
     F2 = r.value.*(DU.value*(r.value*transpose(DV.value))) + (DU.value*r.value).*transpose((DV.value*transpose(r.value))) + (1/4)*(a.value.*a.value)
@@ -144,11 +140,6 @@ end
 #----------------------------------------------------------
 # Test loop expansions 
 #----------------------------------------------------------
-
-using Profile
-
-struct U end
-struct V end
 
 N  = 10
 PS = ProductSpace(ChebyshevGL{U, N, Float64}(-8, -6), ChebyshevGL{V, N+1, Float64}( 3,  5))

@@ -7,7 +7,8 @@ using ScalarWave, Test
 
 libraries = ["Performance"]
 libraries = ["Collapse"]
-libraries = ["MultiPatch"]
+libraries = ["Utilities"]
+libraries = ["Physics"]
 
 for file in libraries
     @info "Testing $file"
