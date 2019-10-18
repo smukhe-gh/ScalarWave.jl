@@ -5,10 +5,9 @@
 
 using ScalarWave, Test
 
-libraries = ["Performance"]
-libraries = ["Collapse"]
-libraries = ["Utilities"]
-libraries = ["Physics"]
+libraries = ["Linearization"]
+libraries = ["AxisOperator"]
+libraries = ["AnalyticJacobian"]
 
 for file in libraries
     @info "Testing $file"
