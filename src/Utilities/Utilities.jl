@@ -6,6 +6,7 @@
 
 export extractUboundary, extractVboundary, combineUVboundary
 export reshapeFromTuple, reshapeToTuple
+export reshapeFromTuple2E, reshapeToTuple2E
 export Grid, setup, extractfield
 export computeUboundary, computeVboundary, compute, distribute
 
@@ -114,4 +115,19 @@ function distribute(grid::Grid, ϕ::Function)::Array{NTuple{3, Field}}
         tree[index] = compute(uboundary, vboundary, tree[index])
     end
     return tree
+end
+
+function reshapeToTuple2E(space::S, x::Array{T,1})::NTuple{2, Field}  where {S, T}
+    U = reshape(x, :, 2)
+    return (reshape(space, U[:, 1]), reshape(space, U[:, 2]))
+end
+
+function reshapeFromTuple2E(U::NTuple{2, Field})
+    return vcat(reshape(U[1]), reshape(U[2]))
+end
+
+function reshapeFromTuple2E(U::NTuple{4, Operator})
+    A = [reshape(U[1]) reshape(U[2]); 
+         reshape(U[3]) reshape(U[4])] 
+    return A
 end

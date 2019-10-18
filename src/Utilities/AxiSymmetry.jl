@@ -1,20 +1,26 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
 # Soham 04-2019
-# Define special operators for axis-symmetry
+# Define operators for axis-symmetry
 #--------------------------------------------------------------------
 
-export axisboundary, enforceregularityonaxis
+export axisboundary, replaceNaNs
 
-function axisboundary(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1,  S2}} where {S1, S2}
-    @assert size(PS.S1) == size(PS.S2)
-    return reshape(PS, Diagonal(vec(reshape(identity(PS.S1))))) 
+function axisboundary(PS::ProductSpace{S1, S2})::Operator{ProductSpace{S1, S2}} where {S1, S2}
+    C = 0*identity(PS)
+    for index in CartesianIndices(C.value)
+        if index.I[1] == index.I[2] == index.I[3] == index.I[4] 
+            C.value[index] = 1 
+        end
+    end
+    return C
 end
 
-function enforceregularityonaxis(L::Operator{ProductSpace{S1, S2}}, D::Operator{ProductSpace{S1, S2}})::Operator{ProductSpace{S1, S2}} where {S1, S2}
-    @assert range(L.space) == range(D.space)
-    A = axisboundary(L.space)
-    L = Operator(A.space, isfinite.(L.value).*L.value) + A*D
-    return L
+function replaceNaNs(u::Field{S})::Field{S} where {S}
+    return Field(u.space, isfinite.(u.value).*u.value)
+end
+
+function replaceNaNs(A::Operator{S})::Operator{S} where {S}
+    return Operator(A.space, isfinite.(A.value).*A.value)
 end
 
