@@ -5,7 +5,6 @@
 #--------------------------------------------------------------------
 
 import Base: maximum, minimum, range, size, ndims
-export axisboundary
 
 ndims(PS::T)   where {T<:ProductSpace{S1, S2}} where {S1, S2} = 2 
 minimum(PS::T) where {T<:ProductSpace{S1, S2}} where {S1, S2} = (minimum(PS.S1), minimum(PS.S2))
