@@ -5,9 +5,9 @@
 
 using ScalarWave, Test
 
-libraries = ["Linearization"]
 libraries = ["AxisOperator"]
 libraries = ["AnalyticJacobian"]
+libraries = ["MinkowskiEvolve"]
 
 for file in libraries
     @info "Testing $file"

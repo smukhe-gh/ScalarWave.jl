@@ -6,87 +6,77 @@
 
 using NLsolve
 
+function reshapeFromTuple(U::NTuple{2, Field})
+    return vcat(reshape(U[1]), reshape(U[2]))
+end
+
+function reshapeToTuple(space::S, x::Array{T,1})::NTuple{2, Field}  where {S, T}
+    U = reshape(x, :, 2)
+    return (reshape(space, U[:, 1]), reshape(space, U[:, 2]))
+end
+
 function minkowskisolver(boundarydata::NTuple{2, Field{ProductSpace{S1, S2}}}, 
                          initialguess::NTuple{2, Field{ProductSpace{S1, S2}}})::NTuple{2, Field{ProductSpace{S1, S2}}} where {S1, S2}
 
-
-    function F(a::Field{S}, ω::Field{S})::NTuple{2, Field{S}} where {S}
-
-        function regularize!(F::Field{S})::Field{S} where {S}
-            FonAxis = DV*r + DU*r 
-            for index in CartesianIndices(F1)
-                if index.I[1] == index.I[2] && r.value[index] <= eps(Float64)
-                    F.value[index] = FonAxis.value[index]
-                end
-            end
-            return F
-        end
-
-        r  = η*ω
-        F1 = r*(DU*(DV*r)) + (DU*r)*(DV*r) + (1/4)*(a^2)
-        F2 = (1/a)*(DU*(DV*a)) - (1/a^2)*(DU*a)*(DV*a) + (1/r)*(DU*(DV*r))
-
-        return (regularize!(F1), regularize!(F2))
+    function F(a::Field{S}, η::Field{S})::NTuple{2, Field{S}} where {S}
+        F1 = DU*(DV*a) - (1/a)*(DU*a)*(DV*a) + (a/η)*(DU*(DV*η))
+        F2 = DU*(DV*η) + (1/η)*(DU*η)*(DV*η) + (1/4)*(1/η)*(a^2)
+        # FonAxis1 = DU*DV*a - (1/a)*(DU*a)*(DV*a)
+        # FonAxis2 = DU*DV*η 
+        FonAxis1 = a
+        FonAxis2 = DU*η + DV*η
+        return ((I-B)*(replaceNaNs(F1) + A*FonAxis1) + B*(a-bnda),
+                (I-B)*(replaceNaNs(F2) + A*FonAxis2) + B*(η-bndη))
     end
 
-    function C(a::Field{S}, r::Field{S})::NTuple{2, Field{S}} where {S}
-        DU, DV = derivative(a.space)
-        C1 = DU*(DU*r) - (2/a)*(DU*a)*(DU*r) 
-        C2 = DV*(DV*r) - (2/a)*(DV*a)*(DV*r) 
-        return (C1, C2)
-    end
-
-    function residual(a::Field{S}, r::Field{S})::NTuple{2, Field{S}} where {S}
-        function BCs(F1::Field{S}, F2::Field{S})::NTuple{2, Field{S}} where {S}
-            BF1 = (I-B)*F1 + B*(a-bnda) 
-            BF2 = (I-B)*F2 + B*(r-bndr) 
-            return (BF1, BF2)
-        end
-        return BCs(F(a, r)...)
-    end
-
+    # function J(a::Field{S}, η::Field{S})::NTuple{4, Operator{S}} where {S}
+        # L1Δa = DU*DV - (1/a)*(DV*a)*DU - (1/a)*(DU*a)*DV + (1/a^2)*(DU*a)*(DV*a)*I + (1/η)*(DU*(DV*η))*I
+        # L2Δa = (a/2)*(1/η)*I
+        # L1Δη = (a/η)*DU*DV - (a/η^2)*(DU*(DV*η))*I
+        # L2Δη = DU*DV + (1/η)*(DV*η)*DU + (1/η)*(DU*η)*DV - (1/η^2)*(DU*η)*(DV*η)*I - (1/4)*(a^2)*(1/η^2)*I
+        # D1   = DU*DV - (1/a)*(DV*a)*DU - (1/a)*(DU*a)*DV + (1/a^2)*(DU*a)*(DV*a)*I
+        # D2   = DV * DU
+        # return ((I-B)*(replaceNaNs(L1Δa) +   A*D2) + B, (I-B)*(replaceNaNs(L1Δη) + 0*A*D1),
+                # (I-B)*(replaceNaNs(L2Δa) + 0*A*D1),     (I-B)*(replaceNaNs(L2Δη) +   A*D2) + B)
+    # end
 
     function f!(fvec::Array{T,1}, x::Array{T,1}) where {T}
-        fvec[:] = reshapeFromTuple(residual(reshapeToTuple(PS, x)...))
+        fvec[:] = reshapeFromTuple(F(reshapeToTuple(PS, x)...))
     end
 
-    function reshapeFromTuple(U::NTuple{2, Field})
-        return vcat(reshape(U[1]), reshape(U[2]))
-    end
     
-    function reshapeToTuple(space::S, x::Array{T,1})::NTuple{2, Field}  where {S, T}
-        U = reshape(x, :, 2)
-        return (reshape(space, U[:, 1]), reshape(space, U[:, 2]))
-    end
+    # function j!(jvec::Array{T,2}, x::Array{T,1}) where {T}
+        # jvec[:, :] = reshapeFromTuple2E(J(reshapeToTuple2E(PS, x)...))
+        # @show cond(jvec)
+    # end
 
-    η = Field(PS, (u,v)->(v-u)/2)
-    (bnda, bndr) = boundarydata
-    (a0, r0) = initialguess
+    (bnda, bndη) = boundarydata
+    (a0, η0) = initialguess
 
-    @show L2.(C(initialguess...))
-    @show L2.(F(initialguess...))
+    solved1 = reshapeToTuple(PS, nlsolve(f!, reshapeFromTuple((a0, η0)); autodiff=:forward, 
+                                            show_trace=true, ftol=1e-9, iterations=10).zero)
 
-    solved = reshapeToTuple(PS, nlsolve(f!, reshapeFromTuple((a0, r0)); 
-                                            show_trace=true, ftol=1e-9, iterations=50).zero)
-    @show L1.(F(solved...))
-    @show L2.(C(solved...))
-    @show L2.(F(solved...))
-    return solved
+    # solved2 = reshapeToTuple(PS, nlsolve(f!, j!, reshapeFromTuple((a0, η0));  
+                                            # show_trace=true, ftol=1e-9, iterations=10).zero)
+
+    # @show L2.(solved1 .- solved2)
+
+    return solved1
 end
 
-PS = ProductSpace(ChebyshevGL{U, 6, Float64}(0, 1), 
-                  ChebyshevGL{V, 6, Float64}(0, 1))
+PS = ProductSpace(ChebyshevGL{U, 12, Float64}(0, 1), 
+                  ChebyshevGL{V, 12, Float64}(0, 1))
 
 DU, DV = derivative(PS)
 B = incomingboundary(PS)
+A = axisboundary(PS)
 I = identity(PS)
 
 a0 = Field(PS, (u,v)->1)
-ω0 = Field(PS, (u,v)->1)
-
-(asol, rsol) = minkowskisolver((B*a0, B*ω0), (1 + a0, ω0))
+η0 = Field(PS, (u,v)->(v-u)/2)
+(asol, ηsol) = minkowskisolver((B*a0, B*η0), (sin(a0) + a0, η0))
 pcolormesh(asol)
 show()
-pcolormesh(rsol)
+pcolormesh(ηsol)
 show()
 
