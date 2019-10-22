@@ -8,6 +8,9 @@ using ScalarWave, Test
 libraries = ["AxisOperator"]
 libraries = ["AnalyticJacobian"]
 libraries = ["MinkowskiEvolve"]
+libraries = ["NonlinearSolver"]
+libraries = ["Mix"]
+libraries = ["MinkowskiEvolve"]
 
 for file in libraries
     @info "Testing $file"

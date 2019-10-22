@@ -4,7 +4,8 @@
 # Simulate Minkowski spacetime on axis
 #--------------------------------------------------------------------
 
-using NLsolve
+using NLsolve, ForwardDiff
+import LinearAlgebra.eigvals, LinearAlgebra.display, LinearAlgebra.cond
 
 function reshapeFromTuple(U::NTuple{2, Field})
     return vcat(reshape(U[1]), reshape(U[2]))
@@ -21,12 +22,14 @@ function minkowskisolver(boundarydata::NTuple{2, Field{ProductSpace{S1, S2}}},
     function F(a::Field{S}, η::Field{S})::NTuple{2, Field{S}} where {S}
         F1 = DU*(DV*a) - (1/a)*(DU*a)*(DV*a) + (a/η)*(DU*(DV*η))
         F2 = DU*(DV*η) + (1/η)*(DU*η)*(DV*η) + (1/4)*(1/η)*(a^2)
-        # FonAxis1 = DU*DV*a - (1/a)*(DU*a)*(DV*a)
-        # FonAxis2 = DU*DV*η 
-        FonAxis1 = a
-        FonAxis2 = DU*η + DV*η
-        return ((I-B)*(replaceNaNs(F1) + A*FonAxis1) + B*(a-bnda),
-                (I-B)*(replaceNaNs(F2) + A*FonAxis2) + B*(η-bndη))
+        FonAxis1 = DU*DV*a - (1/a)*(DU*a)*(DV*a)
+        FonAxis2 = DU*DV*η 
+        # FonAxis1 = DU*a + DV*a
+        # FonAxis2 = DU*η + DV*η 
+        # return ((I-B)*(replaceNaNs(F1) + A*FonAxis1) + B*(a-bnda),
+                # (I-B)*(replaceNaNs(F2) + A*FonAxis2) + B*(η-bndη))
+        return (mix!(mix!(F1, A, FonAxis1), B, a-bnda), 
+                mix!(mix!(F2, A, FonAxis2), B, η-bndη))
     end
 
     # function J(a::Field{S}, η::Field{S})::NTuple{4, Operator{S}} where {S}
@@ -45,27 +48,28 @@ function minkowskisolver(boundarydata::NTuple{2, Field{ProductSpace{S1, S2}}},
     end
 
     
-    # function j!(jvec::Array{T,2}, x::Array{T,1}) where {T}
+    function j!(jvec::Array{T,2}, x::Array{T,1}) where {T}
         # jvec[:, :] = reshapeFromTuple2E(J(reshapeToTuple2E(PS, x)...))
-        # @show cond(jvec)
-    # end
+        jvec[:, :] = ForwardDiff.jacobian(f!, similar(x), x)
+        @show cond(jvec)
+        # @show eigvals(jvec)
+        # display(jvec)
+        # println()
+        # println()
+    end
 
     (bnda, bndη) = boundarydata
     (a0, η0) = initialguess
 
-    solved1 = reshapeToTuple(PS, nlsolve(f!, reshapeFromTuple((a0, η0)); autodiff=:forward, 
-                                            show_trace=true, ftol=1e-9, iterations=10).zero)
+    solved = reshapeToTuple(PS, nlsolve(f!, j!, reshapeFromTuple((a0, η0)); method=:trust_region, factor=0.001,
+                                            show_trace=true, ftol=1e-9, iterations=100).zero)
 
-    # solved2 = reshapeToTuple(PS, nlsolve(f!, j!, reshapeFromTuple((a0, η0));  
-                                            # show_trace=true, ftol=1e-9, iterations=10).zero)
+    return solved
 
-    # @show L2.(solved1 .- solved2)
-
-    return solved1
 end
 
-PS = ProductSpace(ChebyshevGL{U, 12, Float64}(0, 1), 
-                  ChebyshevGL{V, 12, Float64}(0, 1))
+PS = ProductSpace(ChebyshevGL{U, 8, Float64}(0, 1), 
+                  ChebyshevGL{V, 8, Float64}(0, 1))
 
 DU, DV = derivative(PS)
 B = incomingboundary(PS)
@@ -74,7 +78,11 @@ I = identity(PS)
 
 a0 = Field(PS, (u,v)->1)
 η0 = Field(PS, (u,v)->(v-u)/2)
-(asol, ηsol) = minkowskisolver((B*a0, B*η0), (sin(a0) + a0, η0))
+(asol, ηsol) = minkowskisolver((B*a0, B*η0), (0.1 + a0, η0))
+display(asol)
+display(asol - a0)
+@show L2(asol - a0)
+@show L2(ηsol - η0)
 pcolormesh(asol)
 show()
 pcolormesh(ηsol)
