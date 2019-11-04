@@ -24,24 +24,9 @@ function minkowskisolver(boundarydata::NTuple{2, Field{ProductSpace{S1, S2}}},
         F2 = DU*(DV*η) + (1/η)*(DU*η)*(DV*η) + (1/4)*(1/η)*(a^2)
         FonAxis1 = DU*DV*a - (1/a)*(DU*a)*(DV*a)
         FonAxis2 = DU*DV*η 
-        # FonAxis1 = DU*a + DV*a
-        # FonAxis2 = DU*η + DV*η 
-        # return ((I-B)*(replaceNaNs(F1) + A*FonAxis1) + B*(a-bnda),
-                # (I-B)*(replaceNaNs(F2) + A*FonAxis2) + B*(η-bndη))
         return (mix!(mix!(F1, A, FonAxis1), B, a-bnda), 
                 mix!(mix!(F2, A, FonAxis2), B, η-bndη))
     end
-
-    # function J(a::Field{S}, η::Field{S})::NTuple{4, Operator{S}} where {S}
-        # L1Δa = DU*DV - (1/a)*(DV*a)*DU - (1/a)*(DU*a)*DV + (1/a^2)*(DU*a)*(DV*a)*I + (1/η)*(DU*(DV*η))*I
-        # L2Δa = (a/2)*(1/η)*I
-        # L1Δη = (a/η)*DU*DV - (a/η^2)*(DU*(DV*η))*I
-        # L2Δη = DU*DV + (1/η)*(DV*η)*DU + (1/η)*(DU*η)*DV - (1/η^2)*(DU*η)*(DV*η)*I - (1/4)*(a^2)*(1/η^2)*I
-        # D1   = DU*DV - (1/a)*(DV*a)*DU - (1/a)*(DU*a)*DV + (1/a^2)*(DU*a)*(DV*a)*I
-        # D2   = DV * DU
-        # return ((I-B)*(replaceNaNs(L1Δa) +   A*D2) + B, (I-B)*(replaceNaNs(L1Δη) + 0*A*D1),
-                # (I-B)*(replaceNaNs(L2Δa) + 0*A*D1),     (I-B)*(replaceNaNs(L2Δη) +   A*D2) + B)
-    # end
 
     function f!(fvec::Array{T,1}, x::Array{T,1}) where {T}
         fvec[:] = reshapeFromTuple(F(reshapeToTuple(PS, x)...))
@@ -49,21 +34,15 @@ function minkowskisolver(boundarydata::NTuple{2, Field{ProductSpace{S1, S2}}},
 
     
     function j!(jvec::Array{T,2}, x::Array{T,1}) where {T}
-        # jvec[:, :] = reshapeFromTuple2E(J(reshapeToTuple2E(PS, x)...))
         jvec[:, :] = ForwardDiff.jacobian(f!, similar(x), x)
-        @show cond(jvec)
-        # @show eigvals(jvec)
-        # display(jvec)
-        # println()
-        # println()
     end
 
     (bnda, bndη) = boundarydata
     (a0, η0) = initialguess
 
-    solved = reshapeToTuple(PS, nlsolve(f!, j!, reshapeFromTuple((a0, η0)); method=:trust_region, factor=0.001,
-                                            show_trace=true, ftol=1e-9, iterations=100).zero)
-
+    solved = reshapeToTuple(PS, nlsolve(f!, reshapeFromTuple((a0, η0)); 
+                                        method=:trust_region, factor=0.001, autodiff=:forward,
+                                        show_trace=true, ftol=1e-9, iterations=100).zero)
     return solved
 
 end
@@ -79,12 +58,6 @@ I = identity(PS)
 a0 = Field(PS, (u,v)->1)
 η0 = Field(PS, (u,v)->(v-u)/2)
 (asol, ηsol) = minkowskisolver((B*a0, B*η0), (0.1 + a0, η0))
-display(asol)
-display(asol - a0)
 @show L2(asol - a0)
 @show L2(ηsol - η0)
-pcolormesh(asol)
-show()
-pcolormesh(ηsol)
-show()
 

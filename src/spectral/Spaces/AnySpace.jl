@@ -190,3 +190,7 @@ end
 function Base. sqrt(u::Field{S})::Field{S} where {S}
     return reshape(u.space, sqrt.(reshape(u)))
 end
+
+function Base. transpose(u::Field{S})::Field{S} where {S}
+    return Field(u.space, transpose(u.value))
+end

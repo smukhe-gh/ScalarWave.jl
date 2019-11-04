@@ -5,12 +5,9 @@
 
 using ScalarWave, Test
 
-libraries = ["AxisOperator"]
-libraries = ["AnalyticJacobian"]
-libraries = ["MinkowskiEvolve"]
-libraries = ["NonlinearSolver"]
-libraries = ["Mix"]
-libraries = ["MinkowskiEvolve"]
+libraries = ["Collapse"]
+libraries = ["MultipatchCollapse"]
+libraries = ["Cowling"]
 
 for file in libraries
     @info "Testing $file"

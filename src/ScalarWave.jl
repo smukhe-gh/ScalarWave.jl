@@ -13,6 +13,10 @@ include("./Spectral/Spaces/2Dspace.jl")
 include("./Spectral/Spaces/AnySpace.jl")
 include("./Visualization/PyPlot.jl")
 include("./Utilities/AxiSymmetry.jl")
-include("./Utilities/Utilities.jl")
+include("./Utilities/BoundaryUtils.jl")
+include("./Utilities/InitialDataUtils.jl")
+include("./Utilities/NLsolverUtils.jl")
+include("./Utilities/BasisTransformationUtils.jl")
+include("./Utilities/MultiPatchUtils.jl")
 
 end 
