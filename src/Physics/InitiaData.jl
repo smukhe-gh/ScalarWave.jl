@@ -1,13 +1,6 @@
 #--------------------------------------------------------------------
 # Spacetime Discretization methods in Julia
-# Soham 01-2018
+# Soham 09-2019
+# Compute initial data 
 #--------------------------------------------------------------------
 
-using ScalarWave, Test
-
-libraries = ["Regularity"]
-
-for file in libraries
-    @info "Testing $file"
-    include("$(file)Test.jl")
-end

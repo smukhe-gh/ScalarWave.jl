@@ -4,7 +4,8 @@
 # Boundary utilities
 #--------------------------------------------------------------------
 
-export extractUboundary, extractVboundary, combineUVboundary
+export extractUboundary, extractVboundary, 
+       combineUVboundary
 
 function extractUboundary(u::Field{ProductSpace{S1, S2}}, boundarytype::Symbol)::Field{S2} where {S1, S2}
     @assert ndims(u.value) == 2
@@ -41,3 +42,4 @@ function combineUVboundary(ubnd::NTuple{3, Field{S2}},
                            vbnd::NTuple{3, Field{S1}}, boundarytype::Symbol)::NTuple{3, Field{ProductSpace{S1, S2}}} where {S1, S2}
     return combineUVboundary.(ubnd, vbnd, boundarytype) 
 end
+
