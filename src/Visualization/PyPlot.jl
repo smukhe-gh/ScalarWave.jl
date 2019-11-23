@@ -11,6 +11,7 @@ function PyPlot. plot(u::Field{S}; plotstyle="-o", label="") where {S}
     plot(x.value,  u.value, plotstyle, label=label) 
 end
 
+# FIXME: This plotting routine doesn't work quite right. 
 function PyPlot. pcolormesh(f::Field{ProductSpace{S1, S2}}) where {S1, S2} 
     u  = Field(f.space.S1, u->u)
     v  = Field(f.space.S2, v->v)

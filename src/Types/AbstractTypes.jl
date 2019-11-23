@@ -16,13 +16,11 @@ struct V end
 struct Field{S, D, T}
     space::S
     value::AbstractArray{T, D}
-    # Field{S, D, T}(space, value) where {S, D, T} = ndims(space) == D ? new{S, D, T}(space, value) : error("Space and Field dimensions don't match")
 end
 
 struct Operator{S, D, T}
     space::S
     value::AbstractArray{T, D}
-    # Operator{S, D, T}(space, value) where {S, D, T} = 2*ndims(space) == D ? new{S, D, T}(space, value) : error("Space and Operator dimensions don't match")
 end
 
 struct ProductSpace{T1, T2}

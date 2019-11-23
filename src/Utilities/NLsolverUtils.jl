@@ -6,7 +6,7 @@
 
 export reshapeFromTuple, reshapeToTuple
 export reshapeFromTuple2E, reshapeToTuple2E
-export symmetrize
+export enforcereflectionsymmetry
 
 function reshapeFromTuple(U::NTuple{3, Field})
     return vcat(reshape(U[1]), reshape(U[2]), reshape(U[3]))
@@ -26,7 +26,7 @@ function reshapeToTuple2E(space::S, x::Array{T,1})::NTuple{2, Field}  where {S, 
     return (reshape(space, U[:, 1]), reshape(space, U[:, 2]))
 end
 
-function symmetrize(u::Field{S})::Field{S} where {S}
+function enforcereflectionsymmetry(u::Field{S})::Field{S} where {S}
     return (u + transpose(u))/2 
 end
 

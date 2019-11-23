@@ -63,7 +63,7 @@ function main(boundarydata::NTuple{3, Field{ProductSpace{S1, S2}}},
                     + (2/ψ)*(DV*ϕ)*(DU*ψ) + (2/ψ)*(DU*ϕ)*(DV*ψ) + (DU*(DV*ϕ)))
 
         F1onAxis = s
-        F2onAxis = exp(r*s)/2 - (DU*r) - 2*(r/ψ)*(DU*ψ)
+        F2onAxis = DU*ψ - DV*ψ 
         F3onAxis = DU*ϕ - DV*ϕ 
 
         return (mix!(mix!(F1, A, F1onAxis), B, s-bnds), 
