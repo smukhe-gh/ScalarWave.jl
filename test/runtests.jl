@@ -5,7 +5,7 @@
 
 using ScalarWave, Test
 
-libraries = ["Regularity"]
+libraries = ["BasisTransformation"]
 
 for file in libraries
     @info "Testing $file"
